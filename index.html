@@ -1026,7 +1026,7 @@ var reactPicker = null, userFullscreenOverlay = null;
 var APP_VERSION = "6.7";
 var JIKAN_URL = "https://api.jikan.moe/v4";
 var ANILIST_URL = "https://graphql.anilist.co";
-window.addEventListener("error", function (e) { try { var b = document.createElement("div"); b.className = "err-banner"; b.textContent = "JS Error: " + e.message; document.body.appendChild(b); setTimeout(function () { if (b.parentNode) b.parentNode.removeChild(b); }, 6000); } catch (er) {} });
+window.addEventListener("error", function (e) { try { console.error("LStream JS Error:", e.message, e.error || ""); var gate=document.getElementById("authGate"); if(gate && gate.classList.contains("show") && SafeStorage.getItem("lstream_logged_in")==="1"){ gate.classList.add("hidden"); gate.style.display="none"; } } catch (er) {} });
 /* Error banners are diagnostic only and must never intercept taps/clicks. */
 window.addEventListener("unhandledrejection", function (e) { try { console.error("LStream unhandled rejection:", e.reason); } catch (_) {} });
 function setCookie(k, v, days) { try { var d = new Date(); d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000)); document.cookie = k + "=" + encodeURIComponent(v) + "; expires=" + d.toUTCString() + "; path=/; SameSite=Lax"; } catch (e) {} }
@@ -1179,7 +1179,12 @@ function getStrikes() { try { return parseInt(SafeStorage.getItem(STORAGE_STRIKE
 function incrementStrikes() { var n = getStrikes() + 1; SafeStorage.setItem(STORAGE_STRIKES, String(n)); return n; }
 function seedDummyFriendsIfEmpty() { try { var store = getFriendStore(); var seededFlag = SafeStorage.getItem("lstream_dummy_seeded_" + (userState.userId || "x")); if (seededFlag === "1") return; var existingNames = store.incoming.map(function (r) { return r.name; }); [{ name: "Rina_Chan" },{ name: "AnimeLover88" },{ name: "YukiStream" },{ name: "KenjiKun" }].forEach(function (d) { if (existingNames.indexOf(d.name) === -1) store.incoming.push({ name: d.name, time: Date.now() - Math.floor(Math.random() * 3600000) }); }); saveFriendStore(store); SafeStorage.setItem("lstream_dummy_seeded_" + (userState.userId || "x"), "1"); } catch (e) {} }
 function seedDummyChat() { try { var chat = getGlobalChat(); if (chat && chat.length > 0) return; var seededFlag = SafeStorage.getItem("lstream_dummy_chat_seeded"); if (seededFlag === "1") return; var now = Date.now(); var dummies = [{ name: "Rina_Chan", text: "Halo semua! Ada rekomendasi anime bagus?", time: now - 3600000 },{ name: "AnimeLover88", text: "Frieren wajib tonton sih, keren banget", time: now - 3300000 },{ name: "YukiStream", text: "Setuju! Musiknya juga enak didenger", time: now - 3000000 },{ name: "KenjiKun", text: "Kalau action, Jujutsu Kaisen top banget", time: now - 2700000 }]; dummies.forEach(function (d) { chat.push({ id: "dm_dummy_" + d.time, from: "dummy_" + d.name, fromName: d.name, fromAvatar: "", text: d.text, time: d.time, type: "text" }); }); saveGlobalChat(chat); SafeStorage.setItem("lstream_dummy_chat_seeded", "1"); } catch (e) {} }
-var userState = getUser() || { loggedIn: false, premium: false, premiumUntil: 0, premiumClaimed: false, username: "Guest", userId: "#LS-00000", level: 1, xp: 0, coins: 0, avatarUrl: "", bio: "", stats: { comments: 0, history: 0, joinedDays: 0, favorites: 0 }, userComments: [], userHistory: [] };
+var __LS_DEFAULT_USER = { loggedIn: false, premium: false, premiumUntil: 0, premiumClaimed: false, username: "Guest", userId: "#LS-00000", level: 1, xp: 0, coins: 0, diamonds: 0, avatarUrl: "", bio: "", stats: { comments: 0, history: 0, joinedDays: 0, favorites: 0 }, userComments: [], userHistory: [] };
+var __LS_STORED_USER = getUser();
+var userState = Object.assign({}, __LS_DEFAULT_USER, (__LS_STORED_USER && typeof __LS_STORED_USER === "object") ? __LS_STORED_USER : {});
+userState.stats = Object.assign({}, __LS_DEFAULT_USER.stats, (userState.stats && typeof userState.stats === "object") ? userState.stats : {});
+if (!userState.username) userState.username = "Guest";
+if (!userState.userId) userState.userId = "#LS-00000";
 if (!userState.premiumUntil) userState.premiumUntil = 0;
 if (!userState.bio) userState.bio = "";
 if (userState.premiumClaimed === undefined) userState.premiumClaimed = false;
@@ -1865,6 +1870,7 @@ function appendChatBubble(m, noAnim) {
 }
 function updateMsgReactions(el, ctx, msgId) { if (!el) return; var disp = el.querySelector(".chat-msg__reactions-display"); var newHtml = renderReactionsHtml(ctx, msgId); if (disp) { if (newHtml) disp.outerHTML = newHtml; else disp.remove(); } else if (newHtml) { var meta = el.querySelector(".chat-msg__meta"); if (meta) meta.insertAdjacentHTML("beforebegin", newHtml); } el.querySelectorAll(".chat-msg__reaction-item").forEach(function (ri) { ri.addEventListener("click", function (e) { e.stopPropagation(); toggleReaction(ri.dataset.chattype, ri.dataset.msgid, ri.dataset.emoji); updateMsgReactions(el, ri.dataset.chattype, ri.dataset.msgid); }); }); }
 function openUserFullscreen(user) {
+  if (!user || typeof user !== "object") user = { name: "User", avatarUrl: "", isSelf: false };
   if (!userFullscreenOverlay || !userFullscreen) return;
   var isSelf = !!user.isSelf || user.name === userState.username;
   state.currentProfileTab = "comments";
@@ -2186,6 +2192,23 @@ function initPage() {
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initPage);
 else initPage();
+
+/* Emergency boot recovery: a stale/corrupt account or third-party script must
+   never leave the authentication gate permanently covering the application. */
+setTimeout(function(){
+  try{
+    var gate=document.getElementById("authGate");
+    var logged=SafeStorage.getItem(STORAGE_LOGGED_IN)==="1";
+    var saved=getUser();
+    if(gate && logged && saved && saved.loggedIn){
+      gate.classList.add("hidden");
+      gate.style.display="none";
+      document.body.classList.add("logged-in");
+      try{renderUserPanel();}catch(e){}
+      try{renderAccountPage();}catch(e){}
+    }
+  }catch(e){}
+}, 3500);
 </script>
 
 <style id="ls-final-visual-fixes">
