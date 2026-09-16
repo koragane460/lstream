@@ -2602,6 +2602,169 @@ function patchPremium(){var style=document.createElement('style');style.textCont
 function boot(){ensureUserClan();syncClanMembership();patchAnimeGrid();patchKeyboard();hookDetailButtons();patchPremium();setTimeout(patchSettings,0);setInterval(function(){try{syncClanMembership();if($('settingsOverlay')&&$('settingsOverlay').classList.contains('open'))injectRolePanel();decorateProfileAreas()}catch(e){}},900);decorateProfileAreas();installChat()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 window.__lsClanV2={render:renderClanShell,openCreateClan:openCreateClan,join:renderClanJoin};
+
+/* ===== LStream Chat/Clan polish patch ===== */
+(function(){
+  function lsFindClanForUser(name){
+    try{
+      for(var i=0;i<S.clans.length;i++){
+        var c=S.clans[i];
+        if(c.members&&c.members.some(function(m){return m.name===name})) return c;
+      }
+    }catch(e){}
+    return null;
+  }
+  function lsGlobalBubble(m,noAnim){
+    if(!chatBox)return;
+    var isMe=m.from===userState.userId;
+    var id=m.id||m.time;
+    var el=document.createElement('div');
+    el.className='chat-msg chat-msg--'+(isMe?'me':'other')+' ls-global-msg';
+    el.dataset.msgId=id;
+    if(noAnim)el.style.animation='none';
+    var displayName=isMe?userState.username:(m.fromName||'User');
+    var avatar=isMe?avatarWithBorder(userState,32):'<div class="chat-msg__avatar-fallback" style="'+(m.fromAvatar?'background-image:url(\''+String(m.fromAvatar).replace(/'/g,'%27')+'\');background-size:cover;background-position:center':'background:#000')+'"></div>';
+    var c=lsFindClanForUser(displayName);
+    var ctag=c?(' '+clanTag(c)):'';
+    var replyQuote=m.replyTo?'<div class="chat-msg__reply-quote"><b>'+esc(m.replyTo.name)+'</b> · '+esc(m.replyTo.text)+'</div>':'';
+    var media=(m.type==='photo'||m.type==='gif'||m.type==='sticker');
+    var content=media?'<div class="chat-msg__attachment"><img src="'+esc(m.url)+'"></div>':'<div class="chat-msg__text">'+esc(m.text||'')+'</div>';
+    var bubbleCls=media?'chat-msg__bubble chat-msg__bubble--media':'chat-msg__bubble';
+    var replyBtn='<button type="button" class="chat-msg__inline-reply" data-ls-reply-name="'+esc(displayName)+'" data-ls-reply-text="'+esc((m.text||'[foto]').slice(0,80))+'">'+ICON.reply+'<span>Balas</span></button>';
+    var reactBtn='<button type="button" class="chat-msg__react-btn" data-ls-react="1" data-react-msg="'+esc(id)+'" data-react-ctx="global">React</button>';
+    var reactions=renderReactionsHtml('global',id);
+    var del=isMe?'<button type="button" class="chat-msg__del" data-ls-del="'+esc(id)+'">'+ICON.trash+'Hapus</button>':'';
+    el.innerHTML='<div class="chat-msg__avatar '+(isMe?'has-profile-border':'')+'" data-ls-user="'+esc(displayName)+'" data-ls-avatar="'+esc(isMe?userState.avatarUrl:(m.fromAvatar||''))+'">'+avatar+'</div><div class="chat-msg__body"><div class="chat-msg__name"><span>'+esc(displayName)+'</span>'+blueCheck(displayName)+ctag+'</div><div class="'+bubbleCls+'">'+replyQuote+content+replyBtn+'</div>'+reactions+'<div class="chat-msg__meta"><div class="chat-msg__meta-row"><span class="chat-msg__time">'+(typeof formatRelativeTime==='function'?formatRelativeTime(m.time):'baru saja')+'</span>'+reactBtn+del+'</div></div></div>';
+    var rp=el.querySelector('[data-ls-reply-name]');
+    if(rp)rp.onclick=function(e){e.stopPropagation();state.replyingTo={name:rp.dataset.lsReplyName,text:rp.dataset.lsReplyText};if(chatReplyPreview&&chatReplyText){chatReplyText.innerHTML='Membalas <b>'+esc(rp.dataset.lsReplyName)+'</b>';chatReplyPreview.classList.add('show')}if(chatInput){chatInput.focus({preventScroll:true})}};
+    var rr=el.querySelector('[data-ls-react]');
+    if(rr)rr.onclick=function(e){e.stopPropagation();showReactPicker(rr,'global',id)};
+    var av=el.querySelector('[data-ls-user]');
+    if(av)av.onclick=function(e){e.stopPropagation();openUserFullscreen({name:av.dataset.lsUser,avatarUrl:av.dataset.lsAvatar,isSelf:isMe})};
+    var db=el.querySelector('[data-ls-del]');
+    if(db)db.onclick=function(e){e.stopPropagation();if(!confirm('Hapus pesan ini?'))return;deleteGlobalChatMsg(db.dataset.lsDel);el.remove()};
+    el.querySelectorAll('.chat-msg__reaction-item').forEach(function(ri){ri.addEventListener('click',function(e){e.stopPropagation();toggleReaction(ri.dataset.chattype,ri.dataset.msgid,ri.dataset.emoji);updateMsgReactions(el,ri.dataset.chattype,ri.dataset.msgid)})});
+    chatBox.appendChild(el);
+  }
+  function renderGlobalFixed(){
+    var v=$('lsClanView');if(!v)return;
+    v.innerHTML='<div class="ls-global-fixed"><div class="chat-box ls-global-box" id="lsGlobalBox"></div><div class="chat-input-bar ls-global-inputbar"><div class="chat-reply-preview" id="lsGlobalReplyPreview"><span class="chat-reply-preview__text" id="lsGlobalReplyText"></span><button class="chat-reply-preview__close" id="lsGlobalReplyClose">'+ICON.x+'</button></div><div class="chat-input-row"><button class="chat-attach-btn" id="lsGlobalAttach">'+ICON.plus+'</button><textarea id="lsGlobalInput" placeholder="Tulis pesan..." rows="1"></textarea><button class="send" id="lsGlobalSend">'+icon('<polygon points="3 11 22 2 13 21 11 13 3 11"/>')+'</button></div></div></div>';
+    chatBox=$('lsGlobalBox');chatInput=$('lsGlobalInput');chatSendBtn=$('lsGlobalSend');chatAttachBtn=$('lsGlobalAttach');chatReplyPreview=$('lsGlobalReplyPreview');chatReplyText=$('lsGlobalReplyText');chatReplyClose=$('lsGlobalReplyClose');
+    var msgs=getGlobalChat();
+    if(!msgs.length)chatBox.innerHTML='<div class="comments-empty" style="padding:55px 18px">Belum ada chat.</div>';
+    else msgs.forEach(function(m,i){lsGlobalBubble(m,i<msgs.length-4)});
+    chatBox.scrollTop=chatBox.scrollHeight;
+    function send(){
+      if(!userState.loggedIn)return;
+      if(typeof isUserMuted==='function'&&isUserMuted(userState.username)){if(typeof showMuteNotice==='function')showMuteNotice(isUserMuted(userState.username));return}
+      var t=chatInput.value.trim();if(!t)return;
+      var m={id:'gm_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),from:userState.userId,fromName:userState.username,fromAvatar:userState.avatarUrl,text:t,time:Date.now(),replyTo:state.replyingTo||null,type:'text'};
+      pushGlobalChat(m);var empty=chatBox.querySelector('.comments-empty');if(empty)empty.remove();lsGlobalBubble(m,false);chatBox.scrollTop=chatBox.scrollHeight;chatInput.value='';chatInput.style.height='auto';state.replyingTo=null;if(chatReplyPreview)chatReplyPreview.classList.remove('show');chatInput.focus({preventScroll:true});
+    }
+    chatSendBtn.onclick=send;
+    chatInput.oninput=function(){autoResize(this)};
+    chatInput.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}};
+    chatReplyClose.onclick=function(){state.replyingTo=null;chatReplyPreview.classList.remove('show')};
+    chatAttachBtn.onclick=function(){openFilePicker('global')};
+  }
+  function patchedRestoreGlobal(){renderGlobalFixed()}
+  restoreGlobalChatUI=patchedRestoreGlobal;
+
+  function patchedRenderResource(c){
+    var dayKey=new Date().toISOString().slice(0,10),claimed=S.claims[c.id]===dayKey,joined=!!getClanMember(c,userState.username);
+    var pct=Math.min(100,Math.round(((c.level%10)||10)/10*100));
+    return '<div class="ls-clan-level"><div class="ls-clan-level__top"><span>Level Clan</span><b>'+c.level+' / 200</b></div><div class="ls-clan-level__bar"><div class="ls-clan-level__fill" style="width:'+pct+'%"></div></div><div class="ls-clan-level__hint">Kebutuhan progres mengikuti tier level clan.</div></div><div class="ls-clan-resource"><button class="ls-clan-icon-btn ls-clan-resource__info" id="lsClanDiamondInfo">'+I.info+'</button><div class="ls-clan-resource__main"><div class="ls-clan-diamond">'+I.diamond+'</div><div class="ls-clan-resource__num">'+Number(c.diamonds||0).toLocaleString('id-ID')+'</div><div class="ls-clan-resource__label">Total Berlian Clan</div></div><button class="ls-clan-claim '+(claimed?'claimed':'')+(!joined?' ls-clan-claim-disabled':'')+'" id="lsClanClaim" '+((claimed||!joined)?'disabled':'')+'>'+(!joined?'Bergabung untuk Claim':(claimed?'Sudah di-claim hari ini':'Claim'))+'</button><button class="ls-clan-request-big" id="lsClanDonateBtn" '+(!joined?'disabled':'')+'>'+I.diamond+' Donate Berlian</button></div>';
+  }
+  renderResource=patchedRenderResource;
+
+  function patchedOpenClanDetail(c){
+    var v=$('lsClanView');if(!v||!c)return;var sent=requestStatus(c),memberCount=c.members.length,me=getClanMember(c,userState.username),canManage=me&&(me.role==='Leader'||me.role==='Officer');
+    v.innerHTML='<div class="ls-clan-detail-top"><button class="ls-clan-back" id="lsClanDetailBack">'+I.back+'</button><div style="font-weight:900;font-size:.86rem">Detail Clan</div></div><div class="ls-clan-detail-head" style="--clan-bg:'+(c.bgUrl?'url(\''+esc2(c.bgUrl)+'\')':'none')+'"><div>'+avatarFor(c.name,c.avatar).replace('<img','<img class="ls-clan-detail-avatar"')+'</div><div style="min-width:0"><div class="ls-clan-detail-name">'+esc2(c.name)+'</div><div class="ls-clan-detail-tag">'+esc2(c.tag)+' · Level '+c.level+'</div><div style="margin-top:7px">'+clanTag(c)+'</div></div><div class="ls-clan-detail-actions">'+(canManage?'<button class="ls-clan-icon-btn" id="lsClanSettingsBtn">'+I.gear+'</button>':'')+'<button class="ls-clan-icon-btn" id="lsClanInfoBtn">'+I.info+'</button></div><button class="ls-clan-request-big '+(sent?'sent':'')+'" id="lsClanDetailRequest">'+(sent?'Request Terkirim':'Request Clan')+'</button></div><div class="ls-clan-member-count"><div><span>Jumlah member</span><b>'+memberCount+'</b></div><div><span>Clan dibuat</span><b>'+fmtAge(c.createdAt)+'</b></div></div>'+renderResource(c)+'<div class="ls-clan-subtabs"><button class="ls-clan-subtab active" data-detail-tab="members">Member</button><button class="ls-clan-subtab" data-detail-tab="top">Top Donate</button>'+(canManage?'<button class="ls-clan-subtab" data-detail-tab="requests">Request</button>':'')+'</div><div id="lsClanDetailBody"></div>';
+    $('lsClanDetailBack').onclick=renderClanJoin;$('lsClanDetailRequest').onclick=function(){requestClan(c);openClanDetail(c)};var info=$('lsClanInfoBtn');if(info)info.onclick=function(e){e.preventDefault();e.stopPropagation();openClanInfo(c)};var set=$('lsClanSettingsBtn');if(set)set.onclick=function(){openClanSettings(c)};
+    v.querySelectorAll('[data-detail-tab]').forEach(function(b){b.onclick=function(){v.querySelectorAll('[data-detail-tab]').forEach(function(x){x.classList.remove('active')});b.classList.add('active');renderClanDetailBody(c,b.dataset.detailTab)}});renderClanDetailBody(c,'members');
+  }
+  openClanDetail=patchedOpenClanDetail;
+
+  function patchedOpenCreateClan(){
+    var v=$('lsClanView');if(!v)return;var selected='sword';
+    v.innerHTML='<div class="ls-clan-create ls-clan-create-polished"><div class="ls-clan-detail-top"><button class="ls-clan-back" id="lsClanCreateBack">'+I.back+'</button><div style="font-weight:900;font-size:.86rem">Bikin Clan</div></div><div class="ls-clan-create__hero"><div class="ls-clan-create__preview"><div class="ls-create-avatar-wrap"><img id="lsClanCreateAvatar" class="ls-clan-create__avatar" src="'+esc2(userState.avatarUrl||'')+'" onerror="this.style.display=\'none\'"><span class="ls-create-avatar-placeholder">'+I.users+'</span></div><div><div id="lsClanCreateNamePreview" class="ls-clan-create__name">Nama Clan</div><div id="lsClanCreateTagPreview" class="ls-clan-create__tag">Tag Clan</div></div><div class="ls-clan-create__cost">'+I.diamond+' <span>1.000</span></div></div><input id="lsClanAvatarFile" type="file" accept="image/*" hidden><button class="ls-clan-setting-btn" id="lsClanAvatarBtn">'+I.camera+' Ganti Foto Clan</button></div><div class="ls-clan-field"><label>Nama Clan</label><input id="lsClanName" maxlength="24" placeholder="Tulis nama clan..."></div><div class="ls-clan-field"><label>Logo Tag Clan</label><div class="ls-clan-icon-grid">'+['sword','apple','honey','moon','water','arrow','fire'].map(function(k){return '<button class="ls-clan-icon-choice '+(k===selected?'active':'')+'" data-clan-icon="'+k+'">'+iconFor(k)+'</button>'}).join('')+'</div></div><div class="ls-clan-field"><label>Nama Tag Clan</label><input id="lsClanTag" maxlength="8" placeholder="Contoh: LSTR"></div><button class="ls-clan-create-btn" id="lsClanCreateConfirm" disabled>'+I.plus+' Buat Clan</button></div>';
+    var n=$('lsClanName'),t=$('lsClanTag'),btn=$('lsClanCreateConfirm');
+    function check(){var ok=n.value.trim().length>=2&&t.value.trim().length>=2;btn.disabled=!ok;$('lsClanCreateNamePreview').textContent=n.value.trim()||'Nama Clan';$('lsClanCreateTagPreview').textContent=t.value.trim()||'Tag Clan'}
+    n.addEventListener('input',check);t.addEventListener('input',check);
+    document.querySelectorAll('[data-clan-icon]').forEach(function(b){b.onclick=function(){document.querySelectorAll('[data-clan-icon]').forEach(function(x){x.classList.remove('active')});b.classList.add('active');selected=b.dataset.clanIcon}});
+    $('lsClanCreateBack').onclick=renderClanEmpty;$('lsClanAvatarBtn').onclick=function(){$('lsClanAvatarFile').click()};$('lsClanAvatarFile').onchange=function(){var f=this.files&&this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){var im=$('lsClanCreateAvatar');im.style.display='block';im.src=r.result};r.readAsDataURL(f)};
+    btn.onclick=function(){if(userState.clanId){toastClan('Kamu sudah berada di clan.');return}if((userState.diamonds||0)<1000){toastClan('Butuh 1.000 berlian untuk membuat clan.');return}var clan={id:'cl_'+Date.now(),name:n.value.trim(),tag:t.value.trim().toUpperCase(),icon:selected,avatar:$('lsClanCreateAvatar').src||'',members:[{name:userState.username,role:'Leader',level:userState.level||1,joinedAt:Date.now(),donate:0,donateToday:0,grade:'GRADE I',avatar:userState.avatarUrl||''}],createdAt:Date.now(),diamonds:0,level:1,bgUrl:''};userState.diamonds-=1000;userState.clanId=clan.id;userState.clanRole='Leader';saveUserSafe();S.clans.push(clan);storeSet(S);toastClan('Clan berhasil dibuat.');renderClanShell('clan')};check();
+  }
+  openCreateClan=patchedOpenCreateClan;
+
+  function patchModalMotion(){
+    var st=document.createElement('style');st.id='ls-chat-clan-polish-final';st.textContent=`
+      .ls-global-fixed{height:100%;min-height:0;display:flex;flex-direction:column}
+      .ls-global-box{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:14px 8px 18px;scroll-behavior:smooth}
+      .ls-global-inputbar{flex:0 0 auto;margin:0 -14px -22px!important;padding:10px 14px 12px!important;background:#070d18!important;border-top:1px solid rgba(255,255,255,.07)!important}
+      .ls-global-msg{width:100%;align-self:stretch;justify-content:flex-start;margin:0 0 14px!important}
+      .ls-global-msg.chat-msg--other .chat-msg__body{max-width:calc(100% - 48px);margin-right:auto}
+      .ls-global-msg.chat-msg--me{justify-content:flex-end}
+      .ls-global-msg.chat-msg--me .chat-msg__body{max-width:calc(100% - 48px)}
+      .ls-global-msg .chat-msg__name{justify-content:flex-start}
+      .ls-clan-tabs,.ls-clan-subtabs,.ls-clan-filter{margin-top:0}
+      .ls-clan-detail-head{padding-top:18px;padding-bottom:66px;position:relative}
+      .ls-clan-detail-head>#lsClanInfoBtn{position:absolute;right:12px;top:12px}
+      .ls-clan-detail-head .ls-clan-detail-actions{position:absolute;right:56px;top:12px}
+      .ls-clan-detail-head>#lsClanDetailRequest{position:absolute;left:16px;right:16px;bottom:14px;width:calc(100% - 32px);height:42px;margin:0!important}
+      .ls-clan-member-count{display:grid!important;grid-template-columns:1fr 1fr;gap:8px!important}
+      .ls-clan-member-count>div{min-width:0;text-align:center;padding:8px 6px;border-right:1px solid rgba(255,255,255,.06)}
+      .ls-clan-member-count>div:last-child{border-right:0}
+      .ls-clan-member-count span{display:block}.ls-clan-member-count b{margin-top:5px}
+      .ls-clan-claim-disabled,.ls-clan-claim:disabled{color:#69748a!important;background:#171d28!important;border-color:rgba(255,255,255,.06)!important;box-shadow:none!important}
+      .ls-clan-resource .ls-clan-request-big:disabled{opacity:.45;filter:grayscale(.3)}
+      .ls-clan-logo{border-radius:6px!important;background:var(--clan-tag-bg,#3b2a20)!important;position:relative;isolation:isolate;box-shadow:0 0 16px var(--clan-glow,rgba(255,255,255,.08)),inset 0 0 0 1px rgba(255,255,255,.05)!important}
+      .ls-clan-logo:before{content:"";position:absolute;left:5px;right:5px;top:-4px;height:5px;background:inherit;clip-path:polygon(0 100%,12% 0,24% 100%,37% 0,50% 100%,63% 0,76% 100%,88% 0,100% 100%);opacity:.95;z-index:-1}
+      .ls-clan-logo .icon{flex:0 0 auto}
+      .ls-clan-info-modal,.ls-clan-donate-modal,.ls-clan-settings-modal{display:flex!important;visibility:hidden;opacity:0;pointer-events:none;background:rgba(2,5,11,.82)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transition:opacity .18s ease,visibility 0s linear .18s!important;will-change:opacity}
+      .ls-clan-info-modal.open,.ls-clan-donate-modal.open,.ls-clan-settings-modal.open{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .18s ease,visibility 0s!important}
+      .ls-clan-modal-box{animation:lsClanModalSmooth .22s cubic-bezier(.2,.75,.2,1)!important}
+      @keyframes lsClanModalSmooth{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
+      .ls-clan-create-polished{animation:lsClanPageIn .24s ease both;padding-bottom:32px}
+      @keyframes lsClanPageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+      .ls-create-avatar-wrap{position:relative;width:72px;height:72px;display:grid;place-items:center}
+      .ls-create-avatar-placeholder{position:absolute;inset:0;display:grid;place-items:center;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:#0b1424;color:#7182a5;z-index:0}
+      .ls-clan-create__avatar{position:relative;z-index:1}
+      .ls-clan-create__hero,.ls-clan-field,.ls-clan-create-btn{margin-top:16px}
+      .ls-clan-create__hero{margin-top:0}
+      .ls-clan-field input:focus,.ls-clan-search input:focus,.ls-clan-donate-input:focus{border-color:rgba(86,157,255,.48)!important;box-shadow:0 0 0 3px rgba(47,125,255,.08)!important}
+      .ls-clan-donate-modal .ls-clan-modal-box{max-width:370px;border-radius:28px;background:linear-gradient(160deg,#14223a,#08111f);border-color:rgba(100,190,255,.14);box-shadow:0 30px 90px rgba(0,0,0,.62),0 0 45px rgba(59,180,255,.08)}
+      .ls-clan-donate-orb{padding:8px 0 18px}.ls-clan-donate-orb .ls-clan-diamond{filter:drop-shadow(0 0 18px rgba(59,210,255,.5))}
+      .ls-clan-presets button{transition:.16s ease}.ls-clan-presets button.active{transform:translateY(-1px);box-shadow:0 8px 18px rgba(47,125,255,.12)}
+      .ls-clan-info-modal .ls-clan-modal-box{border-radius:26px;background:linear-gradient(160deg,#14233c,#09111f);box-shadow:0 28px 90px rgba(0,0,0,.65),0 0 38px rgba(74,145,255,.07)}
+      .ls-clan-info-item{transition:transform .18s ease,border-color .18s ease}.ls-clan-info-item:hover{transform:translateX(2px);border-color:rgba(99,170,255,.16)}
+      .ls-clan-subtab.active:after,.ls-clan-filter button.active:after,.ls-clan-tab.active:after{box-shadow:0 0 10px rgba(255,255,255,.45)}
+      .ls-clan-card,.ls-clan-detail-head,.ls-clan-resource,.ls-clan-level,.ls-clan-member-count,.ls-clan-member,.ls-clan-rank{animation:lsClanPageIn .22s ease both}
+      @media(max-width:380px){.ls-clan-detail-head{padding-bottom:66px}.ls-global-box{padding-left:4px;padding-right:4px}}
+    `;document.head.appendChild(st);
+  }
+  function seedTestAccount(){
+    try{
+      if(!userState||!userState.username)return;
+      var fr=getAllFriendReqs();
+      if(!fr.some(function(r){return r.from==='LStream_Test'&&r.to===userState.username&&r.status==='pending'})){
+        fr.push({from:'LStream_Test',to:userState.username,time:Date.now(),status:'pending'});saveAllFriendReqs(fr);
+      }
+      var s=getFriendStore();if(!s.incoming.some(function(x){return x.name==='LStream_Test'})){s.incoming.push({name:'LStream_Test',time:Date.now(),status:'pending'});saveFriendStore(s)}
+      window.LSTREAM_TEST_ACCOUNT={username:'LStream_Test',unlimitedDiamonds:true};
+      if(S&&S.clans){S.clans.forEach(function(c){c.members.forEach(function(m){if(m.name==='LStream_Test')m.testUnlimitedDiamonds=true})});storeSet(S)}
+      if(userState){userState.testUnlimitedDiamonds=true;userState.diamonds=999999999;saveUserSafe()}
+    }catch(e){}
+  }
+  function testDiamondUnlimited(){
+    if(!userState)return;
+    if(userState.testUnlimitedDiamonds===true&&Number(userState.diamonds)<999999999){userState.diamonds=999999999;saveUserSafe()}
+  }
+  patchModalMotion();
+  seedTestAccount();
+  testDiamondUnlimited();
+})();
+
 })();
 </script>
 
