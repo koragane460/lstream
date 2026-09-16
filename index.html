@@ -689,6 +689,58 @@ body.light-mode .user-fullscreen-overlay{background:#f0f3f9}
 .user-panel__bar{display:block!important;visibility:visible!important;opacity:1!important}
 .user-panel__bar-fill{display:block!important;visibility:visible!important}
 </style>
+
+<style id="ls-chat-fixed-composer">
+/* Chat layout: messages stay above the composer, composer stays above the device/system black area. */
+#chatOverlay,
+#dmOverlay{
+  height:100dvh!important;
+  min-height:100dvh!important;
+  overflow:hidden!important;
+  align-items:stretch!important;
+}
+#chatOverlay .sheet,
+#dmOverlay .sheet{
+  height:100dvh!important;
+  min-height:100dvh!important;
+  max-height:100dvh!important;
+  padding-bottom:env(safe-area-inset-bottom,0px)!important;
+  box-sizing:border-box!important;
+}
+#chatOverlay .chat-box,
+#dmOverlay .chat-box{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  padding-bottom:18px!important;
+  scroll-padding-bottom:18px!important;
+}
+#chatOverlay .chat-input-bar,
+#dmOverlay .chat-input-bar{
+  position:relative!important;
+  z-index:20!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
+  background:#070b15!important;
+  border-top:1px solid rgba(255,255,255,.08)!important;
+  box-shadow:0 -10px 28px rgba(0,0,0,.28)!important;
+}
+#chatOverlay .chat-input-row,
+#dmOverlay .chat-input-row{position:relative!important;z-index:21!important}
+#chatOverlay .chat-input-row textarea,
+#dmOverlay .chat-input-row textarea{min-height:42px!important;max-height:120px!important}
+/* Keep the last message visually clear of the composer. */
+#chatOverlay .chat-box::after,
+#dmOverlay .chat-box::after{content:"";display:block;flex:0 0 4px;height:4px}
+@supports not (height:100dvh){
+  #chatOverlay,#dmOverlay,#chatOverlay .sheet,#dmOverlay .sheet{height:100vh!important;min-height:100vh!important;max-height:100vh!important}
+}
+</style>
 </head>
 <body>
 
