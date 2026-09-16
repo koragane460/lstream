@@ -3085,5 +3085,54 @@ function patchedRestoreGlobal(){renderGlobalFixed()}
   #settingsOverlay .dev-search button{padding:0 12px}
 }
 </style>
+
+<!-- LStream final boot/button recovery -->
+<style id="ls-final-boot-recovery">
+  /* The auth splash must never remain as an invisible click-blocking layer after login. */
+  body.logged-in #authGate,
+  #authGate.hidden { opacity:0!important; visibility:hidden!important; pointer-events:none!important; }
+  body.logged-in #onboarding { pointer-events:none!important; }
+</style>
+<script id="ls-final-boot-recovery-js">
+(function(){
+  'use strict';
+  function hideGate(){
+    var g=document.getElementById('authGate');
+    if(g){g.classList.add('hidden');g.style.display='none';g.style.pointerEvents='none';g.style.visibility='hidden';g.style.opacity='0';}
+  }
+  function showOnboarding(){
+    var o=document.getElementById('onboarding');
+    if(o && !(document.body.classList.contains('logged-in'))){
+      o.style.display='flex'; o.classList.add('show');
+    }
+  }
+  function recover(){
+    try{
+      var logged=false, saved=null;
+      try{ logged=SafeStorage.getItem(STORAGE_LOGGED_IN)==='1'; saved=getUser(); }catch(e){}
+      var fbUser=null;
+      try{ fbUser=window.__fb && window.__fb.auth && window.__fb.auth.currentUser; }catch(e){}
+      if(document.body.classList.contains('logged-in') || (saved && saved.loggedIn) || logged || fbUser){
+        if(fbUser && (!saved || !saved.loggedIn) && typeof window.__lsHandleFirebaseUser==='function'){
+          try{window.__lsHandleFirebaseUser(fbUser);}catch(e){}
+        }
+        document.body.classList.add('logged-in');
+        hideGate();
+        var o=document.getElementById('onboarding'); if(o){o.classList.remove('show');o.style.display='none';o.style.pointerEvents='none';}
+        try{if(typeof renderUserPanel==='function')renderUserPanel();}catch(e){}
+        try{if(typeof renderAccountPage==='function')renderAccountPage();}catch(e){}
+        try{if(typeof bindNav==='function')bindNav();}catch(e){}
+      } else {
+        /* No session: remove only the loading splash and reveal the login/onboarding UI. */
+        hideGate(); showOnboarding();
+      }
+    }catch(e){ hideGate(); showOnboarding(); }
+  }
+  /* Firebase can be slow on mobile; recover at several checkpoints. */
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(recover,700);setTimeout(recover,2500);setTimeout(recover,5000);});
+  else {setTimeout(recover,700);setTimeout(recover,2500);setTimeout(recover,5000);}
+  window.addEventListener('load',function(){setTimeout(recover,300);});
+})();
+</script>
 </body>
 </html>
