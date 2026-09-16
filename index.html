@@ -18,7 +18,7 @@ img{max-width:100%;display:block}
 .icon{width:1em;height:1em;display:inline-block;vertical-align:-0.15em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .icon--filled{fill:currentColor;stroke:none}
 body:not(.logged-in) .navbar,body:not(.logged-in) .user-panel-wrap,body:not(.logged-in) .hero,body:not(.logged-in) main.container,body:not(.logged-in) .bottom-nav,body:not(.logged-in) .footer{display:none!important}
-.err-banner{position:fixed;top:8px;left:8px;right:8px;background:#ef4444;color:#fff;padding:10px 14px;border-radius:12px;font-size:.8rem;z-index:999999}
+.err-banner{position:fixed;top:8px;left:8px;right:8px;background:#ef4444;color:#fff;padding:10px 14px;border-radius:12px;font-size:.8rem;z-index:999999;pointer-events:none}
 .btn{padding:10px 20px;border-radius:12px;border:none;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px;font-size:.88rem;justify-content:center;transition:transform .15s}
 .btn:active{transform:scale(.97)}
 .btn--primary{background:var(--accent);color:white}
@@ -775,7 +775,7 @@ body.light-mode .user-fullscreen-overlay{background:#f0f3f9}
   <div class="guide-popup__list">
     <div class="guide-popup__item"><span class="guide-popup__bullet">•</span><span>Photo profile akan kosong saat sudah login, bisa mengganti nya di settings</span></div>
     <div class="guide-popup__item"><span class="guide-popup__bullet">•</span><span>Di settings ada fitur fitur yang bisa dipakai untuk kenyamanan sendiri</span></div>
-    <div class="guide-popup__item"><span class="guide-popup__bullet">•</span><span>Ganti username bisa dari settings</span></div>
+    <div class="guide-popup__item"><span class="guide-popup__bullet">•</span><span>Ganti nama bisa dari settings</span></div>
   </div>
   <div class="guide-popup__thanks">Terimakasih atas perhatian nya</div>
   <div class="guide-popup__footer">
@@ -906,7 +906,7 @@ body.light-mode .user-fullscreen-overlay{background:#f0f3f9}
 
 <div class="quality-modal" id="downloadPopup"><div class="quality-modal__box"><button class="quality-modal__close" id="closeDownloadPopup"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="quality-modal__header"><div class="quality-modal__icon"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><div class="quality-modal__title">Pilih Kualitas Download</div><div class="quality-modal__subtitle">Resolusi untuk mengunduh</div></div><div class="quality-modal__opts" id="downloadPopupOpts"></div></div></div>
 
-<div class="simple-modal" id="changeUsernameModal"><div class="simple-modal__box"><div class="simple-modal__title">Ganti Username</div><input type="text" class="simple-modal__input" id="changeUsernameInput" maxlength="20" placeholder="Username baru..."><div class="simple-modal__actions"><button class="btn btn--ghost" id="cancelChangeUsername">Batal</button><button class="btn btn--primary" id="confirmChangeUsername">Simpan</button></div></div></div>
+<div class="simple-modal" id="changeUsernameModal"><div class="simple-modal__box"><div class="simple-modal__title">Ganti Nama</div><input type="text" class="simple-modal__input" id="changeUsernameInput" maxlength="20" placeholder="Nama baru..."><div class="simple-modal__actions"><button class="btn btn--ghost" id="cancelChangeUsername">Batal</button><button class="btn btn--primary" id="confirmChangeUsername">Simpan</button></div></div></div>
 
 <div class="quality-modal" id="borderModal"><div class="quality-modal__box"><button class="quality-modal__close" id="closeBorderModal"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="quality-modal__header"><div class="quality-modal__icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg></div><div class="quality-modal__title">Pilih Border</div><div class="quality-modal__subtitle">Border yang sudah dibeli</div></div><div class="quality-modal__opts" id="borderModalOpts"></div></div></div>
 
@@ -930,7 +930,7 @@ body.light-mode .user-fullscreen-overlay{background:#f0f3f9}
   <div class="account-info-icon">ⓘ</div><div class="account-info-title">Info Akun</div><div class="account-info-sub">Detail akun aktif pada perangkat ini</div>
   <div class="account-info-list">
     <div><span>Akun</span><b id="infoAccountType">-</b></div>
-    <div><span>Username</span><b id="infoUsername">-</b></div>
+    <div><span>Nama</span><b id="infoUsername">-</b></div>
     <div><span>Email</span><b id="infoEmail">-</b></div>
     <div><span>Password</span><b id="infoPassword">-</b></div>
     <div><span>Device ID</span><b id="infoDeviceId">-</b></div>
@@ -1027,6 +1027,8 @@ var APP_VERSION = "6.7";
 var JIKAN_URL = "https://api.jikan.moe/v4";
 var ANILIST_URL = "https://graphql.anilist.co";
 window.addEventListener("error", function (e) { try { var b = document.createElement("div"); b.className = "err-banner"; b.textContent = "JS Error: " + e.message; document.body.appendChild(b); setTimeout(function () { if (b.parentNode) b.parentNode.removeChild(b); }, 6000); } catch (er) {} });
+/* Error banners are diagnostic only and must never intercept taps/clicks. */
+window.addEventListener("unhandledrejection", function (e) { try { console.error("LStream unhandled rejection:", e.reason); } catch (_) {} });
 function setCookie(k, v, days) { try { var d = new Date(); d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000)); document.cookie = k + "=" + encodeURIComponent(v) + "; expires=" + d.toUTCString() + "; path=/; SameSite=Lax"; } catch (e) {} }
 function getCookie(k) { try { var name = k + "="; var ca = document.cookie.split(";"); for (var i = 0; i < ca.length; i++) { var c = ca[i].trim(); if (c.indexOf(name) === 0) return decodeURIComponent(c.substring(name.length)); } } catch (e) {} return null; }
 var SafeStorage = (function () { var mem = {}; var useMem = false; try { localStorage.setItem("__ls__", "1"); localStorage.removeItem("__ls__"); } catch (e) { useMem = true; } return { getItem: function (k) { var v = null; if (!useMem) { try { v = localStorage.getItem(k); } catch (e) {} } if (v === null) v = mem[k] !== undefined ? mem[k] : null; if (v === null) v = getCookie("LS_" + k); return v; }, setItem: function (k, v) { v = String(v); mem[k] = v; if (!useMem) { try { localStorage.setItem(k, v); } catch (e) { useMem = true; } } setCookie("LS_" + k, v, 365); }, removeItem: function (k) { if (!useMem) { try { localStorage.removeItem(k); } catch (e) {} } delete mem[k]; try { document.cookie = "LS_" + k + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; } catch (e) {} } }; })();
@@ -1092,7 +1094,14 @@ function isDeveloperById(id) {
   try { return normalizeLSId(id) === 'LS-00001'; } catch (e) { return false; }
 }
 function getPriorityBadge(username) { var bs = getBadgesOf(username); if (bs.indexOf("developer") !== -1) return { key: "developer", name: BADGES.developer.name, cls: BADGES.developer.cls }; if (bs.indexOf("moderator") !== -1) return { key: "moderator", name: BADGES.moderator.name, cls: BADGES.moderator.cls }; if (bs.indexOf("tester") !== -1) return { key: "tester", name: BADGES.tester.name, cls: BADGES.tester.cls }; return null; }
-function isUserPremium(username) { if (username === userState.username) return !!(userState.premium || userState.devUnlimitedPremium); return (hashStr(username + "_prem") % 10) < 3; }
+function isUserPremium(username) {
+  /* Safe against early calls before userState is initialized. */
+  var u = (typeof userState !== "undefined" && userState) ? userState : null;
+  var name = String(username == null ? "" : username);
+  if (!name) return false;
+  if (u && name === String(u.username || "")) return !!(u.premium || u.devUnlimitedPremium);
+  return (hashStr(name + "_prem") % 10) < 3;
+}
 function renderBadgesOf(username) { var bs = getBadgesOf(username); if (bs.length === 0) return ""; var html = '<span class="badge-group">'; bs.forEach(function (b) { var bd = BADGES[b]; if (bd) html += '<span class="badge ' + bd.cls + '">' + bd.name + '</span>'; }); html += '</span>'; return html; }
 function renderDisplayBadges(username) { var prio = getPriorityBadge(username); if (prio) return '<span class="badge ' + prio.cls + '">' + prio.name + '</span>'; if (isUserPremium(username)) return '<span class="badge badge--premium">Premium</span>'; return ""; }
 function getUsernameClass(username) { var prio = getPriorityBadge(username); if (prio) return "uname uname--" + prio.key; if (isUserPremium(username)) return "uname uname--premium"; return ""; }
@@ -1508,7 +1517,7 @@ function renderSettingsPage() {
   html += '<div class="settings-panel" style="--tier-color:' + esc(tier.color || '#2f7dff') + ';' + bgStyle + '">' + avatar + '<div class="settings-panel__info" style="margin-left:8px;"><div class="settings-panel__name"><span>' + esc(u.username || 'User') + '</span>' + (premium ? blueCheck(u.username) : '') + ' ' + badges + '</div><div class="settings-panel__id">' + esc(u.userId || '') + ' · Level ' + level + ' · Berlian ' + diamonds.toLocaleString('id-ID') + '</div></div></div>';
 
   html += '<div class="settings-profile-actions">' +
-    '<button class="settings-profile-action-btn" id="changeUsernameBtn">' + ICON.pencil + 'Ganti Username</button>' +
+    '<button class="settings-profile-action-btn" id="changeUsernameBtn">' + ICON.pencil + 'Ganti Nama</button>' +
     '<button class="settings-profile-action-btn" id="changeAvatarBtn">' + ICON.camera + 'Ganti Foto</button>' +
     '</div>';
 
