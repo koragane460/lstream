@@ -530,6 +530,11 @@ body:not(.logged-in) .navbar,body:not(.logged-in) .user-panel-wrap,body:not(.log
 .watch-episode-btn{position:relative;min-height:42px;padding:8px 5px;border-radius:11px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);color:var(--text-main);font:700 .7rem inherit;cursor:pointer;text-align:center;overflow:hidden}
 .watch-episode-btn.active{background:rgba(47,125,255,.18);border-color:rgba(47,125,255,.55);color:#fff}
 .watch-episode-btn .watch-ep-progress{position:absolute;left:0;bottom:0;height:2px;background:var(--accent)}
+.watch-episode-more-wrap{grid-column:1/-1;display:flex;justify-content:center;padding-top:2px}
+.watch-episode-more{width:100%;padding:10px 12px;border-radius:11px;background:rgba(47,125,255,.08);border:1px solid rgba(47,125,255,.22);color:var(--text-main);font:750 .7rem inherit;cursor:pointer}
+.watch-episode-more span{color:var(--text-muted);font-weight:600}
+.watch-episode-list.expanded{max-height:420px}
+
 .watch-autonext{margin-left:auto}
 .watch-autonext.active{background:rgba(16,185,129,.16);border-color:rgba(16,185,129,.5)}
 .watch-controls{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
@@ -1046,7 +1051,7 @@ var dmBox = null, dmInput = null, dmSendBtn = null, dmAttachBtn = null, dmReplyP
 var reactPicker = null, userFullscreenOverlay = null;
 var APP_VERSION = "6.7";
 var JIKAN_URL = "https://api.jikan.moe/v4";
-var STREAM_API_BASE = "https://api.aniheist.com";
+var STREAM_API_BASE = "/api";
 var streamApiCache = {};
 var streamAnimeIdCache = {};
 var streamHlsInstance = null;
@@ -1937,31 +1942,9 @@ function resolveStreamSource(anime, episode) {
   var title = anime.title || "";
   var cacheKey = String(anime.mal_id || title).toLowerCase() + "|" + String(episode.mal_id || 1);
   if (streamApiCache[cacheKey]) return Promise.resolve(streamApiCache[cacheKey]);
-  var titleKey = String(anime.mal_id || title).toLowerCase();
-  function pickId(searchJson) {
-    var list = searchJson && (searchJson.data || searchJson.results || searchJson);
-    if (!Array.isArray(list) || !list.length) return null;
-    var target = title.toLowerCase().trim();
-    var exact = list.find(function (x) {
-      var t = String(x.title || x.name || x.title_english || "").toLowerCase().trim();
-      return t === target;
-    });
-    var hit = exact || list[0];
-    return hit && (hit.anime_id || hit.anilist_id || hit.id || hit.mal_id || hit.anilistId) || null;
-  }
-  var idPromise = streamAnimeIdCache[titleKey]
-    ? Promise.resolve(streamAnimeIdCache[titleKey])
-    : streamApiFetch("/api/search?q=" + encodeURIComponent(title)).then(function (j) {
-        var id = pickId(j);
-        if (!id) throw new Error("Anime tidak ditemukan di streaming API");
-        streamAnimeIdCache[titleKey] = id;
-        return id;
-      });
-  return idPromise.then(function (id) {
-    return streamApiFetch("/api/stream?anime_id=" + encodeURIComponent(id) + "&episode=" + encodeURIComponent(episode.mal_id || 1));
-  }).then(function (j) {
+  return streamApiFetch("/stream?title=" + encodeURIComponent(title) + "&episode=" + encodeURIComponent(episode.mal_id || 1)).then(function (j) {
     var d = j && (j.data || j.result || j);
-    var url = d && (d.video_url || d.stream_url || d.url);
+    var url = d && (d.stream_url || d.stream_link || d.video_url || d.url);
     var format = d && (d.format || d.type || (url && /\.m3u8(?:$|\?)/i.test(url) ? "hls" : "mp4"));
     if (!url) throw new Error("Sumber video tidak tersedia");
     var result = { url: url, format: String(format || "mp4").toLowerCase(), subtitles: d.subtitles || [], headers: d.headers || {} };
@@ -2036,13 +2019,39 @@ function getWatchEpisodeByNumber(animeId, num) {
 function renderWatchEpisodeList(animeId, currentEp) {
   if (!watchEpisodeList) return;
   var eps = state.watchEpisodes || [];
-  if (!eps.length) { watchEpisodeList.innerHTML = '<span style="grid-column:1/-1;color:var(--text-muted);font-size:.75rem;padding:10px 0;">Episode belum tersedia.</span>'; if (watchEpisodeCount) watchEpisodeCount.textContent = "-"; return; }
+  if (!eps.length) {
+    watchEpisodeList.innerHTML = '<span style="grid-column:1/-1;color:var(--text-muted);font-size:.75rem;padding:10px 0;">Episode belum tersedia.</span>';
+    if (watchEpisodeCount) watchEpisodeCount.textContent = "-";
+    return;
+  }
   if (watchEpisodeCount) watchEpisodeCount.textContent = eps.length + " episode";
-  watchEpisodeList.innerHTML = eps.map(function(ep) {
-    var prog = getEpisodeProgress(animeId, ep.mal_id);
-    var pct = prog && prog.percent > 0 && prog.percent < 98 ? Math.min(100, Number(prog.percent) || 0) : 0;
+  var visible = eps.slice(0, 5);
+  var hidden = eps.slice(5);
+  function makeBtn(ep) {
+    var pct = getEpisodeProgress(animeId, ep.mal_id);
+    pct = pct && pct.percent > 0 && pct.percent < 98 ? Math.min(100, pct.percent) : 0;
     return '<button type="button" class="watch-episode-btn' + (Number(ep.mal_id) === Number(currentEp) ? ' active' : '') + '" data-watch-ep="' + ep.mal_id + '">Eps ' + ep.mal_id + (pct ? '<span class="watch-ep-progress" style="width:' + pct + '%"></span>' : '') + '</button>';
-  }).join('');
+  }
+  watchEpisodeList.innerHTML = visible.map(makeBtn).join("");
+  if (hidden.length) {
+    watchEpisodeList.innerHTML += '<div class="watch-episode-more-wrap"><button type="button" class="watch-episode-more" id="watchEpisodeMoreBtn">Tampilkan Semua Episode <span>(' + hidden.length + ' lagi)</span></button></div>';
+    var more = $("watchEpisodeMoreBtn");
+    if (more) more.addEventListener("click", function () {
+      var expanded = watchEpisodeList.classList.toggle("expanded");
+      if (expanded) {
+        watchEpisodeList.innerHTML = eps.map(makeBtn).join("") + '<div class="watch-episode-more-wrap"><button type="button" class="watch-episode-more" id="watchEpisodeMoreBtn">Sembunyikan Episode</button></div>';
+        var again = $("watchEpisodeMoreBtn");
+        if (again) again.addEventListener("click", function () { renderWatchEpisodeList(animeId, currentEp); });
+        bindWatchEpisodeButtons(animeId);
+      } else {
+        renderWatchEpisodeList(animeId, currentEp);
+      }
+    });
+  }
+  bindWatchEpisodeButtons(animeId);
+}
+function bindWatchEpisodeButtons(animeId) {
+  if (!watchEpisodeList) return;
   watchEpisodeList.querySelectorAll('[data-watch-ep]').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var ep = getWatchEpisodeByNumber(animeId, parseInt(btn.dataset.watchEp,10));
@@ -2054,16 +2063,31 @@ function renderWatchEpisodeList(animeId, currentEp) {
 }
 function loadWatchEpisodes(animeId, currentEp) {
   if (!watchEpisodeList) return;
+  watchEpisodeList.classList.remove("expanded");
   watchEpisodeList.innerHTML = '<span style="grid-column:1/-1;color:var(--text-muted);font-size:.75rem;padding:10px 0;">Memuat episode...</span>';
-  fetchJikan('/anime/' + animeId + '/episodes?page=1').then(function(r) {
-    var eps = (r && Array.isArray(r.data)) ? r.data : [];
-    var total = (state.currentWatch && state.currentWatch.anime && state.currentWatch.anime.episodes) || 0;
-    if (!eps.length && total) for (var i=1;i<=Math.min(total,100);i++) eps.push({mal_id:i,title:'Episode '+i,aired:null});
+  var anime = state.currentWatch && state.currentWatch.anime;
+  var title = anime && anime.title ? anime.title : "";
+  streamApiFetch('/anime?title=' + encodeURIComponent(title)).then(function(r) {
+    var data = r && (r.data || r.result || r);
+    var eps = data && Array.isArray(data.episodes) ? data.episodes : [];
+    if (!eps.length && data && data.anime_detail && Array.isArray(data.anime_detail.episode_list)) eps = data.anime_detail.episode_list;
+    eps = eps.map(function(ep, i) {
+      return { mal_id: Number(ep.mal_id || ep.number || ep.episode || ep.no || (i + 1)), title: ep.title || ep.name || ("Episode " + (ep.mal_id || ep.number || ep.episode || ep.no || (i + 1))), aired: ep.aired || ep.date || null, slug: ep.slug || ep.endpoint || ep.id || "" };
+    }).filter(function(ep){ return ep.mal_id > 0; });
+    if (!eps.length) throw new Error("Episode API kosong");
     state.watchEpisodes = eps;
     renderWatchEpisodeList(animeId, currentEp);
-    var next = getWatchEpisodeByNumber(animeId, Number(currentEp)+1);
+    var next = getWatchEpisodeByNumber(animeId, Number(currentEp) + 1);
     if (next && state.currentWatch) preloadWatchStream(state.currentWatch.anime, next);
-  }).catch(function(){ state.watchEpisodes=[]; renderWatchEpisodeList(animeId,currentEp); });
+  }).catch(function(){
+    fetchJikan('/anime/' + animeId + '/episodes?page=1').then(function(r) {
+      var eps = (r && Array.isArray(r.data)) ? r.data : [];
+      var total = (state.currentWatch && state.currentWatch.anime && state.currentWatch.anime.episodes) || 0;
+      if (!eps.length && total) for (var i=1;i<=Math.min(total,100);i++) eps.push({mal_id:i,title:'Episode '+i,aired:null});
+      state.watchEpisodes = eps;
+      renderWatchEpisodeList(animeId,currentEp);
+    }).catch(function(){ state.watchEpisodes=[]; renderWatchEpisodeList(animeId,currentEp); });
+  });
 }
 function updateAutoNextButton() {
   if (!watchAutoNextBtn) return;
