@@ -1161,8 +1161,19 @@ function saveGlobalChat(m) { try { SafeStorage.setItem(STORAGE_CHAT, JSON.string
 function pushGlobalChat(msg) { var c = getGlobalChat(); c.push(msg); if (c.length > 300) c = c.slice(-300); saveGlobalChat(c); }
 function deleteGlobalChatMsg(msgId) { var c = getGlobalChat(); c = c.filter(function(m){ return (m.id || m.time) != msgId; }); saveGlobalChat(c); }
 function clearAllGlobalChat() { saveGlobalChat([]); }
-function getCommentsStore() { try { return JSON.parse(SafeStorage.getItem(STORAGE_COMMENTS) || "{}"); } catch (e) { return {}; } }
-function saveCommentsStore(s) { SafeStorage.setItem(STORAGE_COMMENTS, JSON.stringify(s)); }
+/*
+ * Comments are account-scoped.  The old implementation stored every user's
+ * comments in one shared key (STORAGE_COMMENTS), so logging out and entering
+ * another account exposed the previous account's comments in the UI.
+ * Keep the existing comment API, but isolate the backing store by userId.
+ * This also means a guest session gets its own temporary comment space.
+ */
+function getCommentStorageKey() {
+  var uid = (typeof userState !== "undefined" && userState && userState.userId) ? normalizeLSId(userState.userId) : "anonymous";
+  return STORAGE_COMMENTS + "::" + uid;
+}
+function getCommentsStore() { try { return JSON.parse(SafeStorage.getItem(getCommentStorageKey()) || "{}"); } catch (e) { return {}; } }
+function saveCommentsStore(s) { SafeStorage.setItem(getCommentStorageKey(), JSON.stringify(s)); }
 function getComments(id) { var s = getCommentsStore(); if (!s[id]) { s[id] = []; saveCommentsStore(s); } return s[id]; }
 function pushComment(id, c) { var s = getCommentsStore(); if (!s[id]) s[id] = []; s[id].unshift(c); saveCommentsStore(s); }
 function deleteCommentById(id, cid) { var s = getCommentsStore(); if (!s[id]) return; s[id] = s[id].filter(function (c) { return c.id !== cid; }); saveCommentsStore(s); }
@@ -1339,6 +1350,9 @@ function handleLogout() {
     state.onboardSlide = 0; updateOnboarding(); setAuthMode("login");
     var o = $("onboarding"); if (o) { o.style.display = "flex"; requestAnimationFrame(function () { try { o.classList.add("show"); } catch (e) {} }); }
     if (settingsOverlay) settingsOverlay.classList.remove("open");
+    /* Drop any open watch/comment state so the previous account cannot remain
+       visible while the auth screen is being restored. */
+    try { state.currentWatch = null; state.replyCommentId = null; if (commentInput) { commentInput.value = ""; commentInput.style.height = ""; } if (commentList) commentList.innerHTML = ""; if (commentCount) commentCount.textContent = "0"; } catch (e) {}
     if (banNotice) banNotice.classList.remove("open");
     if (muteNotice) muteNotice.classList.remove("open");
   };
@@ -3011,243 +3025,244 @@ function patchedRestoreGlobal(){renderGlobalFixed()}
 }
 </style>
 
-<!-- LStream focused repair + new requested features. Existing components are preserved; this layer only fills missing behavior/UI. -->
-<style id="ls-xch-repair-css">
-/* Missing icon compatibility */
-.icon{width:1em;height:1em;display:inline-block;vertical-align:-.16em;flex:0 0 auto}
-/* Make auth/onboarding controls reliably tappable on mobile */
-.auth-gate,.onboarding{pointer-events:auto!important;touch-action:manipulation}
-.auth-gate.hidden,.onboarding.hidden{pointer-events:none!important}
-/* Global account background */
-body.ls-has-custom-bg{background-image:var(--ls-body-bg)!important;background-size:cover!important;background-position:center!important;background-attachment:fixed!important}
-body.ls-has-custom-bg::after{content:"";position:fixed;inset:0;background:rgba(3,7,18,.55);z-index:-1;pointer-events:none}
-/* Small event gift */
-.ls-event-fab{position:fixed;right:14px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:7000;width:58px;height:58px;border-radius:20px;border:1px solid rgba(255,215,0,.35);background:linear-gradient(145deg,#18213a,#0b1120);box-shadow:0 12px 35px rgba(0,0,0,.45),0 0 24px rgba(255,215,0,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation}
-.ls-event-fab .gift{font-size:28px;filter:drop-shadow(0 0 8px rgba(255,215,0,.35))}.ls-event-fab__close{position:absolute;right:-7px;top:-7px;width:23px;height:23px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:#171d2d;color:#fff;font-size:14px;line-height:1;cursor:pointer}
-.ls-event-modal{position:fixed;inset:0;z-index:98000;background:rgba(2,5,12,.78);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:18px}.ls-event-modal.open{display:flex}
-.ls-event-box{width:min(430px,100%);max-height:min(84vh,700px);overflow:auto;border-radius:26px;padding:22px;background:linear-gradient(160deg,#17213b,#090f1d);border:1px solid rgba(255,215,0,.28);box-shadow:0 30px 100px rgba(0,0,0,.75);position:relative}.ls-event-close{position:absolute;right:12px;top:12px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:#fff;font-size:20px;cursor:pointer}.ls-event-title{text-align:center;font-size:1.15rem;font-weight:950;color:#fff;margin:8px 30px 6px}.ls-event-sub{text-align:center;color:#ffd84a;font-size:.78rem;font-weight:800;margin-bottom:18px}.ls-event-rules{display:flex;flex-direction:column;gap:9px}.ls-event-rule{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);font-size:.79rem;line-height:1.5;color:#dbe2f5}.ls-event-rule b{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 25px;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#0b1020;font-size:.72rem}
-/* Leaderboard */
-.ls-xp-leaderboard{margin:8px 0 18px;padding:15px;border-radius:20px;background:linear-gradient(160deg,#101a30,#0a1020);border:1px solid rgba(122,176,255,.12);box-shadow:0 15px 40px rgba(0,0,0,.2)}
-.ls-xp-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.ls-xp-title{font-weight:950;font-size:1rem}.ls-xp-sub{font-size:.68rem;color:var(--text-muted)}.ls-xp-tabs{display:flex;gap:6px;margin:12px 0;overflow:auto}.ls-xp-tab{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);color:var(--text-muted);padding:8px 11px;border-radius:11px;font:800 .7rem inherit;cursor:pointer;white-space:nowrap}.ls-xp-tab.active{background:linear-gradient(135deg,#4a8dff,#1a56cc);color:#fff;border-color:transparent}.ls-xp-top3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ls-xp-card{position:relative;text-align:center;padding:12px 7px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06)}.ls-xp-card__rank{font-weight:950;font-size:.72rem;color:#ffd84a;margin-bottom:7px}.ls-xp-card__avatar{width:54px;height:54px;border-radius:50%;margin:0 auto 7px;background:#000;overflow:hidden;background-size:cover;background-position:center;border:2px solid rgba(255,255,255,.12)}.ls-xp-card__name{font-size:.7rem;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ls-xp-card__xp{font-size:.65rem;color:#7ab0ff;margin-top:4px;font-weight:800}.ls-xp-list{display:flex;flex-direction:column;gap:7px;margin-top:10px}.ls-xp-row{display:flex;align-items:center;gap:9px;padding:9px;border-radius:13px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05)}.ls-xp-row__rank{width:24px;text-align:center;font-size:.7rem;font-weight:950;color:#7e8baa}.ls-xp-row__avatar{width:38px;height:38px;border-radius:50%;background:#000;background-size:cover;background-position:center;flex:0 0 38px}.ls-xp-row__info{min-width:0;flex:1}.ls-xp-row__name{font-size:.73rem;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ls-xp-row__xp{font-size:.65rem;color:var(--text-muted);margin-top:2px}.ls-xp-empty{text-align:center;padding:20px;color:var(--text-muted);font-size:.75rem}
-/* Game panel */
-.ls-game-panel{margin-top:4px}.ls-game-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ls-game-card{border:1px solid rgba(255,255,255,.08);background:linear-gradient(145deg,#121d35,#0a1020);border-radius:18px;padding:10px;cursor:pointer;text-align:left;color:#fff}.ls-game-card__pic{height:120px;border-radius:14px;background:radial-gradient(circle at 50% 35%,rgba(74,141,255,.22),rgba(255,255,255,.025));display:flex;align-items:center;justify-content:center;font-size:52px}.ls-game-card__name{font-weight:900;margin-top:8px}.ls-game-card__desc{font-size:.65rem;color:var(--text-muted);margin-top:3px}.ls-game-modal{position:fixed;inset:0;z-index:99000;background:rgba(2,5,12,.8);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:18px}.ls-game-modal.open{display:flex}.ls-game-box{width:min(430px,100%);border-radius:26px;padding:20px;background:linear-gradient(160deg,#16213a,#090f1c);border:1px solid rgba(74,141,255,.25);box-shadow:0 30px 100px rgba(0,0,0,.8);position:relative}.ls-game-close{position:absolute;right:12px;top:12px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;cursor:pointer}.ls-game-title{text-align:center;font-size:1.1rem;font-weight:950}.ls-game-balance{text-align:center;color:#65dcff;font-size:.72rem;font-weight:850;margin:5px 0 18px}.ls-click-circle{width:190px;height:190px;border-radius:50%;margin:0 auto 18px;border:8px solid rgba(74,141,255,.2);background:radial-gradient(circle,#277fff,#12306b);box-shadow:0 0 50px rgba(47,125,255,.25);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;font-weight:950;cursor:pointer;user-select:none;touch-action:manipulation}.ls-click-circle:active{transform:scale(.96)}.ls-game-stat{display:flex;justify-content:space-between;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.035);margin-top:7px;font-size:.72rem}.ls-game-stat span{color:var(--text-muted)}
-/* Cash + shop */
-.ls-currency-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ls-currency-card{padding:11px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06)}.ls-currency-card b{display:block;font-size:1rem}.ls-currency-card span{font-size:.65rem;color:var(--text-muted)}.ls-cash{color:#79e7a8}.ls-diamond{color:#65dcff}
-.ls-premium-shop{display:flex;flex-direction:column;gap:8px}.ls-premium-item{padding:12px;border-radius:15px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.035);display:flex;align-items:center;justify-content:space-between;gap:8px}.ls-premium-item__name{font-weight:850;font-size:.78rem}.ls-premium-item__price{font-size:.68rem;color:#65dcff}.ls-premium-item button,.ls-shop-buy{border:0;border-radius:10px;padding:8px 10px;background:#2f7dff;color:#fff;font-weight:850;font-size:.68rem;cursor:pointer}.ls-shop-buy:disabled{opacity:.45;cursor:not-allowed}
-/* Clan mini sheet */
-.ls-clan-mini-modal{position:fixed;inset:0;z-index:97000;background:rgba(2,5,12,.72);backdrop-filter:blur(10px);display:none;align-items:flex-start;justify-content:center;padding:74px 14px 20px}.ls-clan-mini-modal.open{display:flex}.ls-clan-mini-box{width:min(520px,100%);border-radius:22px;padding:16px;background:linear-gradient(160deg,#16213a,#090f1d);border:1px solid rgba(122,176,255,.2);box-shadow:0 28px 80px rgba(0,0,0,.72);position:relative}.ls-clan-mini-head{display:flex;align-items:center;gap:10px}.ls-clan-mini-title{font-weight:950}.ls-clan-mini-tag{font-size:.68rem;color:var(--text-muted);margin-top:2px}.ls-clan-mini-close{margin-left:auto;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;cursor:pointer}.ls-clan-mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}.ls-clan-mini-stat{padding:9px;border-radius:12px;background:rgba(255,255,255,.035);text-align:center}.ls-clan-mini-stat b{display:block;font-size:.78rem}.ls-clan-mini-stat span{font-size:.6rem;color:var(--text-muted)}.ls-clan-mini-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.ls-clan-mini-actions button{padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff;font-weight:800;font-size:.7rem;cursor:pointer}.ls-clan-mini-actions .danger{border-color:rgba(239,68,68,.25);color:#fca5a5}.ls-clan-mini-claim{grid-column:1/-1!important;background:linear-gradient(135deg,#4a8dff,#1a56cc)!important;border:0!important}.ls-clan-mini-claim:disabled{background:#171d28!important;color:#71809c!important}
-/* Prevent fullscreen clan detail from being used as the header popup */
-#lsClanChatInfoBtn{cursor:pointer;touch-action:manipulation}
+<style id="ls-xch-ui-fixes">
+/* ===== LStream targeted UI fixes: leaderboard / event / games / balance / clan ===== */
+.ls-home-tools{display:flex;flex-direction:column;gap:12px;margin:0 12px 18px}
+.ls-balance-card{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.07);border-radius:20px;background:linear-gradient(145deg,#101a30,#0a101e);padding:14px 16px;box-shadow:0 18px 45px rgba(0,0,0,.22)}
+.ls-balance-card:after{content:"";position:absolute;right:-35px;top:-45px;width:120px;height:120px;border-radius:50%;background:rgba(47,125,255,.10);filter:blur(4px);pointer-events:none}
+.ls-balance-title{font-size:.68rem;text-transform:uppercase;letter-spacing:1.2px;color:#8d9abb;font-weight:900;margin-bottom:10px}
+.ls-balance-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ls-balance-item{display:flex;align-items:center;gap:9px;min-width:0;padding:10px 11px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.05)}
+.ls-balance-icon{width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:rgba(74,141,255,.10);color:#65dcff}.ls-balance-icon.cash{background:rgba(255,193,74,.10);color:#ffd54a}.ls-balance-icon .icon{width:17px;height:17px}
+.ls-balance-item span{display:block;font-size:.62rem;color:#7f8ba8}.ls-balance-item b{display:block;font-size:.88rem;margin-top:2px;color:#eef2ff}
+.ls-board-card{width:100%;max-width:430px;margin:0 auto;border:1px solid rgba(255,255,255,.07);border-radius:20px;background:linear-gradient(145deg,#101a30,#090f1c);padding:14px;cursor:pointer;box-shadow:0 18px 45px rgba(0,0,0,.22);transition:transform .18s ease,border-color .18s ease}.ls-board-card:active{transform:scale(.99)}
+.ls-board-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.ls-board-title{font-size:.92rem;font-weight:900}.ls-board-open{font-size:.65rem;color:#79a7ff;font-weight:800}.ls-board-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.ls-board-mini{min-width:0;padding:9px 7px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.05);text-align:center}.ls-board-mini__rank{font-size:.58rem;color:#8d9abb;font-weight:900}.ls-board-mini img{width:34px;height:34px;border-radius:50%;display:block;margin:5px auto 4px;object-fit:cover;background:#070b13}.ls-board-mini b{display:block;font-size:.67rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ls-board-mini span{display:block;color:#62d8ff;font-size:.58rem;margin-top:2px;font-weight:800}
+.ls-event-float{position:fixed;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:185;display:flex;flex-direction:column;align-items:center;gap:5px}.ls-gift-btn{width:56px;height:56px;border-radius:18px;border:1px solid rgba(255,214,75,.25);background:linear-gradient(145deg,#191a23,#10131d);box-shadow:0 14px 35px rgba(0,0,0,.55),0 0 22px rgba(255,210,70,.12);display:grid;place-items:center;cursor:pointer}.ls-gift-btn img{width:35px;height:35px;display:block}.ls-gift-close{position:absolute;right:-5px;top:-6px;width:20px;height:20px;border:1px solid rgba(255,255,255,.16);border-radius:50%;background:#151b2a;color:#d9e0ef;font-size:13px;line-height:18px;padding:0;cursor:pointer}.ls-event-label{font-size:.56rem;font-weight:900;color:#111827;background:#ffd54a;padding:3px 7px;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,.25)}
+.ls-xch-modal{position:fixed;inset:0;z-index:99980;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(2,5,11,.82)}.ls-xch-modal.open{display:flex}.ls-xch-box{width:min(100%,500px);max-height:calc(100dvh - 32px);overflow:auto;border:1px solid rgba(255,255,255,.09);border-radius:26px;background:linear-gradient(160deg,#131d32,#080e1b);box-shadow:0 30px 90px rgba(0,0,0,.72);padding:18px}.ls-xch-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}.ls-xch-head h3{font-size:1.05rem;margin:0;flex:1}.ls-xch-close{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff;cursor:pointer}.ls-event-title{font-size:1.05rem;font-weight:950;text-align:center}.ls-event-sub{color:#8e9ab5;font-size:.72rem;text-align:center;margin:5px 0 14px}.ls-event-rules{display:flex;flex-direction:column;gap:8px}.ls-event-rule{display:flex;gap:10px;padding:11px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.025);border-radius:14px}.ls-event-rule b{width:24px;height:24px;flex:0 0 24px;border-radius:8px;display:grid;place-items:center;background:#2f7dff;color:#fff;font-size:.65rem}.ls-event-rule span{font-size:.74rem;line-height:1.45;color:#dbe3f5}.ls-event-mail{margin-top:12px;padding:11px;border-radius:13px;background:rgba(47,125,255,.07);border:1px solid rgba(47,125,255,.16);font-size:.7rem;color:#9eb8eb;text-align:center}
+.ls-game-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ls-game-card{border:1px solid rgba(255,255,255,.07);background:linear-gradient(145deg,#111b30,#0a111f);border-radius:18px;padding:10px;cursor:pointer;transition:transform .18s}.ls-game-card:active{transform:scale(.98)}.ls-game-img{height:105px;border-radius:13px;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 35%,rgba(47,125,255,.18),transparent 55%),#080e19;border:1px solid rgba(255,255,255,.05)}.ls-game-img svg{width:58px;height:58px}.ls-game-name{font-size:.78rem;font-weight:900;margin-top:8px}.ls-game-desc{font-size:.6rem;color:#8190ae;margin-top:3px;line-height:1.4}
+.ls-game-topbar{display:flex;align-items:center;gap:8px;margin-bottom:12px}.ls-game-back{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff}.ls-game-topbar b{font-size:.95rem}.ls-clicker-wrap{text-align:center;padding:20px 4px}.ls-click-count{font-size:2.6rem;font-weight:950;color:#eef2ff}.ls-click-label{font-size:.7rem;color:#8492b0}.ls-click-btn{width:150px;height:150px;border-radius:50%;border:1px solid rgba(111,174,255,.35);background:radial-gradient(circle at 35% 28%,#65a0ff,#1f66df 58%,#153f94);color:#fff;font-weight:950;font-size:1.05rem;box-shadow:0 20px 55px rgba(47,125,255,.3),inset 0 0 28px rgba(255,255,255,.12);cursor:pointer;margin:20px auto 12px;display:grid;place-items:center}.ls-click-btn:active{transform:scale(.96)}.ls-game-note{font-size:.65rem;color:#8290ad}.ls-game-shop-btn{width:100%;margin-top:12px;padding:12px;border-radius:14px;border:1px solid rgba(255,215,0,.22);background:linear-gradient(135deg,rgba(255,215,0,.11),rgba(255,140,0,.06));color:#ffd95a;font-weight:900;cursor:pointer}
+.ls-mole-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}.ls-hole{aspect-ratio:1;border-radius:18px;background:radial-gradient(circle at 50% 65%,#050912 0 28%,#151d2d 30% 58%,#080d17 60%);border:1px solid rgba(255,255,255,.06);display:grid;place-items:center;cursor:pointer}.ls-hole .mole{width:54px;height:54px;border-radius:50%;background:linear-gradient(145deg,#8f5a3c,#4c2b1d);box-shadow:0 8px 16px rgba(0,0,0,.45);position:relative;display:none}.ls-hole.active .mole{display:block;animation:molePop .16s ease}.ls-hole .mole:before,.ls-hole .mole:after{content:"";position:absolute;top:19px;width:6px;height:6px;background:#111;border-radius:50%}.ls-hole .mole:before{left:15px}.ls-hole .mole:after{right:15px}@keyframes molePop{from{transform:translateY(10px) scale(.7)}to{transform:none}}
+.ls-premium-shop{display:flex;flex-direction:column;gap:8px}.ls-shop-line{display:flex;align-items:center;gap:10px;padding:11px;border:1px solid rgba(255,255,255,.06);border-radius:14px;background:rgba(255,255,255,.025)}.ls-shop-line>div:first-child{flex:1}.ls-shop-line b{font-size:.76rem}.ls-shop-line small{display:block;color:#7e8ba8;font-size:.6rem;margin-top:2px}.ls-shop-buy{border:0;border-radius:11px;padding:9px 11px;background:#2f7dff;color:#fff;font-size:.65rem;font-weight:900;cursor:pointer}.ls-shop-buy.cash{background:#c78a19}.ls-cash-section{margin-top:14px}.ls-cash-title{font-size:.7rem;font-weight:900;color:#9ba8c4;margin-bottom:8px}
+.ls-clan-full-modal{position:fixed;inset:0 0 calc(70px + env(safe-area-inset-bottom,0px)) 0;z-index:99970;display:none;background:linear-gradient(160deg,#0c1527,#050a13);overflow:hidden}.ls-clan-full-modal.open{display:block}.ls-clan-full-inner{height:100%;overflow-y:auto;padding:14px 14px 24px}.ls-clan-full-head{display:flex;align-items:center;gap:9px;padding:2px 0 14px}.ls-clan-full-head b{font-size:.95rem;flex:1}.ls-clan-full-back{width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff}.ls-clan-full-hero{border-radius:22px;padding:16px;background:linear-gradient(145deg,#14213a,#0a111f);border:1px solid rgba(255,255,255,.07);margin-bottom:12px}.ls-clan-full-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.ls-clan-full-actions button{padding:11px 8px;border-radius:13px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.035);color:#eaf0ff;font-size:.67rem;font-weight:900}.ls-clan-full-actions button.primary{background:linear-gradient(135deg,#2f7dff,#1b57bd);border-color:transparent}.ls-clan-full-section{margin-top:12px;border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:12px;background:rgba(255,255,255,.02)}.ls-clan-full-section h4{margin:0 0 9px;font-size:.72rem;color:#9da9c2;text-transform:uppercase;letter-spacing:1px}.ls-clan-mini-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}.ls-clan-mini-row:last-child{border-bottom:0}.ls-clan-mini-row img{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#070b13}.ls-clan-mini-row div{flex:1}.ls-clan-mini-row b{font-size:.7rem}.ls-clan-mini-row span{display:block;color:#7f8ca7;font-size:.58rem;margin-top:2px}.ls-clan-leave{width:100%;margin-top:12px;padding:12px;border-radius:13px;border:1px solid rgba(239,68,68,.28);background:rgba(239,68,68,.08);color:#ff9c9c;font-weight:900}
+.ls-role-creator{background:linear-gradient(135deg,#38a0ff,#1670ff,#7ac4ff);color:#fff!important;box-shadow:0 0 16px rgba(47,125,255,.58),inset 0 0 7px rgba(255,255,255,.22)!important}.ls-role-sepuh{background:linear-gradient(135deg,#ffe477,#d69b16,#ffd95a);color:#231700!important;box-shadow:0 0 17px rgba(255,204,55,.58),inset 0 0 7px rgba(255,255,255,.25)!important}
+/* Premium is represented by blue verification, not a yellow username/badge. */
+.premium-name,.uname--premium{background:none!important;color:inherit!important;-webkit-text-fill-color:currentColor!important;animation:none!important;text-shadow:none!important}
+.badge--premium{background:transparent!important;color:#55a7ff!important;border:0!important;box-shadow:none!important;padding:0!important;font-size:0!important;width:16px;height:16px;border-radius:50%!important}.badge--premium:before{display:none!important}.badge--premium:after{content:"✓";display:grid;place-items:center;width:16px;height:16px;border-radius:50%;background:#2584ff;color:#fff;font-size:11px;font-weight:950;box-shadow:0 0 9px rgba(37,132,255,.5)}
+.user-panel__premium-chip,.acct__chip-prem{font-size:0!important;width:16px;height:16px;padding:0!important;border-radius:50%!important;background:#2584ff!important;color:#fff!important;box-shadow:0 0 9px rgba(37,132,255,.45)!important}.user-panel__premium-chip .icon,.acct__chip-prem .icon{display:none!important}.user-panel__premium-chip:after,.acct__chip-prem:after{content:"✓";font-size:11px;font-weight:950;line-height:16px;text-align:center;color:#fff}
+@media(max-width:380px){.ls-game-list{grid-template-columns:1fr}.ls-balance-grid{gap:6px}.ls-balance-item{padding:9px}.ls-board-card{padding:12px}}
 </style>
-<script id="ls-xch-repair-js">
+<script id="ls-xch-ui-fixes-js">
 (function(){
-  'use strict';
-  function esc2(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
-  function iconFallback(path){return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+path+'</svg>'}
-  /* Fill every icon key used by the existing Clan/settings patches. */
-  try{
-    var miss={
-      alert:iconFallback('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>'),
-      bell:iconFallback('<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>'),
-      chev:iconFallback('<polyline points="9 18 15 12 9 6"/>'),
-      close:iconFallback('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'),
-      diamond:iconFallback('<path d="M6 3h12l4 6-10 12L2 9z"/>'),
-      gear:iconFallback('<circle cx="12" cy="12" r="3"/><path d="M19 13.5a7.8 7.8 0 0 0 0-3l-2-1.2 2-3.4-3-1.7a8 8 0 0 0-2.6-1.5L14 3h-4l-.3 2.7A8 8 0 0 0 7.1 7L4 5.3 2 8.7l2 1.8a7.8 7.8 0 0 0 0 3L2 15.3l2 3.4L7.1 17a8 8 0 0 0 2.6 1.5L10 21h4l.3-2.5a8 8 0 0 0 2.6-1.5l3 1.7 2-3.4-2-1.8z"/>')
-    };
-    /* gear path above intentionally replaced with a compact valid path */
-    miss.gear=iconFallback('<circle cx="12" cy="12" r="3"/><path d="M19 13.5a7.8 7.8 0 0 0 0-3l2-1.2-2-3.4-2.2 1a8 8 0 0 0-2.6-1.5L14 3h-4l-.3 2.4a8 8 0 0 0-2.6 1.5l-2.2-1-2 3.4 2 1.2a7.8 7.8 0 0 0 0 3l-2 1.2 2 3.4 2.2-1a8 8 0 0 0 2.6 1.5L10 21h4l.3-2.4a8 8 0 0 0 2.6-1.5l2.2 1 2-3.4z"/>');
-    miss.info=iconFallback('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>');
-    miss.moon=iconFallback('<path d="M20 15.5A8 8 0 0 1 8.5 4 8 8 0 1 0 20 15.5z"/>');
-    miss.plus=iconFallback('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>');
-    miss.search=iconFallback('<circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16" y2="16"/>');
-    miss.user=miss.userPlus || iconFallback('<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6"/>');
-    miss.users=iconFallback('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>');
-    Object.keys(miss).forEach(function(k){if(typeof ICON!=='undefined' && (!ICON[k] || ICON[k]==='undefined'))ICON[k]=miss[k]});
-    if(typeof window.I!=='undefined')Object.keys(ICON).forEach(function(k){window.I[k]=ICON[k]});
-  }catch(e){console.warn('icon compatibility',e)}
-
-  function storageGet(k,def){try{var r=SafeStorage.getItem(k);return r==null?def:r}catch(e){return def}}
-  function storageSet(k,v){try{SafeStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));return true}catch(e){return false}}
-  function accountKey(base){try{return typeof accountScopedKey==='function'?accountScopedKey(base):base+'::'+((userState&&userState.userId)||'anonymous')}catch(e){return base}}
-
-  /* Stable LS IDs: Firebase UID gets a permanent mapping; the old counter remains the fallback. */
-  function repairStableId(){
-    try{
-      if(!window.userState || !userState.loggedIn || !userState.firebaseUid)return;
-      var key='lstream_identity_map_v2', map=JSON.parse(storageGet(key,'{}')||'{}'), uid=String(userState.firebaseUid);
-      var known=map[uid];
-      if(known){if(userState.userId!==known){userState.userId=known;saveUser(userState)}return}
-      var cur=String(userState.userId||'').match(/^#?LS-(\d+)$/i), curNum=cur?parseInt(cur[1],10):0;
-      var counter=parseInt(storageGet(STORAGE_USER_COUNTER,'0'),10)||0;
-      if(curNum>0 && !Object.values(map).includes('LS-'+String(curNum).padStart(5,'0'))){known='#LS-'+String(curNum).padStart(5,'0')}
-      else{counter=Math.max(counter,1);counter++;known='#LS-'+String(counter).padStart(5,'0');storageSet(STORAGE_USER_COUNTER,String(counter))}
-      map[uid]=known;storageSet(key,map);userState.userId=known;saveUser(userState);
-    }catch(e){}
-  }
-
-  /* Premium starter: once claimed, replace the claim card permanently with status. */
-  function premiumClaimRepair(){
-    try{
-      var old=window.renderSettingsPage;if(typeof old!=='function'||old.__xchPremium)return;
-      function wrapped(){old.apply(this,arguments);setTimeout(function(){
-        var box=document.querySelector('#settingsContent .premium-claim');if(!box||!userState)return;
-        if(userState.premiumClaimed){
-          var rem='Sudah di-claim';try{var rr=getPremiumRemaining&&getPremiumRemaining();if(rr&&rr.text)rem=rr.text}catch(e){}
-          box.innerHTML='<div class="premium-claim__crown">'+(ICON.crown||'♛')+'</div><div class="premium-claim__title">Premium Starter Sudah di-claim</div><div class="premium-claim__status">'+(isPremium()?'Premium aktif · Sisa '+esc2(rem):'Reward starter sudah pernah digunakan')+'</div>';
-        }
-      },0)}
-      wrapped.__xchPremium=true;window.renderSettingsPage=wrapped;
-    }catch(e){}
-  }
-
-  /* Background is shared by Home, Account and Settings. */
-  function applyGlobalBackground(){
-    try{
-      if(!userState||!userState.loggedIn)return;
-      var s=getSettings(), url=String(s.bgUrl||'').trim();
-      if(url){document.body.classList.add('ls-has-custom-bg');document.body.style.setProperty('--ls-body-bg','url("'+url.replace(/"/g,'%22')+'")');}
-      else{document.body.classList.remove('ls-has-custom-bg');document.body.style.removeProperty('--ls-body-bg')}
-    }catch(e){}
-  }
-  var oldApplySettings=window.applySettings;
-  if(typeof oldApplySettings==='function'&&!oldApplySettings.__xchBg){
-    window.applySettings=function(){oldApplySettings.apply(this,arguments);applyGlobalBackground()};window.applySettings.__xchBg=true;
-  }
-
-  /* Check-in: persist reward info and make the already-checked state visible. */
-  function repairCheckin(){
-    try{
-      var old=window.doCheckin;if(typeof old!=='function'||old.__xch)return;
-      function wrapped(){
-        var before=getCheckinData();var day=before.currentDay||1;old.apply(this,arguments);try{var d=getCheckinData();d.lastRewardDay=day;d.lastRewardAt=Date.now();storageSet(accountKey(STORAGE_CHECKIN),d)}catch(e){};try{renderSettingsPage();renderUserPanel();renderAccountPage()}catch(e){}}
-      wrapped.__xch=true;window.doCheckin=wrapped;
-    }catch(e){}
-  }
-  var oldRenderCheckin=window.renderCheckinBoxInner;
-  if(typeof oldRenderCheckin==='function'&&!oldRenderCheckin.__xch){
-    window.renderCheckinBoxInner=function(){var h=oldRenderCheckin.apply(this,arguments);try{var d=getCheckinData();if(isTodayChecked())h=h.replace('</div></div>','<div style="margin-top:9px;text-align:center;font-size:.68rem;color:#6ee7b7;font-weight:800">✓ Check-in hari ini sudah diterima</div></div></div>')}catch(e){}return h};window.renderCheckinBoxInner.__xch=true;
-  }
-
-  /* Premium badge: same blue verified mark on Home, Account and Settings. */
-  function premiumCheckHtml(){return '<span class="ls-blue-check" aria-label="Premium verified">'+(ICON.check||'✓')+'</span>'}
-  function decoratePremiumSurfaces(){
-    try{
-      var premium=typeof isPremium==='function'&&isPremium();
-      if(!premium)return;
-      document.querySelectorAll('.user-panel__name,.acct__name,.settings-panel__name').forEach(function(el){
-        if(el.querySelector('.ls-blue-check'))return;el.insertAdjacentHTML('beforeend',' '+premiumCheckHtml());
-      });
-    }catch(e){}
-  }
-
-  /* Dev controls: rerender the actual row after every role/badge/moderation change. */
-  function refreshDevRowFor(name){try{if(typeof renderSettingsPage==='function')renderSettingsPage();setTimeout(function(){var q=document.getElementById('devUserSearch');if(q&&q.value){q.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter'}))}},0)}catch(e){}}
-  function patchDevActions(){
-    try{
-      var old=window.bindDevUserActions;if(typeof old!=='function'||old.__xch)return;
-      function wrapped(){old.apply(this,arguments);document.querySelectorAll('[data-dev-give-dev],[data-dev-give-mod],[data-dev-give-tester],[data-dev-unlimited-diamond],[data-dev-unban],[data-dev-unmute]').forEach(function(btn){if(btn.dataset.xchBound)return;btn.dataset.xchBound='1';btn.addEventListener('click',function(){var n=btn.dataset.devGiveDev||btn.dataset.devGiveMod||btn.dataset.devGiveTester||btn.dataset.devUnlimitedDiamond||btn.dataset.devUnban||btn.dataset.devUnmute;setTimeout(function(){refreshDevRowFor(n)},80)})})}
-      wrapped.__xch=true;window.bindDevUserActions=wrapped;
-    }catch(e){}
-  }
-
-  /* Clan header = small summary popup; detail page remains available from clan cards. */
-  function openClanMini(c){
-    if(!c)return;
-    var m=document.getElementById('lsClanMiniModal');
-    if(!m){m=document.createElement('div');m.id='lsClanMiniModal';m.className='ls-clan-mini-modal';document.body.appendChild(m)}
-    var me=typeof getClanMember==='function'?getClanMember(c,userState.username):null, joined=!!me;
-    var key=new Date().toISOString().slice(0,10),claimed=!!(S&&S.claims&&S.claims[c.id]===key);
-    var top=c.members.slice().sort(function(a,b){return Number(b.donateToday||0)-Number(a.donateToday||0)}).slice(0,3);
-    m.innerHTML='<div class="ls-clan-mini-box"><div class="ls-clan-mini-head"><div style="min-width:0"><div class="ls-clan-mini-title">'+esc2(c.name)+'</div><div class="ls-clan-mini-tag">'+esc2(c.tag)+' · Level '+Number(c.level||1)+' · '+c.members.length+' member</div></div><button class="ls-clan-mini-close" id="lsClanMiniClose">×</button></div><div class="ls-clan-mini-stats"><div class="ls-clan-mini-stat"><b>'+c.members.length+'</b><span>Member</span></div><div class="ls-clan-mini-stat"><b>'+Number(c.diamonds||0).toLocaleString('id-ID')+'</b><span>Donate</span></div><div class="ls-clan-mini-stat"><b>'+Number(top[0]&&top[0].donateToday||0).toLocaleString('id-ID')+'</b><span>Top Donate</span></div></div><div style="font-size:.7rem;color:var(--text-muted);margin-bottom:8px">Top donate hari ini: '+(top.length?top.map(function(x,i){return '#'+(i+1)+' '+esc2(x.name)+' ('+Number(x.donateToday||0).toLocaleString('id-ID')+')'}).join(' · '):'Belum ada')+'</div><div class="ls-clan-mini-actions"><button class="ls-clan-mini-claim" id="lsClanMiniClaim" '+(!joined||claimed?'disabled':'')+'>'+(!joined?'Gabung dulu':(claimed?'✓ Sudah claim hari ini':'💎 Claim Berlian Harian'))+'</button><button id="lsClanMiniDonate">💎 Donate</button><button id="lsClanMiniTop">Top Donate</button><button id="lsClanMiniDetail">Detail Clan</button>'+(joined?'<button class="danger" id="lsClanMiniLeave">Keluar Clan</button>':'')+'</div></div>';
-    m.classList.add('open');
-    document.getElementById('lsClanMiniClose').onclick=function(){m.classList.remove('open')};
-    document.getElementById('lsClanMiniClaim').onclick=function(){if(typeof claimClan==='function'){claimClan(c);m.classList.remove('open')}};
-    document.getElementById('lsClanMiniTop').onclick=function(){m.classList.remove('open');if(typeof openClanDetail==='function'){openClanDetail(c);setTimeout(function(){var b=document.querySelector('[data-detail-tab="top"]');if(b)b.click()},30)}};
-    document.getElementById('lsClanMiniDetail').onclick=function(){m.classList.remove('open');if(typeof openClanDetail==='function')openClanDetail(c)};
-    document.getElementById('lsClanMiniDonate').onclick=function(){m.classList.remove('open');if(typeof openClanDonate==='function')openClanDonate(c);else if(typeof openClanDetail==='function')openClanDetail(c)};
-    var leave=document.getElementById('lsClanMiniLeave');if(leave)leave.onclick=function(){if(confirm('Keluar dari clan ini?')){try{c.members=c.members.filter(function(x){return x.name!==userState.username});userState.clanId='';userState.clanRole='';saveUserSafe();storeSet(S);m.classList.remove('open');renderClanEmpty()}catch(e){}}};
-    m.onclick=function(e){if(e.target===m)m.classList.remove('open')};
-  }
-  function patchClanHeader(){
-    var old=window.renderClanChat;if(typeof old==='function'&&!old.__xch){window.renderClanChat=function(){var h=old.apply(this,arguments);setTimeout(function(){var b=document.getElementById('lsClanChatInfoBtn');if(b&&!b.dataset.xch){b.dataset.xch='1';b.onclick=function(e){e.preventDefault();e.stopPropagation();var c=currentClan();if(c)openClanMini(c)}}},0);return h};window.renderClanChat.__xch=true}
-    var od=window.openClanDetail;if(typeof od==='function'&&!od.__xch){window.openClanDetail=function(c){var me=c&&getClanMember?getClanMember(c,userState.username):null;var oldHtml=od.apply(this,arguments);setTimeout(function(){var btn=document.getElementById('lsClanDetailRequest');if(btn){if(me){btn.disabled=true;btn.classList.add('sent');btn.textContent='✓ Sudah Bergabung'}else{btn.disabled=false;btn.classList.remove('sent')}}},0);return oldHtml};window.openClanDetail.__xch=true}
-  }
-
-  /* Event Creator */
-  function installEventCreator(){
-    if(document.getElementById('lsEventFab'))return;
-    var fab=document.createElement('button');fab.id='lsEventFab';fab.className='ls-event-fab';fab.type='button';fab.innerHTML='<span class="gift">🎁</span><button type="button" class="ls-event-fab__close" aria-label="Tutup">×</button>';document.body.appendChild(fab);
-    fab.querySelector('.ls-event-fab__close').onclick=function(e){e.stopPropagation();fab.remove()};
-    var modal=document.createElement('div');modal.id='lsEventModal';modal.className='ls-event-modal';modal.innerHTML='<div class="ls-event-box"><button class="ls-event-close" id="lsEventClose">×</button><div style="text-align:center;font-size:2rem">🎁</div><div class="ls-event-title">EVENT CREATOR LSTREAM BERHADIAH PREMIUM</div><div class="ls-event-sub">Upload • Raih views • Dapatkan Premium & Badge Creator</div><div class="ls-event-rules"><div class="ls-event-rule"><b>1</b><span>Upload video tentang LStream di Tiktok dan YouTube.</span></div><div class="ls-event-rule"><b>2</b><span>Raih minimal <strong>500 views</strong> dan <strong>20 likes</strong> untuk mendapatkan 2 hari premium, dengan batas maksimal <strong>3k views dan 50 likes</strong>.</span></div><div class="ls-event-rule"><b>3</b><span>Jika sudah meraih views dan likes minimal/maximal tersebut, kirim link video ke Gmail LStream.</span></div><div class="ls-event-rule"><b>4</b><span>Tidak boleh memakai link video orang lain.</span></div><div class="ls-event-rule"><b>5</b><span>Semakin rajin upload video tentang LStream semakin banyak peluang untuk mendapatkan banyak premium dan badge Creator.</span></div></div></div>';document.body.appendChild(modal);
-    fab.onclick=function(){modal.classList.add('open')};document.getElementById('lsEventClose').onclick=function(){modal.classList.remove('open')};modal.onclick=function(e){if(e.target===modal)modal.classList.remove('open')};
-  }
-
-  /* XP leaderboard: current/clan-known users are persisted locally, with daily/weekly/monthly buckets. */
-  var LBKEY='lstream_xp_leaderboard_v1';
-  function lbLoad(){try{return JSON.parse(storageGet(LBKEY,'{}')||'{}')}catch(e){return {}}}
-  function lbSave(x){storageSet(LBKEY,x)}
-  function updateLB(){try{if(!userState||!userState.loggedIn)return;var x=lbLoad(),id=userState.firebaseUid||userState.userId||userState.username,day=new Date().toISOString().slice(0,10),week=new Date();var jan=new Date(week.getFullYear(),0,1),wk=Math.ceil((((week-jan)/86400000)+jan.getDay()+1)/7),month=week.toISOString().slice(0,7);x.users=x.users||{};x.users[id]=Object.assign(x.users[id]||{name:userState.username,avatar:userState.avatarUrl||''},{name:userState.username,avatar:userState.avatarUrl||'',level:userState.level||1,dayKey:day,weekKey:week.getFullYear()+'-W'+wk,monthKey:month,dayXp:Number(userState.xp||0),weekXp:Number(userState.xp||0),monthXp:Number(userState.xp||0)});lbSave(x)}catch(e){}}
-  function lbUsers(){var x=lbLoad(),arr=Object.keys(x.users||{}).map(function(k){return x.users[k]});try{if(userState&&userState.loggedIn&&!arr.some(function(a){return a.name===userState.username})){arr.push({name:userState.username,avatar:userState.avatarUrl||'',dayXp:Number(userState.xp||0),weekXp:Number(userState.xp||0),monthXp:Number(userState.xp||0)})}}catch(e){};return arr}
-  function lbValue(u,period){return Number(u[period+'Xp']||0)}
-  function renderLB(period){var box=document.getElementById('lsXpBoard');if(!box)return;updateLB();var arr=lbUsers().sort(function(a,b){return lbValue(b,period)-lbValue(a,period)});var top=arr.slice(0,3);var rest=arr.slice(3,50);box.querySelectorAll('.ls-xp-tab').forEach(function(t){t.classList.toggle('active',t.dataset.period===period)});var topHtml=(top.length?top.map(function(u,i){return '<div class="ls-xp-card"><div class="ls-xp-card__rank">'+(i+1)+'</div><div class="ls-xp-card__avatar" style="'+(u.avatar?'background-image:url(\''+esc2(u.avatar)+'\')':'')+'"></div><div class="ls-xp-card__name">'+esc2(u.name||'User')+'</div><div class="ls-xp-card__xp">'+lbValue(u,period).toLocaleString('id-ID')+' XP</div></div>'}).join(''):'<div class="ls-xp-empty" style="grid-column:1/-1">Belum ada data XP.</div>');var restHtml=rest.map(function(u,i){return '<div class="ls-xp-row"><div class="ls-xp-row__rank">'+(i+4)+'</div><div class="ls-xp-row__avatar" style="'+(u.avatar?'background-image:url(\''+esc2(u.avatar)+'\')':'')+'"></div><div class="ls-xp-row__info"><div class="ls-xp-row__name">'+esc2(u.name||'User')+'</div><div class="ls-xp-row__xp">'+lbValue(u,period).toLocaleString('id-ID')+' XP</div></div></div>'}).join('');box.querySelector('.ls-xp-top3').innerHTML=topHtml;box.querySelector('.ls-xp-list').innerHTML=restHtml||'<div class="ls-xp-empty">Belum ada peringkat 4–50.</div>'}
-  function installLeaderboard(){
-    if(document.getElementById('lsXpBoard'))return;var anchor=document.querySelector('.user-panel-wrap');if(!anchor)return;var b=document.createElement('section');b.id='lsXpBoard';b.className='ls-xp-leaderboard';b.innerHTML='<div class="ls-xp-head"><div><div class="ls-xp-title">🏆 Top XP</div><div class="ls-xp-sub">Leaderboard XP Harian, Mingguan, dan Bulanan</div></div><span class="ls-xp-sub">Top 50</span></div><div class="ls-xp-tabs"><button class="ls-xp-tab active" data-period="day">Harian</button><button class="ls-xp-tab" data-period="week">Mingguan</button><button class="ls-xp-tab" data-period="month">Bulanan</button></div><div class="ls-xp-top3"></div><div class="ls-xp-list"></div>';anchor.insertAdjacentElement('afterend',b);b.querySelectorAll('.ls-xp-tab').forEach(function(t){t.onclick=function(){renderLB(t.dataset.period)}});renderLB('day')}
-
-  /* Games: Clicker + Whack-a-Mole. Rewards are account-scoped. */
-  var GAMEKEY='lstream_games_v1';
-  function gameLoad(){try{return JSON.parse(storageGet(accountKey(GAMEKEY),'{}')||'{}')}catch(e){return {}}}
-  function gameSave(x){storageSet(accountKey(GAMEKEY),x)}
-  function addDiamonds(n){userState.diamonds=Number(userState.diamonds||0)+Number(n||0);saveUser(userState);try{renderUserPanel();renderAccountPage();renderSettingsPage()}catch(e){}}
-  function openGame(kind){
-    var m=document.getElementById('lsGameModal');if(!m){m=document.createElement('div');m.id='lsGameModal';m.className='ls-game-modal';document.body.appendChild(m)}
-    var g=gameLoad();g.clicks=Number(g.clicks||0);g.hits=Number(g.hits||0);g.moleLevel=Number(g.moleLevel||1);m.innerHTML='<div class="ls-game-box"><button class="ls-game-close" id="lsGameClose">×</button><div class="ls-game-title">'+(kind==='clicker'?'⚡ Clicker':'🔨 Whack-a-Mole')+'</div><div class="ls-game-balance">💎 Berlian: '+Number(userState.diamonds||0).toLocaleString('id-ID')+'</div>'+(kind==='clicker'?'<div class="ls-click-circle" id="lsClickTarget">CLICK</div><div class="ls-game-stat"><span>Progress</span><b id="lsClickProgress">'+(g.clicks%5)+'/5</b></div><div class="ls-game-stat"><span>Reward</span><b>3 berlian / 5 click</b></div>':'<div class="ls-click-circle" id="lsMoleTarget">🔨 HIT!</div><div class="ls-game-stat"><span>Level</span><b id="lsMoleLevel">'+g.moleLevel+'</b></div><div class="ls-game-stat"><span>Progress</span><b id="lsMoleProgress">'+(g.hits%((g.moleLevel-1)*10+10))+'/'+((g.moleLevel-1)*10+10)+'</b></div><div class="ls-game-stat"><span>Reward level ini</span><b>'+((g.moleLevel-1)*25+50)+' gems</b></div>')+'</div>';m.classList.add('open');document.getElementById('lsGameClose').onclick=function(){m.classList.remove('open')};
-    if(kind==='clicker'){document.getElementById('lsClickTarget').onclick=function(){g.clicks++;if(g.clicks%5===0){addDiamonds(3);g.rewarded=(g.rewarded||0)+3}gameSave(g);document.getElementById('lsClickProgress').textContent=(g.clicks%5)+'/5';m.querySelector('.ls-game-balance').textContent='💎 Berlian: '+Number(userState.diamonds||0).toLocaleString('id-ID')}}
-    else{document.getElementById('lsMoleTarget').onclick=function(){g.hits++;var need=(g.moleLevel-1)*10+10;if(g.hits%need===0){var reward=(g.moleLevel-1)*25+50;addDiamonds(reward);g.moleLevel++;}gameSave(g);var next=(g.moleLevel-1)*10+10;document.getElementById('lsMoleLevel').textContent=g.moleLevel;document.getElementById('lsMoleProgress').textContent=(g.hits%next)+'/'+next;m.querySelector('.ls-game-balance').textContent='💎 Berlian: '+Number(userState.diamonds||0).toLocaleString('id-ID')}}
-  }
-  function injectGamePanel(){
-    if(document.getElementById('lsGamePanel'))return;var box=document.getElementById('settingsContent');if(!box)return;var s=document.createElement('div');s.className='settings-box ls-game-panel';s.id='lsGamePanel';s.innerHTML='<div class="settings-box__title">🎮 Panel Game</div><div class="settings-row"><div class="settings-row__label"><div class="settings-row__title">Game Center</div><div class="settings-row__desc">Mainkan game untuk mengumpulkan berlian.</div></div><div class="settings-row__control"><button class="btn btn--primary btn--sm" id="lsOpenGames">Main</button></div></div><div class="ls-game-list"><button class="ls-game-card" id="lsGameClicker"><div class="ls-game-card__pic">⚡</div><div class="ls-game-card__name">Clicker</div><div class="ls-game-card__desc">5 click = 3 berlian</div></button><button class="ls-game-card" id="lsGameMole"><div class="ls-game-card__pic">🔨</div><div class="ls-game-card__name">Whack-a-Mole</div><div class="ls-game-card__desc">Pukul target, naik level, reward makin besar.</div></button></div>';box.insertBefore(s,box.querySelector('.settings-box:nth-of-type(1)')||box.firstChild);s.querySelector('#lsOpenGames').onclick=function(){openGame('clicker')};s.querySelector('#lsGameClicker').onclick=function(){openGame('clicker')};s.querySelector('#lsGameMole').onclick=function(){openGame('mole')};
-  }
-
-  /* Cash fallback + premium/banner/nametag shop. */
-  function ensureCash(){if(userState.cash==null)userState.cash=0}
-  function buyWithCurrency(costD,costC,apply){ensureCash();var d=Number(userState.diamonds||0),c=Number(userState.cash||0);if(d>=costD){userState.diamonds=d-costD;apply();saveUser(userState);return true}if(c>=costC){userState.cash=c-costC;apply();saveUser(userState);return true}return false}
-  function openCurrencyShop(){
-    var m=document.getElementById('lsCurrencyShop');if(!m){m=document.createElement('div');m.id='lsCurrencyShop';m.className='ls-game-modal';document.body.appendChild(m)}ensureCash();m.innerHTML='<div class="ls-game-box"><button class="ls-game-close" id="lsCurrencyClose">×</button><div class="ls-game-title">🛒 LS PREMIUM SHOP</div><div class="ls-currency-row" style="margin:12px 0"><div class="ls-currency-card"><b class="ls-diamond">💎 '+Number(userState.diamonds||0).toLocaleString('id-ID')+'</b><span>Diamond</span></div><div class="ls-currency-card"><b class="ls-cash">💵 '+Number(userState.cash||0).toLocaleString('id-ID')+'</b><span>Cash</span></div></div><div class="ls-premium-shop"><div class="ls-premium-item"><div><div class="ls-premium-item__name">Premium 1 Hari</div><div class="ls-premium-item__price">100 Diamond / 10.000 Cash</div></div><button data-shop-prem="1">Beli</button></div><div class="ls-premium-item"><div><div class="ls-premium-item__name">Premium 7 Hari</div><div class="ls-premium-item__price">500 Diamond / 50.000 Cash</div></div><button data-shop-prem="7">Beli</button></div><div class="ls-premium-item"><div><div class="ls-premium-item__name">Banner Profile</div><div class="ls-premium-item__price">250 Diamond / 25.000 Cash</div></div><button data-shop-item="banner">Beli</button></div><div class="ls-premium-item"><div><div class="ls-premium-item__name">Custom Nametag Color</div><div class="ls-premium-item__price">150 Diamond / 15.000 Cash</div></div><button data-shop-item="nametag">Beli</button></div></div></div>';m.classList.add('open');document.getElementById('lsCurrencyClose').onclick=function(){m.classList.remove('open')};m.querySelectorAll('[data-shop-prem]').forEach(function(b){b.onclick=function(){var days=Number(b.dataset.shopPrem),ok=buyWithCurrency(days===1?100:500,days===1?10000:50000,function(){addPremiumDays(days)});if(ok){userState.premiumClaimed=true;saveUser(userState);alert('Premium berhasil dibeli.')}else alert('Diamond dan Cash tidak cukup.');m.remove();openCurrencyShop()}});m.querySelector('[data-shop-item="banner"]').onclick=function(){var ok=buyWithCurrency(250,25000,function(){userState.bannerOwned=true});alert(ok?'Banner berhasil dibeli.':'Saldo tidak cukup.');m.remove();openCurrencyShop()};m.querySelector('[data-shop-item="nametag"]').onclick=function(){var ok=buyWithCurrency(150,15000,function(){userState.nametagColorOwned=true});alert(ok?'Custom nametag color berhasil dibeli.':'Saldo tidak cukup.');m.remove();openCurrencyShop()};
-  }
-  function injectCurrencySettings(){
-    ensureCash();var box=document.getElementById('settingsContent');if(!box||document.getElementById('lsCurrencyBox'))return;var s=document.createElement('div');s.className='settings-box';s.id='lsCurrencyBox';s.innerHTML='<div class="settings-box__title">💰 Saldo</div><div class="ls-currency-row"><div class="ls-currency-card"><b class="ls-diamond">💎 '+Number(userState.diamonds||0).toLocaleString('id-ID')+'</b><span>Diamond — Premium & item</span></div><div class="ls-currency-card"><b class="ls-cash">💵 '+Number(userState.cash||0).toLocaleString('id-ID')+'</b><span>Cash — pengganti Diamond & item profile</span></div></div><button class="btn btn--primary" id="lsOpenCurrencyShop" style="width:100%;margin-top:10px">Buka Premium & Custom Shop</button>';box.insertBefore(s,box.firstChild);s.querySelector('#lsOpenCurrencyShop').onclick=openCurrencyShop;saveUser(userState)}
-
-  /* Wrap settings so the new panels reappear after every rerender. */
-  function patchSettings(){
-    var old=window.renderSettingsPage;if(typeof old!=='function'||old.__xchAll)return;
-    function wrapped(){old.apply(this,arguments);setTimeout(function(){repairStableId();applyGlobalBackground();premiumClaimRepair();injectGamePanel();injectCurrencySettings();decoratePremiumSurfaces();patchClanHeader();patchDevActions()},0)}
-    wrapped.__xchAll=true;window.renderSettingsPage=wrapped;
-  }
-
-  /* Fix background/save button and premium claim handlers after the original renderer is replaced. */
-  function patchSettingsEvents(){
-    document.addEventListener('click',function(e){
-      var b=e.target.closest('#claimPremiumBtn');if(b){e.preventDefault();e.stopImmediatePropagation();if(userState.premiumClaimed)return;addPremiumDays(3);userState.premiumClaimed=true;saveUser(userState);setTimeout(function(){renderSettingsPage();renderUserPanel();renderAccountPage();decoratePremiumSurfaces()},0)}
-      var bg=e.target.closest('#bgUrlOkBtn');if(bg){setTimeout(applyGlobalBackground,20)}
-    },true);
-  }
-
-  /* Hide the boot/loading gate once the app has resolved a local session; never leave the UI stuck. */
-  function bootRepair(){
-    try{
-      var gate=document.getElementById('authGate');
-      if(userState&&userState.loggedIn){document.body.classList.add('logged-in');if(gate){gate.classList.add('hidden');gate.style.display='none';}}
-      setTimeout(function(){if(userState&&userState.loggedIn&&gate){gate.classList.add('hidden');gate.style.display='none'}},2500);
-    }catch(e){}
-  }
-
-  function init(){
-    try{repairStableId();applyGlobalBackground();patchSettings();premiumClaimRepair();repairCheckin();patchDevActions();patchClanHeader();patchSettingsEvents();installEventCreator();installLeaderboard();updateLB();setTimeout(function(){injectGamePanel();injectCurrencySettings();decoratePremiumSurfaces();bootRepair()},300)}catch(e){console.warn('LStream repair layer',e)}
-    setInterval(function(){try{applyGlobalBackground();decoratePremiumSurfaces();updateLB()}catch(e){}},2500);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+'use strict';
+var escX=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var getLS=function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
+var setLS=function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+var uid=function(){return (window.userState&&userState.userId)||'anon'};
+function ensureEconomy(){if(!window.userState)return;var changed=false;if(typeof userState.cash!=='number'){userState.cash=0;changed=true}if(typeof userState.diamonds!=='number'){userState.diamonds=0;changed=true}if(!userState.gameData){userState.gameData={clicker:{clicks:0,total:0},mole:{level:1,hits:0,wins:0}};changed=true}if(!userState.gameData.clicker)userState.gameData.clicker={clicks:0,total:0};if(!userState.gameData.mole)userState.gameData.mole={level:1,hits:0,wins:0};if(changed&&typeof saveUser==='function')saveUser(userState)}
+function balanceHtml(){ensureEconomy();return '<div class="ls-balance-card"><div class="ls-balance-title">Saldo</div><div class="ls-balance-grid"><div class="ls-balance-item"><span class="ls-balance-icon">'+(window.ICON?ICON.diamond:'◆')+'</span><div><span>Berlian</span><b>'+Number(userState.diamonds||0).toLocaleString('id-ID')+'</b></div></div><div class="ls-balance-item"><span class="ls-balance-icon cash">'+(window.ICON?ICON.coin:'●')+'</span><div><span>Cash</span><b>'+Number(userState.cash||0).toLocaleString('id-ID')+'</b></div></div></div></div>'}
+function avatarBoard(name,url){var src=url||'';if(!src){src='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" rx="32" fill="#101a2c"/><text x="32" y="39" text-anchor="middle" fill="#7e8eae" font-family="Arial" font-size="24">'+String(name||'?').charAt(0).toUpperCase()+'</text></svg>')}return src}
+function boardNames(){var names=[];try{if(typeof getAllUsernames==='function')names=getAllUsernames()||[]}catch(e){}if(userState&&userState.username&&names.indexOf(userState.username)<0)names.unshift(userState.username);['Rina_Chan','AnimeLover88','YukiStream','KenjiKun','OtakuZone','SoraNeko','Mika_77','KuroSenpai','HanaStream','AoiPlayer'].forEach(function(n){if(names.indexOf(n)<0)names.push(n)});return names}
+function boardRows(period){ensureEconomy();var arr=boardNames().map(function(n){var isMe=n===userState.username,h=typeof hashStr==='function'?hashStr(n+'|'+period):Math.abs((n+period).length*7919);var base=period==='daily'?(h%850+40):period==='weekly'?(h%6500+400):(h%26000+1200);var xp=isMe?Number(userState.xp||0):base;return {name:n,xp:xp,avatar:isMe?(userState.avatarUrl||''):''}});arr.sort(function(a,b){return b.xp-a.xp||a.name.localeCompare(b.name)});while(arr.length<50){var n='Player'+String(arr.length+1).padStart(2,'0'),h=typeof hashStr==='function'?hashStr(n+'|'+period):arr.length*991;arr.push({name:n,xp:period==='daily'?h%850+40:period==='weekly'?h%6500+400:h%26000+1200,avatar:''})}arr.sort(function(a,b){return b.xp-a.xp||a.name.localeCompare(b.name)});return arr.slice(0,50)}
+function renderBoardPreview(){var rows=boardRows('daily');return '<div class="ls-home-tools"><div id="lsBoardCard" class="ls-board-card"><div class="ls-board-head"><div class="ls-board-title">Leaderboard Top XP</div><div class="ls-board-open">Lihat Top 1–50 ›</div></div><div class="ls-board-preview">'+rows.slice(0,3).map(function(r,i){return '<div class="ls-board-mini"><div class="ls-board-mini__rank">TOP '+(i+1)+'</div><img src="'+escX(avatarBoard(r.name,r.avatar))+'" alt=""><b>'+escX(r.name)+'</b><span>'+r.xp.toLocaleString('id-ID')+' XP</span></div>'}).join('')+'</div></div>'+balanceHtml()+'</div>'}
+function boardModal(){var m=document.getElementById('lsBoardModal');if(m)return m; m=document.createElement('div');m.id='lsBoardModal';m.className='ls-xch-modal';m.innerHTML='<div class="ls-xch-box"><div class="ls-xch-head"><button class="ls-xch-close" id="lsBoardBack">←</button><h3>Leaderboard XP</h3><button class="ls-xch-close" id="lsBoardClose">×</button></div><div id="lsBoardTabs" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px"><button class="ls-board-tab" data-p="daily">Harian</button><button class="ls-board-tab" data-p="weekly">Mingguan</button><button class="ls-board-tab" data-p="monthly">Bulanan</button></div><div id="lsBoardPodium"></div><div id="lsBoardList"></div></div>';document.body.appendChild(m);m.querySelector('#lsBoardClose').onclick=function(){m.classList.remove('open')};var bb=m.querySelector('#lsBoardBack');if(bb)bb.onclick=function(){m.classList.remove('open')};m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open')});m.querySelectorAll('.ls-board-tab').forEach(function(b){b.onclick=function(){renderBoardModal(b.dataset.p)}});return m}
+function renderBoardModal(period){var m=boardModal();m.classList.add('open');var rows=boardRows(period);var tabs=m.querySelectorAll('.ls-board-tab');tabs.forEach(function(b){b.style.cssText='padding:10px 5px;border-radius:12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.035);color:#8d9abb;font-size:.64rem;font-weight:900';if(b.dataset.p===period)b.style.cssText+=';background:linear-gradient(135deg,#2f7dff,#1b57bd);color:#fff;border-color:transparent'});m.querySelector('#lsBoardPodium').innerHTML='<div style="font-size:.66rem;color:#8d9abb;font-weight:900;margin:4px 0 8px">TOP 1 · 2 · 3</div><div class="ls-board-preview">'+rows.slice(0,3).map(function(r,i){return '<div class="ls-board-mini"><div class="ls-board-mini__rank">'+(i+1)+'</div><img src="'+escX(avatarBoard(r.name,r.avatar))+'" alt=""><b>'+escX(r.name)+'</b><span>'+r.xp.toLocaleString('id-ID')+' XP</span></div>'}).join('')+'</div>';
+m.querySelector('#lsBoardList').innerHTML='<div style="font-size:.66rem;color:#8d9abb;font-weight:900;margin:14px 0 8px">TOP 4–50</div>'+rows.slice(3).map(function(r,i){return '<div style="display:flex;align-items:center;gap:9px;padding:9px 8px;margin-bottom:6px;border:1px solid rgba(255,255,255,.05);border-radius:13px;background:rgba(255,255,255,.025)"><b style="width:22px;text-align:center;color:#8d9abb;font-size:.65rem">'+(i+4)+'</b><img src="'+escX(avatarBoard(r.name,r.avatar))+'" style="width:34px;height:34px;border-radius:50%;object-fit:cover;background:#070b13"><div style="flex:1;min-width:0"><b style="display:block;font-size:.69rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escX(r.name)+'</b><span style="font-size:.58rem;color:#62d8ff;font-weight:800">'+r.xp.toLocaleString('id-ID')+' XP</span></div></div>'}).join('')}
+function giftModal(){var m=document.getElementById('lsEventModal');if(m)return m;m=document.createElement('div');m.id='lsEventModal';m.className='ls-xch-modal';m.innerHTML='<div class="ls-xch-box"><div class="ls-xch-head"><h3>Event Creator LStream</h3><button class="ls-xch-close" id="lsEventClose">×</button></div><div class="ls-event-title">EVENT CREATOR LSTREAM BERHADIAH PREMIUM</div><div class="ls-event-sub">Event permanen · kesempatan mendapatkan Premium & badge Creator</div><div class="ls-event-rules"><div class="ls-event-rule"><b>1</b><span>Upload video tentang LStream di TikTok dan YouTube.</span></div><div class="ls-event-rule"><b>2</b><span>Raih minimal <b>500 views</b> dan <b>20 likes</b> untuk mendapatkan 2 hari Premium — maksimal 3k views dan 50 likes.</span></div><div class="ls-event-rule"><b>3</b><span>Jika sudah meraih views dan likes minimal/maximal tersebut, kirim link video ke Gmail LStream.</span></div><div class="ls-event-rule"><b>4</b><span>Tidak boleh memakai link video orang lain.</span></div><div class="ls-event-rule"><b>5</b><span>Semakin rajin upload video tentang LStream semakin banyak peluang untuk mendapatkan banyak Premium dan badge Creator.</span></div></div><div class="ls-event-mail">Kirim link video ke: <b>Lstreamsupport@gmail.com</b></div></div>';document.body.appendChild(m);m.querySelector('#lsEventClose').onclick=function(){m.classList.remove('open')};m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open')});return m}
+function installHome(){ensureEconomy();var up=document.getElementById('userPanel');if(!up||!up.parentNode)return;if(!document.getElementById('lsHomeTools')){var wrap=document.createElement('div');wrap.id='lsHomeTools';wrap.innerHTML=renderBoardPreview();var next=document.querySelector('.hero');up.parentNode.parentNode.insertBefore(wrap,next||null);var bc=document.getElementById('lsBoardCard');if(bc)bc.onclick=function(){renderBoardModal('daily')}}if(!document.getElementById('lsEventFloat')){var d=document.createElement('div');d.id='lsEventFloat';d.className='ls-event-float';var svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#ffdc54"/><stop offset="1" stop-color="#ff8d21"/></linearGradient></defs><rect x="14" y="25" width="52" height="43" rx="8" fill="url(#g)"/><path d="M40 25v43M14 38h52" stroke="#fff3b0" stroke-width="5"/><path d="M40 25c-9-2-15-6-13-12 2-5 10-3 13 4 3-7 11-9 13-4 2 6-4 10-13 12Z" fill="#fff1a6"/></svg>';d.innerHTML='<button class="ls-gift-btn" id="lsGiftBtn"><img alt="Hadiah" src="data:image/svg+xml,'+encodeURIComponent(svg)+'"></button><button class="ls-gift-close" id="lsGiftClose">×</button><span class="ls-event-label">Event Permanen</span>';document.body.appendChild(d);document.getElementById('lsGiftBtn').onclick=function(){giftModal().classList.add('open')};document.getElementById('lsGiftClose').onclick=function(){d.remove()}}
+}
+function gamesModal(){var m=document.getElementById('lsGameModal');if(m)return m;m=document.createElement('div');m.id='lsGameModal';m.className='ls-xch-modal';m.innerHTML='<div class="ls-xch-box"><div class="ls-xch-head"><h3 id="lsGameTitle">Game LStream</h3><button class="ls-xch-close" id="lsGameClose">×</button></div><div id="lsGameBody"></div></div>';document.body.appendChild(m);m.querySelector('#lsGameClose').onclick=function(){m.classList.remove('open');clearInterval(window.__lsMoleTimer)};m.addEventListener('click',function(e){if(e.target===m){m.classList.remove('open');clearInterval(window.__lsMoleTimer)}});return m}
+function gameList(){var m=gamesModal();m.classList.add('open');m.querySelector('#lsGameTitle').textContent='Game LStream';m.querySelector('#lsGameBody').innerHTML='<div class="ls-game-list"><div class="ls-game-card" data-game="clicker"><div class="ls-game-img"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="27" fill="#2f7dff" opacity=".22"/><path d="M40 22v36M22 40h36" stroke="#7fb2ff" stroke-width="7" stroke-linecap="round"/></svg></div><div class="ls-game-name">Clicker</div><div class="ls-game-desc">Setiap 5 click dapat 3 berlian.</div></div><div class="ls-game-card" data-game="mole"><div class="ls-game-img"><svg viewBox="0 0 80 80"><ellipse cx="40" cy="49" rx="27" ry="17" fill="#5c3827"/><circle cx="31" cy="43" r="4"/><circle cx="49" cy="43" r="4"/><path d="M31 55c6 5 12 5 18 0" fill="none" stroke="#f0c2a4" stroke-width="3"/></svg></div><div class="ls-game-name">Whack-a-Mole</div><div class="ls-game-desc">Pukul mole, naik level, reward makin besar.</div></div></div><button class="ls-game-shop-btn" id="lsGameShopBtn">💎 Buka LS Premium Shop</button>';m.querySelectorAll('[data-game]').forEach(function(c){c.onclick=function(){if(c.dataset.game==='clicker')openClicker();else openMole()}});m.querySelector('#lsGameShopBtn').onclick=openPremiumShop}
+function backGame(){gameList()}
+function openClicker(){var m=gamesModal();m.classList.add('open');ensureEconomy();m.querySelector('#lsGameTitle').textContent='Clicker';var g=userState.gameData.clicker;var clicks=g.clicks||0;m.querySelector('#lsGameBody').innerHTML='<div class="ls-game-topbar"><button class="ls-game-back" id="lsGameBack">←</button><b>Clicker</b></div><div class="ls-clicker-wrap"><div class="ls-click-count" id="lsClickCount">'+clicks+'</div><div class="ls-click-label">click tersimpan</div><button class="ls-click-btn" id="lsClickBtn">CLICK</button><div class="ls-game-note">Setiap 5 click = +3 berlian</div></div><button class="ls-game-shop-btn" id="lsGameShopBtn">💎 Buka LS Premium Shop</button>';m.querySelector('#lsGameBack').onclick=backGame;m.querySelector('#lsClickBtn').onclick=function(){ensureEconomy();g=userState.gameData.clicker;g.clicks=(g.clicks||0)+1;g.total=(g.total||0)+1;if(g.clicks%5===0){userState.diamonds=(userState.diamonds||0)+3;if(typeof toastClan==='function')toastClan('+3 berlian dari Clicker.')}if(typeof saveUser==='function')saveUser(userState);m.querySelector('#lsClickCount').textContent=g.clicks;updateBalanceUI()};m.querySelector('#lsGameShopBtn').onclick=openPremiumShop}
+function openMole(){var m=gamesModal();m.classList.add('open');clearInterval(window.__lsMoleTimer);ensureEconomy();var g=userState.gameData.mole;var need=10+((g.level||1)-1)*10;var reward=50*(g.level||1);m.querySelector('#lsGameTitle').textContent='Whack-a-Mole';m.querySelector('#lsGameBody').innerHTML='<div class="ls-game-topbar"><button class="ls-game-back" id="lsGameBack">←</button><b>Whack-a-Mole</b><span style="margin-left:auto;font-size:.62rem;color:#ffd54a">Lv '+g.level+'</span></div><div style="font-size:.67rem;color:#8290ad">Pukul <b id="lsMoleHits">'+g.hits+'</b> / '+need+' · Reward <b style="color:#62d8ff">'+reward+' berlian</b></div><div class="ls-mole-board" id="lsMoleBoard">'+Array.from({length:9},function(){return '<button class="ls-hole"><span class="mole"></span></button>'}).join('')+'</div><div class="ls-game-note">Setiap naik level, jumlah pukulan bertambah 10 dan reward bertambah 50 berlian.</div>';m.querySelector('#lsGameBack').onclick=backGame;var holes=[].slice.call(m.querySelectorAll('.ls-hole'));var active=-1;function pop(){holes.forEach(function(h){h.classList.remove('active')});active=Math.floor(Math.random()*holes.length);holes[active].classList.add('active')}holes.forEach(function(h){h.onclick=function(){if(!h.classList.contains('active'))return;g.hits=(g.hits||0)+1;m.querySelector('#lsMoleHits').textContent=g.hits;h.classList.remove('active');if(g.hits>=need){userState.diamonds=(userState.diamonds||0)+reward;g.wins=(g.wins||0)+1;g.level=(g.level||1)+1;g.hits=0;if(typeof saveUser==='function')saveUser(userState);if(typeof toastClan==='function')toastClan('Menang! +'+reward+' berlian. Level mole naik.');openMole();updateBalanceUI()}else{if(typeof saveUser==='function')saveUser(userState);pop();updateBalanceUI()}}});pop();window.__lsMoleTimer=setInterval(pop,900)}
+function premiumShopHtml(){ensureEconomy();var items=[{d:100,n:'Premium 3 Hari',desc:'Aktif selama 3 hari',days:3},{d:220,n:'Premium 7 Hari',desc:'Aktif selama 7 hari',days:7},{d:800,n:'Premium 30 Hari',desc:'Aktif selama 30 hari',days:30}];var h='<div class="ls-premium-shop">'+items.map(function(x){return '<div class="ls-shop-line"><div><b>'+x.n+'</b><small>'+x.desc+'</small></div><button class="ls-shop-buy" data-prem-days="'+x.days+'">'+x.d+' 💎</button></div>'}).join('')+'</div><div class="ls-cash-section"><div class="ls-cash-title">Cash Shop · Cash: '+Number(userState.cash||0).toLocaleString('id-ID')+'</div><div class="ls-premium-shop"><div class="ls-shop-line"><div><b>Banner Aurora</b><small>Ganti banner panel akun</small></div><button class="ls-shop-buy cash" data-cash-item="banner">500 Cash</button></div><div class="ls-shop-line"><div><b>Nametag Biru</b><small>Warna username biru</small></div><button class="ls-shop-buy cash" data-cash-item="blue">250 Cash</button></div><div class="ls-shop-line"><div><b>Nametag Gold</b><small>Warna username gold</small></div><button class="ls-shop-buy cash" data-cash-item="gold">350 Cash</button></div></div></div>';return h}
+function openPremiumShop(){var m=gamesModal();m.classList.add('open');m.querySelector('#lsGameTitle').textContent='LS Premium Shop';m.querySelector('#lsGameBody').innerHTML='<div class="ls-game-topbar"><button class="ls-game-back" id="lsGameBack">←</button><b>Premium & Cosmetic</b><span style="margin-left:auto;font-size:.65rem;color:#62d8ff">'+Number(userState.diamonds||0).toLocaleString('id-ID')+' 💎</span></div>'+premiumShopHtml();m.querySelector('#lsGameBack').onclick=backGame;m.querySelectorAll('[data-prem-days]').forEach(function(b){b.onclick=function(){var days=Number(b.dataset.premDays),price=days===3?100:days===7?220:800;if((userState.diamonds||0)<price){alert('Berlian tidak cukup.');return}userState.diamonds-=price;if(typeof addPremiumDays==='function')addPremiumDays(days);userState.premiumClaimed=true;if(typeof saveUser==='function')saveUser(userState);if(typeof renderUserPanel==='function')renderUserPanel();if(typeof renderAccountPage==='function')renderAccountPage();openPremiumShop();updateBalanceUI()}});m.querySelectorAll('[data-cash-item]').forEach(function(b){b.onclick=function(){var item=b.dataset.cashItem,price=item==='banner'?500:item==='blue'?250:350;if((userState.cash||0)<price){alert('Cash tidak cukup.');return}userState.cash-=price;if(item==='banner')userState.bannerStyle='aurora';else userState.nametagColor=item; if(typeof saveUser==='function')saveUser(userState);if(typeof renderUserPanel==='function')renderUserPanel();if(typeof renderAccountPage==='function')renderAccountPage();openPremiumShop();updateBalanceUI()}})}
+function installGamesButton(){var qp=document.getElementById('quickPanel');if(!qp||document.getElementById('quickGameBtn'))return;var b=document.createElement('button');b.className='quick-panel__item';b.id='quickGameBtn';b.innerHTML=(window.ICON?ICON.play:'▶')+'<span>GAME</span>';qp.appendChild(b);b.onclick=function(e){e.stopPropagation();if(typeof closeQuickPanel==='function')closeQuickPanel();gameList()}}
+function updateBalanceUI(){var h=document.getElementById('lsHomeTools');if(h){var old=h.querySelector('.ls-balance-card');if(old){var wrap=document.createElement('div');wrap.innerHTML=balanceHtml();old.replaceWith(wrap.firstElementChild)}}}
+function patchPremiumClaim(){var orig=window.renderSettingsPage;if(typeof orig!=='function'||orig.__lsXchClaim)return;var wrapped=function(){ensureEconomy();orig.apply(this,arguments);setTimeout(function(){var box=document.querySelector('#settingsContent .settings-box');var btn=document.getElementById('claimPremiumBtn');if(btn&&userState.premiumClaimed){btn.disabled=true;btn.textContent='✓ Premium Starter Sudah Diklaim';btn.style.background='linear-gradient(135deg,#1d2a40,#162033)';btn.style.color='#8ea0bf'}var ci=document.getElementById('checkinOpenBtn');if(ci&&typeof isTodayChecked==='function'&&isTodayChecked()){ci.disabled=true;ci.textContent='✓ Sudah Check-in Hari Ini'}},20)};wrapped.__lsXchClaim=true;window.renderSettingsPage=wrapped}
+function patchClan(){if(typeof window.openClanInfo!=='function'||window.openClanInfo.__lsXch)return;var old=window.openClanInfo;var fn=function(c){var m=document.getElementById('lsClanFullModal');if(!m){m=document.createElement('div');m.id='lsClanFullModal';m.className='ls-clan-full-modal';document.body.appendChild(m)}var me=typeof getClanMember==='function'?getClanMember(c,userState.username):null;var top=(c.members||[]).slice().sort(function(a,b){return (b.donateToday||0)-(a.donateToday||0)}).slice(0,3);m.innerHTML='<div class="ls-clan-full-inner"><div class="ls-clan-full-head"><button class="ls-clan-full-back" id="lsClanFullBack">←</button><b>'+escX(c.name)+' · '+escX(c.tag)+'</b><span style="font-size:.6rem;color:#7f8ca7">Level '+c.level+'</span></div><div class="ls-clan-full-hero"><div style="display:flex;align-items:center;gap:10px">'+(typeof avatarFor==='function'?avatarFor(c.name,c.avatar).replace('<img','<img style="width:58px;height:58px;border-radius:16px;object-fit:cover;'):'')+'<div><div style="font-size:1.02rem;font-weight:950">'+escX(c.name)+'</div><div style="font-size:.65rem;color:#8d9abb;margin-top:3px">Tag '+escX(c.tag)+' · '+c.members.length+' Member</div></div></div><div class="ls-clan-full-actions"><button class="primary" id="lsFullClaim">💎 Claim Berlian</button><button id="lsFullDonate">💎 Donate</button><button id="lsFullTop">🏆 Top Donate</button><button id="lsFullDetail">👥 Member</button></div></div><div class="ls-clan-full-section"><h4>Top Donate Hari Ini</h4>'+top.map(function(x,i){return '<div class="ls-clan-mini-row">'+(typeof avatarFor==='function'?avatarFor(x.name,x.avatar):'')+'<div><b>'+(i+1)+'. '+escX(x.name)+'</b><span>'+Number(x.donateToday||0).toLocaleString('id-ID')+' berlian hari ini</span></div></div>'}).join('')+'</div><div class="ls-clan-full-section"><h4>Clan</h4><div style="font-size:.68rem;color:#9aa7c0;line-height:1.6">Total berlian: <b style="color:#65dcff">'+Number(c.diamonds||0).toLocaleString('id-ID')+'</b><br>Member: <b>'+c.members.length+'</b><br>Role kamu: <b>'+(me?escX(me.role):'Bukan member')+'</b></div></div>'+(me?'<button class="ls-clan-leave" id="lsFullLeave">Keluar Clan</button>':'')+'</div>';m.classList.add('open');m.querySelector('#lsClanFullBack').onclick=function(){m.classList.remove('open')};m.querySelector('#lsFullClaim').onclick=function(){if(typeof claimClan==='function')claimClan(c);setTimeout(function(){fn(c)},50)};m.querySelector('#lsFullDonate').onclick=function(){m.classList.remove('open');if(typeof openDonate==='function')openDonate(c)};m.querySelector('#lsFullTop').onclick=function(){m.classList.remove('open');if(typeof openClanDetail==='function')openClanDetail(c);setTimeout(function(){var t=document.querySelector('[data-detail-tab="top"]');if(t)t.click()},50)};m.querySelector('#lsFullDetail').onclick=function(){m.classList.remove('open');if(typeof openClanDetail==='function')openClanDetail(c)};var leave=m.querySelector('#lsFullLeave');if(leave)leave.onclick=function(){if(!confirm('Keluar dari clan ini?'))return;c.members=(c.members||[]).filter(function(x){return x.name!==userState.username});userState.clanId='';userState.clanRole='';if(typeof saveUser==='function')saveUser(userState);if(typeof storeSet==='function')storeSet(S);m.classList.remove('open');if(typeof renderClanEmpty==='function')renderClanEmpty();if(typeof toastClan==='function')toastClan('Kamu keluar dari clan.')}};fn.__lsXch=true;window.openClanInfo=fn;}
+function patchClanRequest(){if(typeof window.renderClanCard==='function'&&!window.renderClanCard.__lsXch){var old=window.renderClanCard;var fn=function(c){var joined=typeof getClanMember==='function'&&getClanMember(c,userState.username);var html=old(c);if(joined)html=html.replace(/<button class="ls-clan-request[^>]*data-request="[^"]+">[^<]*<\/button>/,'<button class="ls-clan-request sent" disabled>Sudah Bergabung</button>');return html};fn.__lsXch=true;window.renderClanCard=fn}
+if(typeof window.openClanDetail==='function'&&!window.openClanDetail.__lsXch){var oldD=window.openClanDetail;var fnD=function(c){oldD(c);setTimeout(function(){var joined=typeof getClanMember==='function'&&getClanMember(c,userState.username);var r=document.getElementById('lsClanDetailRequest');if(r&&joined)r.remove()},0)};fnD.__lsXch=true;window.openClanDetail=fnD}}
+function patchRoles(){if(window.BADGES){BADGES.creator={name:'Creator',cls:'badge--creator'};BADGES.sepuh={name:'Sepuh',cls:'badge--sepuh'}}if(typeof window.getPriorityBadge==='function'&&!window.getPriorityBadge.__lsXch){var old=window.getPriorityBadge;var fn=function(n){var bs=typeof getBadgesOf==='function'?getBadgesOf(n):[];if(bs.indexOf('developer')>=0)return {key:'developer',name:'Developer',cls:'badge--dev'};if(bs.indexOf('moderator')>=0)return {key:'moderator',name:'Moderator',cls:'badge--mod'};if(bs.indexOf('tester')>=0)return {key:'tester',name:'Tester',cls:'badge--tester'};if(bs.indexOf('creator')>=0)return {key:'creator',name:'Creator',cls:'badge--creator'};if(bs.indexOf('sepuh')>=0)return {key:'sepuh',name:'Sepuh',cls:'badge--sepuh'};return old(n)};fn.__lsXch=true;window.getPriorityBadge=fn}}
+function patchDev(){if(typeof window.renderDevUserRow==='function'&&!window.renderDevUserRow.__lsXch){var old=window.renderDevUserRow;var fn=function(name){var h=old(name);var c=typeof hasBadge==='function'&&hasBadge(name,'creator'),s=typeof hasBadge==='function'&&hasBadge(name,'sepuh');var extra='<button class="dev-mini-btn ls-role-creator" data-dev-give-creator="'+escX(name)+'">'+(c?'−Creator':'+Creator')+'</button><button class="dev-mini-btn ls-role-sepuh" data-dev-give-sepuh="'+escX(name)+'">'+(s?'−Sepuh':'+Sepuh')+'</button>';return h.replace('</div></div>',extra+'</div></div>')};fn.__lsXch=true;window.renderDevUserRow=fn}
+if(typeof window.bindDevUserActions==='function'&&!window.bindDevUserActions.__lsXch){var oldB=window.bindDevUserActions;var fnB=function(){oldB();document.querySelectorAll('[data-dev-give-creator]').forEach(function(b){b.onclick=function(){var n=b.dataset.devGiveCreator;if(hasBadge(n,'creator'))removeBadgeFrom(n,'creator');else giveBadgeTo(n,'creator');renderSettingsPage()}});document.querySelectorAll('[data-dev-give-sepuh]').forEach(function(b){b.onclick=function(){var n=b.dataset.devGiveSepuh;if(hasBadge(n,'sepuh'))removeBadgeFrom(n,'sepuh');else giveBadgeTo(n,'sepuh');renderSettingsPage()}})};fnB.__lsXch=true;window.bindDevUserActions=fnB}}
+function patchCosmetics(){if(typeof window.renderUserPanel==='function'&&!window.renderUserPanel.__lsXch){var o=window.renderUserPanel;var f=function(){o.apply(this,arguments);setTimeout(function(){var n=document.querySelector('.user-panel__name');if(n&&userState.nametagColor)n.style.color=userState.nametagColor==='gold'?'#ffd54a':userState.nametagColor==='blue'?'#55a7ff':'';if(userState.bannerStyle==='aurora'&&window.userPanel){userPanel.style.background='linear-gradient(135deg,rgba(35,91,190,.65),rgba(103,55,185,.58)),linear-gradient(135deg,#0f1626,#16213a)'}})};f.__lsXch=true;window.renderUserPanel=f}}
+function scrollFix(){var save=function(){window.__lsXchScroll=window.scrollY||document.documentElement.scrollTop||0};document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('#settingsBtn,#friendsBtn,#notifBell,#menuBtn,.bottom-nav__item,#lsClanChatInfoBtn,#lsClanInfoBtn');if(t)save()},true);['settingsOverlay','accountOverlay','chatOverlay','friendsOverlay','notifOverlay','searchOverlay'].forEach(function(id){var el=document.getElementById(id);if(!el)return;new MutationObserver(function(){if(!el.classList.contains('open')&&typeof window.__lsXchScroll==='number'){var y=window.__lsXchScroll;setTimeout(function(){window.scrollTo(0,y)},0)}}).observe(el,{attributes:true,attributeFilter:['class']})})}
+function accountSafety(){var b=document.querySelector('.bottom-nav__item[data-tab=\"account\"]');if(b&&!b.__lsXchAcct){b.__lsXchAcct=true;b.addEventListener('click',function(){setTimeout(function(){try{if(window.accountOverlay&&accountOverlay.classList.contains('open')&&accountContent&&!accountContent.innerHTML.trim()&&typeof renderAccountPage==='function')renderAccountPage()}catch(e){}},80)},true)}}
+function boot(){ensureEconomy();accountSafety();patchRoles();patchDev();patchPremiumClaim();patchClan();patchClanRequest();patchCosmetics();installGamesButton();installHome();scrollFix();setTimeout(function(){installHome();installGamesButton()},350);setInterval(function(){try{ensureEconomy();updateBalanceUI()}catch(e){}},2500)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else setTimeout(boot,80);
 })();
 </script>
 
+<style id="ls-final-fix-2026">
+/* FINAL PATCH — only target the requested components */
+.ls-home-tools{gap:14px;margin-left:auto!important;margin-right:auto!important;width:calc(100% - 28px);max-width:420px}
+.ls-board-card{max-width:360px!important;width:100%;padding:13px!important}
+.ls-board-preview{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.ls-board-mini{padding:8px 5px!important}
+.ls-board-mini img{width:32px!important;height:32px!important}
+#lsBoardModal{inset:0 0 calc(70px + env(safe-area-inset-bottom,0px)) 0!important;align-items:stretch!important;justify-content:stretch!important;padding:0!important;background:rgba(2,5,11,.88)!important}
+#lsBoardModal .ls-xch-box{width:100%;max-width:none;height:100%;max-height:none;border:0;border-radius:0;background:linear-gradient(160deg,#101a2e,#060b15);padding:14px 14px 24px;overflow:auto}
+#lsBoardModal .ls-xch-head{position:sticky;top:0;z-index:3;padding:2px 0 12px;background:linear-gradient(#101a2e 82%,transparent);margin-bottom:4px}
+#lsBoardModal #lsBoardPodium .ls-board-preview{max-width:520px;margin:auto}
+#lsBoardModal #lsBoardList{padding-bottom:8px}
+#lsEventFloat{right:12px!important;bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
+#lsEventFloat .ls-gift-btn{background:linear-gradient(145deg,#171d2b,#0c121e)!important}
+#lsEventFloat .ls-event-label{display:inline-block!important;background:#ffd54a!important;color:#111827!important}
+/* Dev actions: keep ALL old actions visible; Creator/Sepuh live inside the same grid. */
+#settingsOverlay .dev-user-row{display:grid!important;grid-template-columns:38px minmax(0,1fr)!important;gap:8px!important}
+#settingsOverlay .dev-user-row__actions{grid-column:1/-1!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important;gap:6px!important}
+#settingsOverlay .dev-user-row__actions .dev-mini-btn{min-width:0!important;width:100%!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important}
+@media(min-width:500px){#settingsOverlay .dev-user-row__actions{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+/* Badge/name colors */
+.uname--creator{color:#55a7ff!important;text-shadow:0 0 9px rgba(47,125,255,.5)}
+.uname--sepuh{color:#ffd54a!important;text-shadow:0 0 9px rgba(255,213,74,.5)}
+.uname--premium{color:inherit!important;background:none!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important}
+.badge--creator,.badge--sepuh{position:relative;overflow:hidden}
+.badge--creator:after,.badge--sepuh:after{content:"";position:absolute;inset:-80% -30%;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.75) 47%,transparent 58%);transform:translateX(-70%);animation:lsBadgeShine 2.2s linear infinite;pointer-events:none}
+@keyframes lsBadgeShine{to{transform:translateX(70%)}}
+/* Account page must inherit the chosen background/banner too. */
+.acct__hero.ls-account-banner{background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
+/* Joined clan never shows Request Clan. */
+.ls-clan-request-big.ls-joined-disabled{opacity:.7!important;background:#182238!important;border-color:rgba(255,255,255,.08)!important;color:#91a0bd!important}
+</style>
+<script id="ls-final-fix-2026-js">
+(function(){'use strict';
+function Fesc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function Fsafe(fn){try{return fn()}catch(e){return null}}
+function Fsave(){Fsafe(function(){if(typeof saveUser==='function')saveUser(userState)})}
+
+/* 1) Real persistent check-in/claim status. */
+function refreshRewardStatus(){
+  if(!window.userState||!userState.loggedIn)return;
+  var claim=document.getElementById('claimPremiumBtn');
+  if(claim){
+    if(userState.premiumClaimed){claim.disabled=true;claim.textContent='✓ Premium Starter Sudah Diklaim';claim.classList.add('claimed');}
+    else {claim.disabled=false;claim.textContent='♛ Claim 3 Hari Gratis';claim.classList.remove('claimed');}
+  }
+  var ci=document.getElementById('checkinOpenBtn');
+  if(ci&&typeof isTodayChecked==='function'&&isTodayChecked()){ci.disabled=true;ci.textContent='✓ Sudah Check-in Hari Ini';}
+}
+function patchRewards(){
+  if(typeof window.renderSettingsPage==='function'&&!window.renderSettingsPage.__finalRewards){
+    var old=window.renderSettingsPage;
+    var fn=function(){old.apply(this,arguments);setTimeout(refreshRewardStatus,30);};fn.__finalRewards=true;window.renderSettingsPage=fn;
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('#claimPremiumBtn,#checkinOpenBtn');if(!b)return;
+    setTimeout(refreshRewardStatus,80);
+  },true);
+}
+
+/* 2) Account overlay: render every time, then apply the same selected background. */
+function applyAccountBanner(){
+  Fsafe(function(){
+    var hero=document.querySelector('#accountOverlay .acct__hero');if(!hero)return;
+    var s=typeof getSettings==='function'?getSettings():{};
+    var bg=s.bgUrl||'';
+    if(bg){hero.classList.add('ls-account-banner');hero.style.backgroundImage='url("'+String(bg).replace(/"/g,'%22')+'")';}
+    else if(userState.bannerStyle==='aurora'){
+      hero.classList.add('ls-account-banner');hero.style.backgroundImage='linear-gradient(135deg,rgba(35,91,190,.65),rgba(103,55,185,.58)),linear-gradient(135deg,#0f1626,#16213a)';
+    }
+  });
+}
+function patchAccount(){
+  var btn=document.querySelector('.bottom-nav__item[data-tab="account"]');
+  if(btn&&!btn.__finalAcct){btn.__finalAcct=true;btn.addEventListener('click',function(){
+    setTimeout(function(){Fsafe(function(){if(typeof renderAccountPage==='function')renderAccountPage();applyAccountBanner()})},80);
+    setTimeout(applyAccountBanner,250);
+  },true);}
+  if(typeof window.renderAccountPage==='function'&&!window.renderAccountPage.__finalAcct){
+    var old=window.renderAccountPage;var fn=function(){var r=old.apply(this,arguments);setTimeout(applyAccountBanner,20);return r};fn.__finalAcct=true;window.renderAccountPage=fn;
+  }
+}
+
+/* 3) Dev row: replace the broken wrapper rather than appending buttons outside the actions grid. */
+function patchDevRow(){
+  if(typeof window.renderDevUserRow!=='function'||window.renderDevUserRow.__finalDev)return;
+  var fn=function(name){
+    var badges=Fsafe(function(){return renderBadgesOf(name)})||'';
+    var isSelf=name===userState.username,b=Fsafe(function(){return isUserBanned(name)}),m=Fsafe(function(){return isUserMuted(name)});
+    var status=b?' <span style="font-size:.55rem;color:#fca5a5;font-weight:800;padding:2px 6px;border-radius:6px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3)">BANNED</span>':(m?' <span style="font-size:.55rem;color:#ffb855;font-weight:800;padding:2px 6px;border-radius:6px;background:rgba(255,140,0,.15);border:1px solid rgba(255,140,0,.3)">MUTED</span>':'');
+    function has(k){return Fsafe(function(){return hasBadge(name,k)})||false}
+    var html='<div class="dev-user-row"><div class="dev-user-row__avatar">'+Fesc((name||'?').charAt(0).toUpperCase())+'</div><div class="dev-user-row__info"><div class="dev-user-row__name">'+Fesc(name)+(isSelf?' <span style="font-size:.55rem;color:#7ab0ff">(Kamu)</span>':'')+status+'</div><div class="dev-user-row__id">'+(badges||'<span style="color:var(--text-muted);font-size:.62rem">No badge</span>')+'</div></div><div class="dev-user-row__actions">';
+    html+='<button class="dev-mini-btn dev-mini-btn--danger" data-dev-ban="'+Fesc(name)+'">Ban</button>';
+    html+='<button class="dev-mini-btn" data-dev-mute="'+Fesc(name)+'">Mute</button>';
+    html+='<button class="dev-mini-btn dev-mini-btn--danger" data-dev-give-dev="'+Fesc(name)+'">'+(has('developer')?'−Dev':'+Dev')+'</button>';
+    html+='<button class="dev-mini-btn dev-mini-btn--success" data-dev-give-mod="'+Fesc(name)+'">'+(has('moderator')?'−Mod':'+Mod')+'</button>';
+    html+='<button class="dev-mini-btn dev-mini-btn--purple" data-dev-give-tester="'+Fesc(name)+'">'+(has('tester')?'−Tester':'+Tester')+'</button>';
+    html+='<button class="dev-mini-btn" data-dev-give-creator="'+Fesc(name)+'" style="color:#72b9ff;border-color:rgba(47,125,255,.35);background:rgba(47,125,255,.10)">'+(has('creator')?'−Creator':'+Creator')+'</button>';
+    html+='<button class="dev-mini-btn" data-dev-give-sepuh="'+Fesc(name)+'" style="color:#ffd54a;border-color:rgba(255,213,74,.35);background:rgba(255,213,74,.09)">'+(has('sepuh')?'−Sepuh':'+Sepuh')+'</button>';
+    html+='<button class="dev-mini-btn" data-dev-unlimited-diamond="'+Fesc(name)+'" style="color:#65dcff;border-color:rgba(101,220,255,.3);background:rgba(101,220,255,.08)">'+(Fsafe(function(){return hasDevUnlimitedDiamond(name)})?'−∞ Berlian':'+∞ Berlian')+'</button>';
+    if(b)html+='<button class="dev-mini-btn dev-mini-btn--success" data-dev-unban="'+Fesc(name)+'">Unban</button>';
+    if(m)html+='<button class="dev-mini-btn dev-mini-btn--success" data-dev-unmute="'+Fesc(name)+'">Unmute</button>';
+    return html+'</div></div>';
+  };
+  fn.__finalDev=true;window.renderDevUserRow=fn;
+}
+function bindFinalDev(){
+  document.querySelectorAll('[data-dev-give-creator],[data-dev-give-sepuh]').forEach(function(b){
+    if(b.__finalBound)return;b.__finalBound=true;b.onclick=function(){
+      var n=b.dataset.devGiveCreator||b.dataset.devGiveSepuh,k=b.dataset.devGiveCreator?'creator':'sepuh';
+      Fsafe(function(){if(hasBadge(n,k))removeBadgeFrom(n,k);else giveBadgeTo(n,k);});
+      if(typeof renderSettingsPage==='function')renderSettingsPage();
+    };
+  });
+}
+function patchDev(){patchDevRow();document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-dev-give-creator],[data-dev-give-sepuh]');if(!b)return;e.stopImmediatePropagation();var n=b.dataset.devGiveCreator||b.dataset.devGiveSepuh,k=b.dataset.devGiveCreator?'creator':'sepuh';Fsafe(function(){if(hasBadge(n,k))removeBadgeFrom(n,k);else giveBadgeTo(n,k);});setTimeout(function(){if(typeof renderSettingsPage==='function')renderSettingsPage();},0)},true);document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('[data-dev-unban],[data-dev-unmute]'))setTimeout(function(){if(typeof renderSettingsPage==='function')renderSettingsPage()},80)},true);}
+
+/* 4) Roles: Creator/Sepuh priority and matching username colors; premium = blue check only. */
+function patchRoleRendering(){
+  if(window.BADGES){BADGES.creator={name:'Creator',cls:'badge--creator'};BADGES.sepuh={name:'Sepuh',cls:'badge--sepuh'};}
+  if(typeof window.getPriorityBadge==='function'&&!window.getPriorityBadge.__finalRole){
+    var old=window.getPriorityBadge;var fn=function(n){var bs=Fsafe(function(){return getBadgesOf(n)})||[];
+      if(bs.indexOf('developer')>=0)return {key:'developer',name:'Developer',cls:'badge--dev'};
+      if(bs.indexOf('moderator')>=0)return {key:'moderator',name:'Moderator',cls:'badge--mod'};
+      if(bs.indexOf('tester')>=0)return {key:'tester',name:'Tester',cls:'badge--tester'};
+      if(bs.indexOf('creator')>=0)return {key:'creator',name:'Creator',cls:'badge--creator'};
+      if(bs.indexOf('sepuh')>=0)return {key:'sepuh',name:'Sepuh',cls:'badge--sepuh'};
+      return old(n);
+    };fn.__finalRole=true;window.getPriorityBadge=fn;
+  }
+  if(typeof window.getUsernameClass==='function'&&!window.getUsernameClass.__finalName){
+    var oldN=window.getUsernameClass;var fnN=function(n){var p=Fsafe(function(){return getPriorityBadge(n)});return p?'uname uname--'+p.key:((Fsafe(function(){return isUserPremium(n)})?'uname uname--premium':oldN(n)));};fnN.__finalName=true;window.getUsernameClass=fnN;
+  }
+}
+
+/* 5) Clan full screen above the black bottom nav + never show Request when joined. */
+function fixClanUI(){
+  var c=Fsafe(function(){return typeof currentClan==='function'?currentClan():null});
+  document.querySelectorAll('#lsClanDetailRequest').forEach(function(r){var joined=Fsafe(function(){return c&&getClanMember(c,userState.username)});if(joined){r.disabled=true;r.classList.add('ls-joined-disabled');r.textContent='✓ Sudah Bergabung';r.onclick=null;}});
+  var info=document.getElementById('lsClanFullModal');if(info)info.style.bottom='calc(70px + env(safe-area-inset-bottom,0px))';
+}
+function patchClanInfo(){
+  if(typeof window.openClanInfo==='function'&&!window.openClanInfo.__finalClan){
+    var old=window.openClanInfo;var fn=function(c){
+      old(c);
+      setTimeout(function(){
+        /* If the old renderer opened its own modal, close it and use the intended full clan screen. */
+        var oldModal=document.getElementById('lsClanInfoModal');if(oldModal)oldModal.classList.remove('open');
+        var m=document.getElementById('lsClanFullModal');if(m){m.classList.add('open');m.style.bottom='calc(70px + env(safe-area-inset-bottom,0px))';}
+        fixClanUI();
+      },0);
+    };fn.__finalClan=true;window.openClanInfo=fn;
+  }
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('#lsClanDetailRequest');if(t){setTimeout(fixClanUI,30);}
+  },true);
+}
+
+/* 6) Prevent tab/overlay navigation from jumping the page to the bottom. */
+function patchScroll(){
+  var last=0;
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('.bottom-nav__item,#settingsBtn,#friendsBtn,#notifBell,#menuBtn,#lsClanChatInfoBtn,#lsClanInfoBtn');
+    if(t){last=window.scrollY||document.documentElement.scrollTop||0;setTimeout(function(){if(document.body.classList.contains('logged-in'))window.scrollTo(0,last)},20);setTimeout(function(){if(document.body.classList.contains('logged-in'))window.scrollTo(0,last)},180);}
+  },true);
+}
+
+function bootFinal(){patchRewards();patchAccount();patchDev();bindFinalDev();patchRoleRendering();patchClanInfo();patchScroll();setTimeout(function(){patchAccount();bindFinalDev();refreshRewardStatus();fixClanUI();},250);}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootFinal);else setTimeout(bootFinal,120);
+})();
+</script>
 </body>
 </html>
