@@ -1186,19 +1186,28 @@ function getProgressStore() { try { return JSON.parse(SafeStorage.getItem(STORAG
 function saveProgressStore(s) { SafeStorage.setItem(STORAGE_PROGRESS, JSON.stringify(s)); }
 function getEpisodeProgress(animeId, epNum) { var s = getProgressStore(); return s[animeId + ":" + epNum] || null; }
 function setEpisodeProgress(animeId, epNum, percent, currentTime, duration) { var s = getProgressStore(); s[animeId + ":" + epNum] = { percent: percent, currentTime: currentTime, duration: duration, time: Date.now() }; saveProgressStore(s); }
-function fetchJikan(ep) {
+function fetchJikan(ep, attempt) {
+  attempt = attempt || 0;
   return fetch(JIKAN_URL + ep)
     .then(function (r) {
-      if (!r.ok) throw new Error("HTTP " + r.status);
+      if (!r.ok) {
+        var err = new Error("HTTP " + r.status); err.status = r.status; throw err;
+      }
       return r.json();
     })
     .then(function (j) {
-      return {
-        data: Array.isArray(j.data) ? j.data : (j.data ? [j.data] : []),
-        pagination: j.pagination || null
-      };
+      /* Keep Jikan's response shape intact: list endpoints return an array,
+       * while /anime/{id} returns one object. */
+      return { data: j && j.data != null ? j.data : [], pagination: j && j.pagination ? j.pagination : null };
     })
-    .catch(function () { return null; });
+    .catch(function (err) {
+      /* Jikan applies a rate limit. A single short retry prevents a burst of
+       * Home requests from making Search/Detail appear empty. */
+      if (attempt < 1 && err && (err.status === 429 || err.status === 503)) {
+        return new Promise(function (resolve) { setTimeout(resolve, 900); }).then(function () { return fetchJikan(ep, attempt + 1); });
+      }
+      return null;
+    });
 }
 
 /*
@@ -1242,6 +1251,7 @@ function normalizeAnime(a) {
 function normalizeAnimeList(list) {
   return Array.isArray(list) ? list.map(normalizeAnime).filter(function (a) { return a.mal_id; }) : [];
 }
+function normalizeAnimeSingle(a) { return a && !Array.isArray(a) ? normalizeAnime(a) : null; }
 function fetchAniList(title) { var q = "query ($s: String) { Media(search: $s, type: ANIME) { id averageScore popularity favourites studios(isMain: true) { nodes { name } } } }"; return fetch(ANILIST_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: q, variables: { s: title } }) }).then(function (r) { return r.json(); }).then(function (j) { return (j.data && j.data.Media) || null; }).catch(function () { return null; }); }
 var FALLBACK_ANIME = [{ mal_id: 1, title: "Frieren: Beyond Journey's End", images: { jpg: { image_url: "" } }, score: 9.3, episodes: 28, type: "TV" },{ mal_id: 2, title: "Jujutsu Kaisen", images: { jpg: { image_url: "" } }, score: 8.6, episodes: 24, type: "TV" }];
 
@@ -1819,7 +1829,28 @@ function loadMainListPage() {
 }
 function resetMainListAndLoad() { state.page = 1; state.hasNextPage = true; renderSkeletons(mainGrid, 6); loadMainListPage(); }
 function renderHero(a) { state.heroAnimeData = a; if (heroTitle) heroTitle.textContent = a.title; if (heroDesc) heroDesc.textContent = a.synopsis ? a.synopsis.slice(0, 180) + "..." : "—"; var url = a.images && a.images.jpg && a.images.jpg.large_image_url; if (url) $("hero").style.backgroundImage = "linear-gradient(to right, #0f0f1acc, #0f0f1a55), url('" + url + "')"; }
-function openAnimeModal(id) { try { if (modalBodyContent) modalBodyContent.innerHTML = '<p style="padding:20px 0;color:var(--text-muted);">Memuat...</p>'; if (episodeSection) episodeSection.style.display = "none"; if (anilistSection) anilistSection.style.display = "none"; if (modal) modal.classList.add("open"); if (modalBody) modalBody.scrollTop = 0; fetchJikan("/anime/" + id).then(function (r) { if (!r || !r.data || !modalBodyContent) return; var a = r.data; state.currentAnimeData = a; var gT = (a.genres || []).map(function (g) { return '<span class="genre-tag">' + esc(g.name) + '</span>'; }).join(""); modalBodyContent.innerHTML = '<img class="modal__poster" src="' + esc(_lg(a.images)) + '" onerror="this.src=\'' + PLACEHOLDER_IMG + '\'"><div class="modal__info"><h2>' + esc(a.title) + '</h2><p style="color:var(--text-muted);font-size:.8rem;">' + esc(a.title_japanese || "") + '</p><p style="margin-top:6px;"><strong>Skor:</strong> ' + (a.score != null ? a.score : "N/A") + '</p><p><strong>Episode:</strong> ' + (a.episodes != null ? a.episodes : "?") + '</p><div class="modal__genres">' + gT + '</div></div><div class="modal__synopsis-full"><h3>Sinopsis</h3><p class="modal__synopsis" id="modalSynopsisText">' + esc(a.synopsis || "Tidak ada sinopsis.") + '</p><button class="btn btn--ghost btn--sm" id="modalSynopsisBtn" style="margin-top:10px;">Baca Selengkapnya</button></div>'; var sb = $("modalSynopsisBtn"); if (sb) sb.addEventListener("click", function () { var sy = $("modalSynopsisText"); if (!sy) return; sy.classList.toggle("expanded"); sb.textContent = sy.classList.contains("expanded") ? "Sembunyikan" : "Baca Selengkapnya"; }); updateFavBtn(); loadEpisodes(id); loadAniListInfo(a.title); }); } catch (e) {} }
+function openAnimeModal(id) {
+  try {
+    if (modalBodyContent) modalBodyContent.innerHTML = '<p style="padding:20px 0;color:var(--text-muted);">Memuat...</p>';
+    if (episodeSection) episodeSection.style.display = "none";
+    if (anilistSection) anilistSection.style.display = "none";
+    if (modal) modal.classList.add("open");
+    if (modalBody) modalBody.scrollTop = 0;
+    fetchJikan("/anime/" + id).then(function (r) {
+      if (!r || !r.data || !modalBodyContent) return;
+      var a = normalizeAnimeSingle(r.data);
+      if (!a || !a.mal_id) { modalBodyContent.innerHTML = '<p style="padding:20px 0;color:var(--text-muted);">Data anime tidak tersedia.</p>'; return; }
+      state.currentAnimeData = a;
+      var gT = (a.genres || []).map(function (g) { return '<span class="genre-tag">' + esc(g.name) + '</span>'; }).join("");
+      modalBodyContent.innerHTML = '<img class="modal__poster" src="' + esc(_lg(a.images)) + '" onerror="this.src=\'' + PLACEHOLDER_IMG + '\'">' +
+        '<div class="modal__info"><h2>' + esc(a.title) + '</h2><p style="color:var(--text-muted);font-size:.8rem;">' + esc(a.title_japanese || "") + '</p><p style="margin-top:6px;"><strong>Skor:</strong> ' + (a.score != null ? a.score : "N/A") + '</p><p><strong>Episode:</strong> ' + (a.episodes != null ? a.episodes : "?") + '</p><div class="modal__genres">' + gT + '</div></div>' +
+        '<div class="modal__synopsis-full"><h3>Sinopsis</h3><p class="modal__synopsis" id="modalSynopsisText">' + esc(a.synopsis || "Tidak ada sinopsis.") + '</p><button class="btn btn--ghost btn--sm" id="modalSynopsisBtn" style="margin-top:10px;">Baca Selengkapnya</button></div>';
+      var sb = $("modalSynopsisBtn");
+      if (sb) sb.addEventListener("click", function () { var sy = $("modalSynopsisText"); if (!sy) return; sy.classList.toggle("expanded"); sb.textContent = sy.classList.contains("expanded") ? "Sembunyikan" : "Baca Selengkapnya"; });
+      updateFavBtn(); loadEpisodes(id); loadAniListInfo(a.title);
+    });
+  } catch (e) {}
+}
 function updateFavBtn() { if (!state.currentAnimeData || !modalFavBtn) return; modalFavBtn.classList.toggle("active", isFavorite(state.currentAnimeData.mal_id)); }
 function loadEpisodes(animeId) { if (!episodeSection || !episodeListEl) return; episodeSection.style.display = "block"; episodeListEl.innerHTML = '<p style="color:var(--text-muted);padding:20px 0;">Memuat episode...</p>'; fetchJikan("/anime/" + animeId + "/episodes?page=1").then(function (r) { var eps = (r && r.data) ? r.data : []; var totalEps = (state.currentAnimeData && state.currentAnimeData.episodes) || 12; if (eps.length === 0) { eps = []; for (var i = 1; i <= Math.min(totalEps, 24); i++) eps.push({ mal_id: i, title: "Episode " + i, aired: null }); } episodeListEl.innerHTML = ""; eps.forEach(function (ep) { var item = document.createElement("div"); item.className = "episode-item"; var prog = getEpisodeProgress(animeId, ep.mal_id); var progHtml = (prog && prog.percent > 0 && prog.percent < 98) ? '<div class="episode-item__progress" style="width:' + Math.min(100, prog.percent) + '%"></div>' : ''; item.innerHTML = progHtml + '<span class="episode-item__title">Eps ' + ep.mal_id + ': ' + esc(ep.title || "Untitled") + '</span><span class="episode-item__meta">' + (ep.aired ? new Date(ep.aired).toLocaleDateString("id-ID") : "-") + '</span><span class="episode-item__play">' + ICON.play + '</span>'; item.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); if (!state.currentAnimeData) return; if (modal) modal.classList.remove("open"); openWatch(state.currentAnimeData, ep, { resumeTime: (prog && prog.percent > 0 && prog.percent < 98) ? prog.currentTime : 0 }); }); episodeListEl.appendChild(item); }); }); }
 function loadAniListInfo(title) { if (!anilistSection || !anilistBody) return; anilistSection.style.display = "block"; anilistBody.innerHTML = '<p style="color:var(--text-muted);padding:10px 0;">Memuat...</p>'; fetchAniList(title).then(function (m) { if (!m) { anilistBody.innerHTML = ''; return; } var st = (m.studios && m.studios.nodes) ? m.studios.nodes.map(function (s) { return s.name; }).join(", ") : "-"; anilistBody.innerHTML = '<div class="anilist-grid"><div class="anilist-stat"><b>' + (m.averageScore || "-") + '</b>Skor</div><div class="anilist-stat"><b>' + (m.popularity || "-") + '</b>Populer</div><div class="anilist-stat"><b>' + (m.favourites || "-") + '</b>Favorit</div><div class="anilist-stat"><b>' + esc(st) + '</b>Studio</div></div>'; }); }
@@ -2137,7 +2168,22 @@ if (searchInput) searchInput.addEventListener("keydown", function (e) { if (e.ke
 if (accountContent) accountContent.addEventListener("click", function (e) { var tab = e.target.closest(".acct__tab"); if (!tab) return; accountContent.querySelectorAll(".acct__tab").forEach(function (t) { t.classList.remove("active"); }); tab.classList.add("active"); renderTabContent(tab.dataset.tab); });
 if (replyPopupInput) replyPopupInput.addEventListener("input", function () { autoResize(this); });
 if (typeof IntersectionObserver !== "undefined" && scrollSentinel) { new IntersectionObserver(function (entries) { entries.forEach(function (entry) { if (entry.isIntersecting) loadMainListPage(); }); }, { rootMargin: "300px" }).observe(scrollSentinel); }
-function handleSearch() { try { var k = searchInput ? searchInput.value.trim() : ""; if (!k) return; renderSkeletons(searchResults, 4); fetchJikan("/anime?q=" + encodeURIComponent(k) + "&limit=12").then(function (r) { if (!searchResults) return; searchResults.innerHTML = ""; var items = normalizeAnimeList(r && r.data); if (!items.length) return; var grid = document.createElement("div"); grid.className = "card-grid"; renderAnimeGrid(items, grid); searchResults.appendChild(grid); }); } catch (e) {} }
+function handleSearch() {
+  try {
+    var k = searchInput ? searchInput.value.trim() : "";
+    if (!k || !searchResults) return;
+    renderSkeletons(searchResults, 4);
+    fetchJikan("/anime?q=" + encodeURIComponent(k) + "&limit=12").then(function (r) {
+      if (!searchResults) return;
+      searchResults.innerHTML = "";
+      var items = normalizeAnimeList(r && r.data);
+      if (!items.length) { searchResults.innerHTML = '<p style="color:var(--text-muted);padding:20px;">Anime tidak ditemukan.</p>'; return; }
+      var grid = document.createElement("div"); grid.className = "card-grid";
+      renderAnimeGrid(items, grid); searchResults.appendChild(grid);
+    }).catch(function () { if (searchResults) searchResults.innerHTML = '<p style="color:var(--text-muted);padding:20px;">Pencarian gagal. Coba lagi.</p>'; });
+  } catch (e) { if (searchResults) searchResults.innerHTML = '<p style="color:var(--text-muted);padding:20px;">Pencarian gagal. Coba lagi.</p>'; }
+}
+
 
 /* ===== LStream 6.7 visual/identity patch ===== */
 function showAccountInfo() {
