@@ -1186,7 +1186,62 @@ function getProgressStore() { try { return JSON.parse(SafeStorage.getItem(STORAG
 function saveProgressStore(s) { SafeStorage.setItem(STORAGE_PROGRESS, JSON.stringify(s)); }
 function getEpisodeProgress(animeId, epNum) { var s = getProgressStore(); return s[animeId + ":" + epNum] || null; }
 function setEpisodeProgress(animeId, epNum, percent, currentTime, duration) { var s = getProgressStore(); s[animeId + ":" + epNum] = { percent: percent, currentTime: currentTime, duration: duration, time: Date.now() }; saveProgressStore(s); }
-function fetchJikan(ep) { return fetch(JIKAN_URL + ep).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }).then(function (j) { return { data: j.data, pagination: j.pagination || null }; }).catch(function () { return null; }); }
+function fetchJikan(ep) {
+  return fetch(JIKAN_URL + ep)
+    .then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(function (j) {
+      return {
+        data: Array.isArray(j.data) ? j.data : (j.data ? [j.data] : []),
+        pagination: j.pagination || null
+      };
+    })
+    .catch(function () { return null; });
+}
+
+/*
+ * LStream anime data layer.
+ * Jikan returns large nested objects; Home only needs a stable set of fields.
+ * Keep the original object in `raw` so detail/episode features can use the
+ * complete API response later without changing the Home UI again.
+ */
+function normalizeAnime(a) {
+  a = a || {};
+  var images = a.images || {};
+  var jpg = images.jpg || {};
+  var webp = images.webp || {};
+  return {
+    mal_id: a.mal_id || 0,
+    title: a.title || a.title_english || a.title_japanese || "Tanpa Judul",
+    title_english: a.title_english || "",
+    title_japanese: a.title_japanese || "",
+    images: {
+      jpg: {
+        image_url: jpg.image_url || webp.image_url || PLACEHOLDER_IMG,
+        large_image_url: jpg.large_image_url || webp.large_image_url || jpg.image_url || webp.image_url || PLACEHOLDER_IMG
+      }
+    },
+    score: typeof a.score === "number" ? a.score : null,
+    episodes: a.episodes != null ? a.episodes : null,
+    type: a.type || "TV",
+    status: a.status || "",
+    synopsis: a.synopsis || "",
+    year: a.year || (a.aired && a.aired.from ? new Date(a.aired.from).getFullYear() : null),
+    genres: Array.isArray(a.genres) ? a.genres.map(function (g) { return { mal_id: g.mal_id, name: g.name }; }) : [],
+    aired: a.aired || null,
+    duration: a.duration || "",
+    rating: a.rating || "",
+    rank: a.rank || null,
+    popularity: a.popularity || null,
+    raw: a
+  };
+}
+
+function normalizeAnimeList(list) {
+  return Array.isArray(list) ? list.map(normalizeAnime).filter(function (a) { return a.mal_id; }) : [];
+}
 function fetchAniList(title) { var q = "query ($s: String) { Media(search: $s, type: ANIME) { id averageScore popularity favourites studios(isMain: true) { nodes { name } } } }"; return fetch(ANILIST_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: q, variables: { s: title } }) }).then(function (r) { return r.json(); }).then(function (j) { return (j.data && j.data.Media) || null; }).catch(function () { return null; }); }
 var FALLBACK_ANIME = [{ mal_id: 1, title: "Frieren: Beyond Journey's End", images: { jpg: { image_url: "" } }, score: 9.3, episodes: 28, type: "TV" },{ mal_id: 2, title: "Jujutsu Kaisen", images: { jpg: { image_url: "" } }, score: 8.6, episodes: 24, type: "TV" }];
 
@@ -1719,12 +1774,49 @@ if (closeQualityModal) closeQualityModal.addEventListener("click", function () {
 if (closeSpeedPopup) closeSpeedPopup.addEventListener("click", function () { speedPopup.classList.remove("open"); });
 if (closeDownloadPopup) closeDownloadPopup.addEventListener("click", function () { downloadPopup.classList.remove("open"); });
 function createAnimeCard(a) { var c = document.createElement("div"); c.className = "anime-card"; c.innerHTML = '<img class="anime-card__img" src="' + esc(_im(a.images)) + '" alt="' + esc(a.title) + '" loading="lazy"><div class="anime-card__body"><p class="anime-card__title">' + esc(a.title) + '</p><div class="anime-card__meta"><span>' + esc(a.type || "-") + ' · ' + (a.episodes != null ? a.episodes : "?") + ' eps</span><span class="anime-card__score">' + ICON.star + ' ' + (a.score != null ? a.score : "N/A") + '</span></div></div>'; var img = c.querySelector("img"); if (img) img.addEventListener("error", function (ev) { ev.target.src = PLACEHOLDER_IMG; }); c.addEventListener("click", function () { openAnimeModal(a.mal_id); }); return c; }
-function renderAnimeGrid(list, container, opts) { if (!container) return; opts = opts || {}; if (!opts.append) container.innerHTML = ""; if (!list || list.length === 0) { if (!opts.append) container.innerHTML = '<p style="color:var(--text-muted);padding:20px;">Tidak ada.</p>'; return; } list.forEach(function (a) { container.appendChild(createAnimeCard(a)); }); }
+function renderAnimeGrid(list, container, opts) {
+  if (!container) return;
+  opts = opts || {};
+  if (!opts.append) container.innerHTML = "";
+  var items = normalizeAnimeList(list);
+  if (items.length === 0) {
+    if (!opts.append) container.innerHTML = '<p style="color:var(--text-muted);padding:20px;">Tidak ada.</p>';
+    return;
+  }
+  items.forEach(function (a) { container.appendChild(createAnimeCard(a)); });
+}
 function renderSkeletons(c, n) { if (!c) return; n = n || 6; c.innerHTML = ""; for (var i = 0; i < n; i++) { var sk = document.createElement("div"); sk.className = "skeleton skeleton-card"; c.appendChild(sk); } }
 function loadGenreList() { return fetchJikan("/genres/anime").then(function (r) { if (!r || !r.data) { addFallbackGenres(); return; } var sorted = r.data.slice().sort(function (a, b) { return (b.count || 0) - (a.count || 0); }); sorted.forEach(function (g) { var ch = document.createElement("button"); ch.className = "genre-chip"; ch.dataset.genre = g.mal_id; ch.dataset.name = g.name; ch.textContent = g.name; if (genreBar) genreBar.appendChild(ch); }); if (statusGenreList) statusGenreList.textContent = sorted.length + " genre"; }).catch(addFallbackGenres); }
 function addFallbackGenres() { if (!genreBar) return; [{ id: 1, name: "Action" },{ id: 2, name: "Adventure" },{ id: 4, name: "Comedy" }].forEach(function (g) { var ch = document.createElement("button"); ch.className = "genre-chip"; ch.dataset.genre = g.id; ch.dataset.name = g.name; ch.textContent = g.name; genreBar.appendChild(ch); }); }
 if (genreExpandBtn) genreExpandBtn.addEventListener("click", function () { state.genreExpanded = !state.genreExpanded; if (genreBar) genreBar.classList.toggle("expanded", state.genreExpanded); });
-function loadMainListPage() { if (state.isLoading || !state.hasNextPage) return; state.isLoading = true; if (infiniteLoader) infiniteLoader.classList.add("active"); var ep = state.currentGenreId ? "/anime?genres=" + state.currentGenreId + "&order_by=popularity&sort=asc&page=" + state.page + "&limit=12" : "/top/anime?page=" + state.page + "&limit=12"; if (mainListTitle) mainListTitle.textContent = state.currentGenreId ? 'Genre: ' + state.currentGenreName : 'Top Anime'; fetchJikan(ep).then(function (r) { if (infiniteLoader) infiniteLoader.classList.remove("active"); state.isLoading = false; if (!r || !r.data || r.data.length === 0) { if (state.page === 1) renderAnimeGrid(FALLBACK_ANIME, mainGrid); state.hasNextPage = false; return; } renderAnimeGrid(r.data, mainGrid, { append: state.page > 1 }); if (statusMain) statusMain.textContent = "Halaman " + state.page; if (state.page === 1 && !state.heroAnimeData && r.data[0]) renderHero(r.data[0]); var hn = !!(r.pagination && r.pagination.has_next_page); state.hasNextPage = hn; if (hn) state.page += 1; }); }
+function loadMainListPage() {
+  if (state.isLoading || !state.hasNextPage) return;
+  state.isLoading = true;
+  if (infiniteLoader) infiniteLoader.classList.add("active");
+  var ep = state.currentGenreId
+    ? "/anime?genres=" + state.currentGenreId + "&order_by=popularity&sort=asc&page=" + state.page + "&limit=12"
+    : "/top/anime?page=" + state.page + "&limit=12";
+  if (mainListTitle) mainListTitle.textContent = state.currentGenreId ? "Genre: " + state.currentGenreName : "Top Anime";
+  fetchJikan(ep).then(function (r) {
+    if (infiniteLoader) infiniteLoader.classList.remove("active");
+    state.isLoading = false;
+    var items = normalizeAnimeList(r && r.data);
+    if (items.length === 0) {
+      if (state.page === 1) {
+        renderAnimeGrid(FALLBACK_ANIME, mainGrid);
+        if (statusMain) statusMain.textContent = "Data sementara";
+      }
+      state.hasNextPage = false;
+      return;
+    }
+    renderAnimeGrid(items, mainGrid, { append: state.page > 1 });
+    if (statusMain) statusMain.textContent = "Halaman " + state.page;
+    if (state.page === 1 && !state.heroAnimeData && items[0]) renderHero(items[0]);
+    var hn = !!(r.pagination && r.pagination.has_next_page);
+    state.hasNextPage = hn;
+    if (hn) state.page += 1;
+  });
+}
 function resetMainListAndLoad() { state.page = 1; state.hasNextPage = true; renderSkeletons(mainGrid, 6); loadMainListPage(); }
 function renderHero(a) { state.heroAnimeData = a; if (heroTitle) heroTitle.textContent = a.title; if (heroDesc) heroDesc.textContent = a.synopsis ? a.synopsis.slice(0, 180) + "..." : "—"; var url = a.images && a.images.jpg && a.images.jpg.large_image_url; if (url) $("hero").style.backgroundImage = "linear-gradient(to right, #0f0f1acc, #0f0f1a55), url('" + url + "')"; }
 function openAnimeModal(id) { try { if (modalBodyContent) modalBodyContent.innerHTML = '<p style="padding:20px 0;color:var(--text-muted);">Memuat...</p>'; if (episodeSection) episodeSection.style.display = "none"; if (anilistSection) anilistSection.style.display = "none"; if (modal) modal.classList.add("open"); if (modalBody) modalBody.scrollTop = 0; fetchJikan("/anime/" + id).then(function (r) { if (!r || !r.data || !modalBodyContent) return; var a = r.data; state.currentAnimeData = a; var gT = (a.genres || []).map(function (g) { return '<span class="genre-tag">' + esc(g.name) + '</span>'; }).join(""); modalBodyContent.innerHTML = '<img class="modal__poster" src="' + esc(_lg(a.images)) + '" onerror="this.src=\'' + PLACEHOLDER_IMG + '\'"><div class="modal__info"><h2>' + esc(a.title) + '</h2><p style="color:var(--text-muted);font-size:.8rem;">' + esc(a.title_japanese || "") + '</p><p style="margin-top:6px;"><strong>Skor:</strong> ' + (a.score != null ? a.score : "N/A") + '</p><p><strong>Episode:</strong> ' + (a.episodes != null ? a.episodes : "?") + '</p><div class="modal__genres">' + gT + '</div></div><div class="modal__synopsis-full"><h3>Sinopsis</h3><p class="modal__synopsis" id="modalSynopsisText">' + esc(a.synopsis || "Tidak ada sinopsis.") + '</p><button class="btn btn--ghost btn--sm" id="modalSynopsisBtn" style="margin-top:10px;">Baca Selengkapnya</button></div>'; var sb = $("modalSynopsisBtn"); if (sb) sb.addEventListener("click", function () { var sy = $("modalSynopsisText"); if (!sy) return; sy.classList.toggle("expanded"); sb.textContent = sy.classList.contains("expanded") ? "Sembunyikan" : "Baca Selengkapnya"; }); updateFavBtn(); loadEpisodes(id); loadAniListInfo(a.title); }); } catch (e) {} }
@@ -2045,7 +2137,7 @@ if (searchInput) searchInput.addEventListener("keydown", function (e) { if (e.ke
 if (accountContent) accountContent.addEventListener("click", function (e) { var tab = e.target.closest(".acct__tab"); if (!tab) return; accountContent.querySelectorAll(".acct__tab").forEach(function (t) { t.classList.remove("active"); }); tab.classList.add("active"); renderTabContent(tab.dataset.tab); });
 if (replyPopupInput) replyPopupInput.addEventListener("input", function () { autoResize(this); });
 if (typeof IntersectionObserver !== "undefined" && scrollSentinel) { new IntersectionObserver(function (entries) { entries.forEach(function (entry) { if (entry.isIntersecting) loadMainListPage(); }); }, { rootMargin: "300px" }).observe(scrollSentinel); }
-function handleSearch() { try { var k = searchInput ? searchInput.value.trim() : ""; if (!k) return; renderSkeletons(searchResults, 4); fetchJikan("/anime?q=" + encodeURIComponent(k) + "&limit=12").then(function (r) { if (!searchResults) return; searchResults.innerHTML = ""; if (!r || !r.data) return; var grid = document.createElement("div"); grid.className = "card-grid"; renderAnimeGrid(r.data, grid); searchResults.appendChild(grid); }); } catch (e) {} }
+function handleSearch() { try { var k = searchInput ? searchInput.value.trim() : ""; if (!k) return; renderSkeletons(searchResults, 4); fetchJikan("/anime?q=" + encodeURIComponent(k) + "&limit=12").then(function (r) { if (!searchResults) return; searchResults.innerHTML = ""; var items = normalizeAnimeList(r && r.data); if (!items.length) return; var grid = document.createElement("div"); grid.className = "card-grid"; renderAnimeGrid(items, grid); searchResults.appendChild(grid); }); } catch (e) {} }
 
 /* ===== LStream 6.7 visual/identity patch ===== */
 function showAccountInfo() {
@@ -2149,7 +2241,7 @@ function initPage() {
   try { startGuestTimer(); } catch (e) {}
   state.playbackSpeed = getSettings().playbackSpeed || 1;
   renderSkeletons(mainGrid, 6);
-  Promise.all([loadGenreList(), fetchJikan("/seasons/now?limit=12")]).then(function (r) { var sr = r[1]; if (sr && sr.data && sr.data.length > 0) { if (statusSeason) statusSeason.textContent = sr.data.length + " anime"; renderAnimeGrid(sr.data, seasonAnimeGrid); } else { renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); } }).catch(function () { renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); });
+  Promise.all([loadGenreList(), fetchJikan("/seasons/now?limit=12")]).then(function (r) { var sr = r[1]; var seasonItems = normalizeAnimeList(sr && sr.data); if (seasonItems.length > 0) { if (statusSeason) statusSeason.textContent = seasonItems.length + " anime"; renderAnimeGrid(seasonItems, seasonAnimeGrid); } else { renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); } }).catch(function () { renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); });
   loadMainListPage();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initPage);
