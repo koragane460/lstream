@@ -18,7 +18,7 @@ img{max-width:100%;display:block}
 .icon{width:1em;height:1em;display:inline-block;vertical-align:-0.15em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .icon--filled{fill:currentColor;stroke:none}
 body:not(.logged-in) .navbar,body:not(.logged-in) .user-panel-wrap,body:not(.logged-in) .hero,body:not(.logged-in) main.container,body:not(.logged-in) .bottom-nav,body:not(.logged-in) .footer{display:none!important}
-.err-banner{position:fixed;top:8px;left:8px;right:8px;background:#ef4444;color:#fff;padding:10px 14px;border-radius:12px;font-size:.8rem;z-index:999999;pointer-events:none}
+.err-banner{position:fixed;top:8px;left:8px;right:8px;background:#ef4444;color:#fff;padding:10px 14px;border-radius:12px;font-size:.8rem;z-index:999999}
 .btn{padding:10px 20px;border-radius:12px;border:none;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px;font-size:.88rem;justify-content:center;transition:transform .15s}
 .btn:active{transform:scale(.97)}
 .btn--primary{background:var(--accent);color:white}
@@ -775,7 +775,7 @@ body.light-mode .user-fullscreen-overlay{background:#f0f3f9}
   <div class="guide-popup__list">
     <div class="guide-popup__item"><span class="guide-popup__bullet">•</span><span>Photo profile akan kosong saat sudah login, bisa mengganti nya di settings</span></div>
     <div class="guide-popup__item"><span class="guide-popup__bullet">•</span><span>Di settings ada fitur fitur yang bisa dipakai untuk kenyamanan sendiri</span></div>
-    <div class="guide-popup__item"><span class="guide-popup__bullet">•</span><span>Ganti nama bisa dari settings</span></div>
+    <div class="guide-popup__item"><span class="guide-popup__bullet">•</span><span>Ganti username bisa dari settings</span></div>
   </div>
   <div class="guide-popup__thanks">Terimakasih atas perhatian nya</div>
   <div class="guide-popup__footer">
@@ -906,7 +906,7 @@ body.light-mode .user-fullscreen-overlay{background:#f0f3f9}
 
 <div class="quality-modal" id="downloadPopup"><div class="quality-modal__box"><button class="quality-modal__close" id="closeDownloadPopup"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="quality-modal__header"><div class="quality-modal__icon"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><div class="quality-modal__title">Pilih Kualitas Download</div><div class="quality-modal__subtitle">Resolusi untuk mengunduh</div></div><div class="quality-modal__opts" id="downloadPopupOpts"></div></div></div>
 
-<div class="simple-modal" id="changeUsernameModal"><div class="simple-modal__box"><div class="simple-modal__title">Ganti Nama</div><input type="text" class="simple-modal__input" id="changeUsernameInput" maxlength="20" placeholder="Nama baru..."><div class="simple-modal__actions"><button class="btn btn--ghost" id="cancelChangeUsername">Batal</button><button class="btn btn--primary" id="confirmChangeUsername">Simpan</button></div></div></div>
+<div class="simple-modal" id="changeUsernameModal"><div class="simple-modal__box"><div class="simple-modal__title">Ganti Username</div><input type="text" class="simple-modal__input" id="changeUsernameInput" maxlength="20" placeholder="Username baru..."><div class="simple-modal__actions"><button class="btn btn--ghost" id="cancelChangeUsername">Batal</button><button class="btn btn--primary" id="confirmChangeUsername">Simpan</button></div></div></div>
 
 <div class="quality-modal" id="borderModal"><div class="quality-modal__box"><button class="quality-modal__close" id="closeBorderModal"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="quality-modal__header"><div class="quality-modal__icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg></div><div class="quality-modal__title">Pilih Border</div><div class="quality-modal__subtitle">Border yang sudah dibeli</div></div><div class="quality-modal__opts" id="borderModalOpts"></div></div></div>
 
@@ -930,7 +930,7 @@ body.light-mode .user-fullscreen-overlay{background:#f0f3f9}
   <div class="account-info-icon">ⓘ</div><div class="account-info-title">Info Akun</div><div class="account-info-sub">Detail akun aktif pada perangkat ini</div>
   <div class="account-info-list">
     <div><span>Akun</span><b id="infoAccountType">-</b></div>
-    <div><span>Nama</span><b id="infoUsername">-</b></div>
+    <div><span>Username</span><b id="infoUsername">-</b></div>
     <div><span>Email</span><b id="infoEmail">-</b></div>
     <div><span>Password</span><b id="infoPassword">-</b></div>
     <div><span>Device ID</span><b id="infoDeviceId">-</b></div>
@@ -1026,9 +1026,7 @@ var reactPicker = null, userFullscreenOverlay = null;
 var APP_VERSION = "6.7";
 var JIKAN_URL = "https://api.jikan.moe/v4";
 var ANILIST_URL = "https://graphql.anilist.co";
-window.addEventListener("error", function (e) { try { console.error("LStream JS Error:", e.message, e.error || ""); var gate=document.getElementById("authGate"); if(gate && gate.classList.contains("show") && SafeStorage.getItem("lstream_logged_in")==="1"){ gate.classList.add("hidden"); gate.style.display="none"; } } catch (er) {} });
-/* Error banners are diagnostic only and must never intercept taps/clicks. */
-window.addEventListener("unhandledrejection", function (e) { try { console.error("LStream unhandled rejection:", e.reason); } catch (_) {} });
+window.addEventListener("error", function (e) { try { var b = document.createElement("div"); b.className = "err-banner"; b.textContent = "JS Error: " + e.message; document.body.appendChild(b); setTimeout(function () { if (b.parentNode) b.parentNode.removeChild(b); }, 6000); } catch (er) {} });
 function setCookie(k, v, days) { try { var d = new Date(); d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000)); document.cookie = k + "=" + encodeURIComponent(v) + "; expires=" + d.toUTCString() + "; path=/; SameSite=Lax"; } catch (e) {} }
 function getCookie(k) { try { var name = k + "="; var ca = document.cookie.split(";"); for (var i = 0; i < ca.length; i++) { var c = ca[i].trim(); if (c.indexOf(name) === 0) return decodeURIComponent(c.substring(name.length)); } } catch (e) {} return null; }
 var SafeStorage = (function () { var mem = {}; var useMem = false; try { localStorage.setItem("__ls__", "1"); localStorage.removeItem("__ls__"); } catch (e) { useMem = true; } return { getItem: function (k) { var v = null; if (!useMem) { try { v = localStorage.getItem(k); } catch (e) {} } if (v === null) v = mem[k] !== undefined ? mem[k] : null; if (v === null) v = getCookie("LS_" + k); return v; }, setItem: function (k, v) { v = String(v); mem[k] = v; if (!useMem) { try { localStorage.setItem(k, v); } catch (e) { useMem = true; } } setCookie("LS_" + k, v, 365); }, removeItem: function (k) { if (!useMem) { try { localStorage.removeItem(k); } catch (e) {} } delete mem[k]; try { document.cookie = "LS_" + k + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; } catch (e) {} } }; })();
@@ -1036,27 +1034,11 @@ function $(id) { return document.getElementById(id); }
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
 function _im(img) { return (img && img.jpg && img.jpg.image_url) || PLACEHOLDER_IMG; }
 function _lg(img) { return (img && img.jpg && img.jpg.large_image_url) || (img && img.jpg && img.jpg.image_url) || PLACEHOLDER_IMG; }
-var STORAGE_FAV = "lstream_favorites", STORAGE_CHAT = "lstream_chat_global", STORAGE_NOTIF = "lstream_notifications", STORAGE_DM = "lstream_dm", STORAGE_FRIENDS = "lstream_friends", STORAGE_SETTINGS = "lstream_settings", STORAGE_CHECKIN = "lstream_checkin", STORAGE_COMMENTS = "lstream_comments", STORAGE_USER = "lstream_user", STORAGE_LOGGED_IN = "lstream_logged_in", STORAGE_USER_COUNTER = "lstream_user_counter", STORAGE_USER_REGISTRY = "lstream_user_registry_v2", STORAGE_PROGRESS = "lstream_progress", STORAGE_REACTIONS = "lstream_reactions", STORAGE_STRIKES = "lstream_strikes", STORAGE_SHOP = "lstream_shop", STORAGE_BADGES = "lstream_badges", STORAGE_BANS = "lstream_bans", STORAGE_MUTES = "lstream_mutes", STORAGE_DEVICE = "lstream_device_id", STORAGE_AUTH_PENDING = "lstream_auth_pending", STORAGE_FRIEND_REQ = "lstream_all_friend_req", STORAGE_GUIDE = "lstream_guide_shown", STORAGE_GUEST_EXPIRED = "lstream_guest_expired", STORAGE_DEV_DIAMONDS = "lstream_dev_unlimited_diamonds";
+var STORAGE_FAV = "lstream_favorites", STORAGE_CHAT = "lstream_chat_global", STORAGE_NOTIF = "lstream_notifications", STORAGE_DM = "lstream_dm", STORAGE_FRIENDS = "lstream_friends", STORAGE_SETTINGS = "lstream_settings", STORAGE_CHECKIN = "lstream_checkin", STORAGE_COMMENTS = "lstream_comments", STORAGE_USER = "lstream_user", STORAGE_LOGGED_IN = "lstream_logged_in", STORAGE_USER_COUNTER = "lstream_user_counter", STORAGE_PROGRESS = "lstream_progress", STORAGE_REACTIONS = "lstream_reactions", STORAGE_STRIKES = "lstream_strikes", STORAGE_SHOP = "lstream_shop", STORAGE_BADGES = "lstream_badges", STORAGE_BANS = "lstream_bans", STORAGE_MUTES = "lstream_mutes", STORAGE_DEVICE = "lstream_device_id", STORAGE_AUTH_PENDING = "lstream_auth_pending", STORAGE_FRIEND_REQ = "lstream_all_friend_req", STORAGE_GUIDE = "lstream_guide_shown", STORAGE_GUEST_EXPIRED = "lstream_guest_expired", STORAGE_DEV_DIAMONDS = "lstream_dev_unlimited_diamonds";
 var PLACEHOLDER_IMG = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="280"><rect width="200" height="280" fill="#1a2540"/><text x="50%" y="50%" font-family="sans-serif" font-size="18" fill="#4a6fa5" text-anchor="middle" dy=".3em">No Image</text></svg>');
-function icon(s){return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">'+s+'</svg>'};
 var ICON = { crown: '<svg class="icon icon--filled" viewBox="0 0 24 24"><path d="M3 8 L5 19 H19 L21 8 L15 13 L12 6 L9 13 Z M5 19 V21 H19 V19"/></svg>', crystal: '<svg class="icon" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M12 2 L19 6 L19 14 L12 22 L5 14 L5 6 Z"/></svg>', xp: '<svg class="icon icon--filled" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', pencil: '<svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>', camera: '<svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>', trash: '<svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>', reply: '<svg class="icon" viewBox="0 0 24 24"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>', play: '<svg class="icon icon--filled" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>', x: '<svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', logout: '<svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>', mail: '<svg class="icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>', save: '<svg class="icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>', coin: '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/><text x="12" y="16" font-size="11" font-weight="900" text-anchor="middle" fill="#8b6914" font-family="Arial">$</text></svg>', star: '<svg class="icon icon--filled" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>', warn: '<svg class="icon" viewBox="0 0 24 24"><path d="M10.29 3.86 L1.82 18 a2 2 0 0 0 1.71 3 h16.94 a2 2 0 0 0 1.71 -3 L13.71 3.86 a2 2 0 0 0 -3.42 0 z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', clock: '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>', shield: '<svg class="icon icon--filled" viewBox="0 0 24 24"><path d="M12 2 L4 5 v6 c0 5 3.5 9.5 8 11 c4.5 -1.5 8 -6 8 -11 V5 Z"/></svg>', back: '<svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>', userPlus: '<svg class="icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>', check: '<svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' };
-
-// Clan/UI icon compatibility: the clan module uses these keys too.
-Object.assign(ICON, {
-  alert: icon('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5h.01"/>'),
-  plus: icon('<path d="M12 5v14M5 12h14"/>'),
-  users: icon('<path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM21 21v-2a4 4 0 0 0-3-3.87M16.5 3.13a4 4 0 0 1 0 7.75"/>'),
-  search: icon('<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>'),
-  searchUser: icon('<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/>'),
-  close: icon('<path d="M6 6l12 12M18 6L6 18"/>'),
-  chev: icon('<path d="m9 18 6-6-6-6"/>'),
-  info: icon('<circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7.2h.01"/>'),
-  diamond: icon('<path d="m7 3 10 0 4 6-9 12L3 9l4-6Z"/><path d="m3 9 18 0M7 3l5 18 5-18"/>'),
-  gear: icon('<path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.06.06-1.8 1.8-.06-.06a1.8 1.8 0 0 0-1.98-.36 1.8 1.8 0 0 0-1.1 1.65V21h-2.55v-.09a1.8 1.8 0 0 0-1.1-1.65 1.8 1.8 0 0 0-1.98.36l-.06.06-1.8-1.8.06-.06A1.8 1.8 0 0 0 7.9 15.8a1.8 1.8 0 0 0-1.65-1.1H6.2v-2.55h.05A1.8 1.8 0 0 0 7.9 11.05a1.8 1.8 0 0 0-.36-1.98l-.06-.06 1.8-1.8.06.06a1.8 1.8 0 0 0 1.98.36 1.8 1.8 0 0 0 1.1-1.65V6h2.55v.08a1.8 1.8 0 0 0 1.1 1.65 1.8 1.8 0 0 0 1.98-.36l.06-.06 1.8 1.8-.06.06a1.8 1.8 0 0 0-.36 1.98 1.8 1.8 0 0 0 1.65 1.1h.05v2.55h-.05A1.8 1.8 0 0 0 19.4 15Z"/>'),
-  moon: icon('<path d="M20.5 14.7A8.7 8.7 0 0 1 9.3 3.5 9 9 0 1 0 20.5 14.7Z"/>')
-});
-
-window.I = ICON; /* legacy compatibility without declaring a conflicting global lexical binding */
+window.I = ICON;
+var I = ICON; /* legacy compatibility: older patches referenced I directly */
 
 ICON.user = ICON.userPlus;
 var TIER_ICONS = { bronze: '<svg class="icon icon--filled" viewBox="0 0 24 24"><path d="M12 2 L4 5 v6 c0 5 3.5 9.5 8 11 c4.5 -1.5 8 -6 8 -11 V5 Z"/></svg>', silver: '<svg class="icon icon--filled" viewBox="0 0 24 24"><path d="M6.92 5 H17.08 L20 21 H4 Z"/></svg>', gold: '<svg class="icon icon--filled" viewBox="0 0 24 24"><path d="M6 9 H18 V11 C18 14.87 14.87 18 11 18 H13 C9.13 18 6 14.87 6 11 Z M18 10 H20 C21.1 10 22 10.9 22 12 C22 13.1 21.1 14 20 14 H18"/></svg>', diamond: '<svg class="icon icon--filled" viewBox="0 0 24 24"><path d="M6 3 H18 L22 9 L12 21 L2 9 Z"/></svg>', emerald: '<svg class="icon icon--filled" viewBox="0 0 24 24"><path d="M12 2 C7 7 4 11 4 15 a8 8 0 0 0 16 0 c0 -4 -3 -8 -8 -13 z"/></svg>', master: '<svg class="icon icon--filled" viewBox="0 0 24 24"><path d="M3 8 L5 19 H19 L21 8 L15 13 L12 6 L9 13 Z"/></svg>', super: '<svg class="icon icon--filled" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>' };
@@ -1094,14 +1076,7 @@ function isDeveloperById(id) {
   try { return normalizeLSId(id) === 'LS-00001'; } catch (e) { return false; }
 }
 function getPriorityBadge(username) { var bs = getBadgesOf(username); if (bs.indexOf("developer") !== -1) return { key: "developer", name: BADGES.developer.name, cls: BADGES.developer.cls }; if (bs.indexOf("moderator") !== -1) return { key: "moderator", name: BADGES.moderator.name, cls: BADGES.moderator.cls }; if (bs.indexOf("tester") !== -1) return { key: "tester", name: BADGES.tester.name, cls: BADGES.tester.cls }; return null; }
-function isUserPremium(username) {
-  /* Safe against early calls before userState is initialized. */
-  var u = (typeof userState !== "undefined" && userState) ? userState : null;
-  var name = String(username == null ? "" : username);
-  if (!name) return false;
-  if (u && name === String(u.username || "")) return !!(u.premium || u.devUnlimitedPremium);
-  return (hashStr(name + "_prem") % 10) < 3;
-}
+function isUserPremium(username) { if (username === userState.username) return !!(userState.premium || userState.devUnlimitedPremium); return (hashStr(username + "_prem") % 10) < 3; }
 function renderBadgesOf(username) { var bs = getBadgesOf(username); if (bs.length === 0) return ""; var html = '<span class="badge-group">'; bs.forEach(function (b) { var bd = BADGES[b]; if (bd) html += '<span class="badge ' + bd.cls + '">' + bd.name + '</span>'; }); html += '</span>'; return html; }
 function renderDisplayBadges(username) { var prio = getPriorityBadge(username); if (prio) return '<span class="badge ' + prio.cls + '">' + prio.name + '</span>'; if (isUserPremium(username)) return '<span class="badge badge--premium">Premium</span>'; return ""; }
 function getUsernameClass(username) { var prio = getPriorityBadge(username); if (prio) return "uname uname--" + prio.key; if (isUserPremium(username)) return "uname uname--premium"; return ""; }
@@ -1139,29 +1114,7 @@ var LEVEL_TIERS = [{ name: "Bronze", min: 1, max: 99, color: "#cd7f32", light: "
 function getTierByLevel(l) { var c = Math.min(l, 10000); for (var i = 0; i < LEVEL_TIERS.length; i++) { if (c >= LEVEL_TIERS[i].min && c <= LEVEL_TIERS[i].max) return LEVEL_TIERS[i]; } return LEVEL_TIERS[LEVEL_TIERS.length - 1]; }
 function getTierProgress(l) { var t = getTierByLevel(l); var r = t.max - t.min; var d = Math.min(l, t.max) - t.min; return { tier: t, percent: Math.min(100, r > 0 ? (d / r) * 100 : 100), text: l + " / " + t.max + " ke tier berikut" }; }
 function getTierIcon(tier) { return TIER_ICONS[tier.icon] || TIER_ICONS.bronze; }
-function getUserRegistry() { try { var r = JSON.parse(SafeStorage.getItem(STORAGE_USER_REGISTRY) || "{}"); return r && typeof r === "object" ? r : {}; } catch (e) { return {}; } }
-function saveUserRegistry(r) { try { SafeStorage.setItem(STORAGE_USER_REGISTRY, JSON.stringify(r || {})); } catch (e) {} }
-function getNextLSId() { var counter = parseInt(SafeStorage.getItem(STORAGE_USER_COUNTER) || "0", 10) || 0; counter += 1; SafeStorage.setItem(STORAGE_USER_COUNTER, String(counter)); return "#LS-" + String(counter).padStart(5, "0"); }
-function getStableLSId(fbUser, existing) {
-  var reg = getUserRegistry();
-  var key = fbUser && fbUser.uid ? "uid:" + fbUser.uid : "";
-  var emailKey = fbUser && fbUser.email ? "email:" + String(fbUser.email).toLowerCase() : "";
-  var found = (key && reg[key]) || (emailKey && reg[emailKey]);
-  if (found) return found;
-  var existingId = existing && existing.userId;
-  if (existing && existing.firebaseUid && fbUser && existing.firebaseUid === fbUser.uid && existingId) return existingId;
-  var id = "";
-  if (existingId && /^#LS-\d+$/i.test(existingId)) id = existingId;
-  else {
-    var counter = parseInt(SafeStorage.getItem(STORAGE_USER_COUNTER) || "0", 10) || 0;
-    if (counter < 1) { id = "#LS-00001"; SafeStorage.setItem(STORAGE_USER_COUNTER, "1"); }
-    else id = getNextLSId();
-  }
-  if (key) reg[key] = id;
-  if (emailKey) reg[emailKey] = id;
-  saveUserRegistry(reg);
-  return id;
-}
+function getNextLSId() { var counter = parseInt(SafeStorage.getItem(STORAGE_USER_COUNTER) || "0"); counter += 1; SafeStorage.setItem(STORAGE_USER_COUNTER, String(counter)); return "#LS-" + String(counter).padStart(5, "0"); }
 function getUser() { try { var raw = SafeStorage.getItem(STORAGE_USER); if (!raw) return null; return JSON.parse(raw); } catch (e) { return null; } }
 function saveUser(u) { SafeStorage.setItem(STORAGE_USER, JSON.stringify(u)); }
 function hashStr(s) { s = String(s || "user"); var h = 0; for (var i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; } return Math.abs(h); }
@@ -1179,12 +1132,7 @@ function getStrikes() { try { return parseInt(SafeStorage.getItem(STORAGE_STRIKE
 function incrementStrikes() { var n = getStrikes() + 1; SafeStorage.setItem(STORAGE_STRIKES, String(n)); return n; }
 function seedDummyFriendsIfEmpty() { try { var store = getFriendStore(); var seededFlag = SafeStorage.getItem("lstream_dummy_seeded_" + (userState.userId || "x")); if (seededFlag === "1") return; var existingNames = store.incoming.map(function (r) { return r.name; }); [{ name: "Rina_Chan" },{ name: "AnimeLover88" },{ name: "YukiStream" },{ name: "KenjiKun" }].forEach(function (d) { if (existingNames.indexOf(d.name) === -1) store.incoming.push({ name: d.name, time: Date.now() - Math.floor(Math.random() * 3600000) }); }); saveFriendStore(store); SafeStorage.setItem("lstream_dummy_seeded_" + (userState.userId || "x"), "1"); } catch (e) {} }
 function seedDummyChat() { try { var chat = getGlobalChat(); if (chat && chat.length > 0) return; var seededFlag = SafeStorage.getItem("lstream_dummy_chat_seeded"); if (seededFlag === "1") return; var now = Date.now(); var dummies = [{ name: "Rina_Chan", text: "Halo semua! Ada rekomendasi anime bagus?", time: now - 3600000 },{ name: "AnimeLover88", text: "Frieren wajib tonton sih, keren banget", time: now - 3300000 },{ name: "YukiStream", text: "Setuju! Musiknya juga enak didenger", time: now - 3000000 },{ name: "KenjiKun", text: "Kalau action, Jujutsu Kaisen top banget", time: now - 2700000 }]; dummies.forEach(function (d) { chat.push({ id: "dm_dummy_" + d.time, from: "dummy_" + d.name, fromName: d.name, fromAvatar: "", text: d.text, time: d.time, type: "text" }); }); saveGlobalChat(chat); SafeStorage.setItem("lstream_dummy_chat_seeded", "1"); } catch (e) {} }
-var __LS_DEFAULT_USER = { loggedIn: false, premium: false, premiumUntil: 0, premiumClaimed: false, username: "Guest", userId: "#LS-00000", level: 1, xp: 0, coins: 0, diamonds: 0, avatarUrl: "", bio: "", stats: { comments: 0, history: 0, joinedDays: 0, favorites: 0 }, userComments: [], userHistory: [] };
-var __LS_STORED_USER = getUser();
-var userState = Object.assign({}, __LS_DEFAULT_USER, (__LS_STORED_USER && typeof __LS_STORED_USER === "object") ? __LS_STORED_USER : {});
-userState.stats = Object.assign({}, __LS_DEFAULT_USER.stats, (userState.stats && typeof userState.stats === "object") ? userState.stats : {});
-if (!userState.username) userState.username = "Guest";
-if (!userState.userId) userState.userId = "#LS-00000";
+var userState = getUser() || { loggedIn: false, premium: false, premiumUntil: 0, premiumClaimed: false, username: "Guest", userId: "#LS-00000", level: 1, xp: 0, coins: 0, avatarUrl: "", bio: "", stats: { comments: 0, history: 0, joinedDays: 0, favorites: 0 }, userComments: [], userHistory: [] };
 if (!userState.premiumUntil) userState.premiumUntil = 0;
 if (!userState.bio) userState.bio = "";
 if (userState.premiumClaimed === undefined) userState.premiumClaimed = false;
@@ -1227,17 +1175,7 @@ function getProgressStore() { try { return JSON.parse(SafeStorage.getItem(STORAG
 function saveProgressStore(s) { SafeStorage.setItem(STORAGE_PROGRESS, JSON.stringify(s)); }
 function getEpisodeProgress(animeId, epNum) { var s = getProgressStore(); return s[animeId + ":" + epNum] || null; }
 function setEpisodeProgress(animeId, epNum, percent, currentTime, duration) { var s = getProgressStore(); s[animeId + ":" + epNum] = { percent: percent, currentTime: currentTime, duration: duration, time: Date.now() }; saveProgressStore(s); }
-function fetchJikan(ep) {
-  /* Never let a slow/offline API keep the app in a loading state. */
-  var controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-  var timer = controller ? setTimeout(function(){ try{ controller.abort(); }catch(e){} }, 6500) : null;
-  var opts = controller ? { signal: controller.signal } : {};
-  return fetch(JIKAN_URL + ep, opts)
-    .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-    .then(function (j) { return { data: j.data, pagination: j.pagination || null }; })
-    .catch(function () { return null; })
-    .finally(function(){ if(timer) clearTimeout(timer); });
-}
+function fetchJikan(ep) { return fetch(JIKAN_URL + ep).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }).then(function (j) { return { data: j.data, pagination: j.pagination || null }; }).catch(function () { return null; }); }
 function fetchAniList(title) { var q = "query ($s: String) { Media(search: $s, type: ANIME) { id averageScore popularity favourites studios(isMain: true) { nodes { name } } } }"; return fetch(ANILIST_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: q, variables: { s: title } }) }).then(function (r) { return r.json(); }).then(function (j) { return (j.data && j.data.Media) || null; }).catch(function () { return null; }); }
 var FALLBACK_ANIME = [{ mal_id: 1, title: "Frieren: Beyond Journey's End", images: { jpg: { image_url: "" } }, score: 9.3, episodes: 28, type: "TV" },{ mal_id: 2, title: "Jujutsu Kaisen", images: { jpg: { image_url: "" } }, score: 8.6, episodes: 24, type: "TV" }];
 
@@ -1289,8 +1227,8 @@ window.__lsHandleFirebaseUser = function (fbUser) {
     var isAnonymous = fbUser.isAnonymous === true;
     var username = displayName.slice(0, 24);
     if (isAnonymous) { username = "User" + Math.floor(1000 + Math.random() * 8999); }
-    var userId = getStableLSId(fbUser, existing);
-    if (sameUser && existing.loggedIn) { existing.email = fbUser.email || existing.email; existing.username = fbUser.displayName || existing.username; var rr = getUserRegistry(); if (fbUser.uid) rr["uid:" + fbUser.uid] = existing.userId; if (fbUser.email) rr["email:" + String(fbUser.email).toLowerCase()] = existing.userId; saveUserRegistry(rr); saveUser(existing); userState = existing; }
+    var userId = (sameUser && existing.loggedIn) || existing.firebaseUid === fbUser.uid ? existing.userId : getNextLSId();
+    if (sameUser && existing.loggedIn) { existing.email = fbUser.email || existing.email; existing.username = fbUser.displayName || existing.username; saveUser(existing); userState = existing; }
     else { userState = { loggedIn: true, premium: false, premiumUntil: 0, premiumClaimed: false, username: username, userId: userId, level: 1, xp: 0, coins: 0, email: fbUser.email || "", avatarUrl: "", bio: "", stats: { comments: 0, history: 0, joinedDays: 0, favorites: 0 }, joinedAt: Date.now(), userComments: [], userHistory: [], firebaseUid: fbUser.uid, isAnonymous: isAnonymous, authProvider: isGoogle ? "google" : (isAnonymous ? "anonymous" : "email") }; saveUser(userState); }
     if (isAnonymous) { userState.guestExpiresAt = Date.now() + 15 * 60 * 1000; saveUser(userState); }
     SafeStorage.setItem(STORAGE_LOGGED_IN, "1");
@@ -1432,13 +1370,13 @@ function renderUserPanel() {
     userPanel.className = "user-panel";
     if (hasBg) userPanel.style.backgroundImage = "url('" + settings.bgUrl.replace(/'/g, "%27") + "')"; else userPanel.style.backgroundImage = "";
     userPanel.style.setProperty("--tier-color", tier.color); userPanel.style.setProperty("--tier-color-light", tier.light);
-    var nameCls = '';
+    var nameCls = (u.premium || u.devUnlimitedPremium) ? 'premium-name' : '';
     var bioHtml = u.bio ? '<div class="bio-display">' + esc(u.bio) + '</div>' : '';
     var statusHtml = '<div class="user-status ' + (isOnline ? '' : 'offline') + '"><span class="user-status__dot"></span>' + (isOnline ? "Online" : "Offline") + '</div>';
     var badges = renderBadgesOf(u.username);
     var guestTimerHtml = '';
     if (u.guestExpiresAt) { var left = u.guestExpiresAt - Date.now(); if (left > 0) { var mm = Math.floor(left / 60000), ss = Math.floor((left % 60000) / 1000); guestTimerHtml = '<div class="guest-timer">' + ICON.clock + 'Akun Guest berakhir dalam <b id="guestTimerDisplay">' + String(mm).padStart(2, "0") + ':' + String(ss).padStart(2, "0") + '</b></div>'; } }
-    userPanel.innerHTML = '<div class="user-panel__avatar-wrap">' + avatarWithBorder(u, 72) + '<span class="user-panel__status ' + (isOnline ? "" : "offline") + '" style="right:0;bottom:0;"></span><span class="user-panel__level-chip">' + u.level + '</span></div><div class="user-panel__info"><div class="user-panel__name-row"><div class="user-panel__name-left"><span class="user-panel__name ' + nameCls + '">' + esc(u.username) + '</span>' + ((u.premium || u.devUnlimitedPremium) ? blueCheck(u.username) : '') + '<span class="user-panel__tier-tag" style="color:' + tier.color + ';background:' + tier.color + '22;border:1px solid ' + tier.color + '55;">' + getTierIcon(tier) + '<span>' + tier.name + '</span></span>' + badges + '</div><span class="user-panel__user-id">' + esc(u.userId) + '</span></div>' + bioHtml + statusHtml + guestTimerHtml + '<div class="user-panel__level-label" style="margin-top:8px;">Level <b>' + u.level + '</b> · ' + prog.text + '</div><div class="user-panel__bar"><div class="user-panel__bar-fill" style="width:' + prog.percent + '%"></div></div></div>';
+    userPanel.innerHTML = '<div class="user-panel__avatar-wrap">' + avatarWithBorder(u, 72) + '<span class="user-panel__status ' + (isOnline ? "" : "offline") + '" style="right:0;bottom:0;"></span><span class="user-panel__level-chip">' + u.level + '</span></div><div class="user-panel__info"><div class="user-panel__name-row"><div class="user-panel__name-left"><span class="user-panel__name ' + nameCls + '">' + esc(u.username) + '</span>' + ((u.premium || u.devUnlimitedPremium) ? '<span class="user-panel__premium-chip">' + ICON.crown + ' PREMIUM</span>' : '') + '<span class="user-panel__tier-tag" style="color:' + tier.color + ';background:' + tier.color + '22;border:1px solid ' + tier.color + '55;">' + getTierIcon(tier) + '<span>' + tier.name + '</span></span>' + badges + '</div><span class="user-panel__user-id">' + esc(u.userId) + '</span></div>' + bioHtml + statusHtml + guestTimerHtml + '<div class="user-panel__level-label" style="margin-top:8px;">Level <b>' + u.level + '</b> · ' + prog.text + '</div><div class="user-panel__bar"><div class="user-panel__bar-fill" style="width:' + prog.percent + '%"></div></div></div>';
     userPanel.onclick = function () { renderAccountPage(); if (accountOverlay) accountOverlay.classList.add("open"); setActiveTab("account"); };
     startGuestTimer();
   } catch (e) {}
@@ -1451,7 +1389,7 @@ function renderAccountPage() {
     var prog = getTierProgress(u.level); var tier = prog.tier;
     var isOnline = !settings.hideOnline; var hasBg = !!settings.bgUrl;
     var bgStyle = hasBg ? 'background-image:url(\'' + settings.bgUrl.replace(/'/g, "%27") + '\');' : "";
-    var nameCls = '';
+    var nameCls = (u.premium || u.devUnlimitedPremium) ? 'premium-name' : '';
     var cc = (u.userComments || []).length; var hc = (u.userHistory || []).length;
     var bioHtml = u.bio ? '<div class="acct__bio">' + esc(u.bio) + '</div>' : '';
     var badges = renderBadgesOf(u.username);
@@ -1460,7 +1398,7 @@ function renderAccountPage() {
     html += '<div class="acct__avatar-box">' + avatarWithBorder(u, 84) + '<span class="acct__dot ' + (isOnline ? "" : "offline") + '" style="right:2px;bottom:2px;width:18px;height:18px;"></span>';
     html += '<span class="acct__lvl" style="bottom:4px;left:4px;">Lv. ' + u.level + '</span></div>';
     html += '<div class="acct__info"><div class="acct__name ' + nameCls + '">' + esc(u.username) + '</div><div class="acct__badges">';
-    if (u.premium || u.devUnlimitedPremium) html += blueCheck(u.username);
+    if (u.premium || u.devUnlimitedPremium) html += '<span class="acct__chip-prem">' + ICON.crown + ' PREMIUM</span>';
     html += '<span class="acct__tier" style="color:' + tier.color + ';background:' + tier.color + '22;border-color:' + tier.color + '55;">' + getTierIcon(tier) + '<span>' + tier.name + '</span></span>' + badges + '</div><div class="acct__id">' + esc(u.userId) + (u.email ? ' · ' + esc(u.email) : '') + '</div><div class="acct__status ' + (isOnline ? "on" : "off") + '"><span class="acct__status-dot ' + (isOnline ? "" : "offline") + '"></span>' + (isOnline ? "Online" : "Offline") + '</div></div></div>';
     html += '<div class="acct__level-row"><span>Level <b>' + u.level + '</b></span><span>' + prog.text + '</span></div><div class="acct__bar"><div class="acct__bar-fill" style="width:' + prog.percent + '%"></div></div>' + bioHtml + '</div>';
     html += '<div class="acct__stats"><div class="acct__stat"><b>' + cc + '</b><span>Komentar</span></div><div class="acct__sep"></div><div class="acct__stat"><b>' + hc + '</b><span>History</span></div><div class="acct__sep"></div><div class="acct__stat"><b>' + u.coins + '</b><span>Coin</span></div></div>';
@@ -1523,16 +1461,17 @@ function renderSettingsPage() {
 
   var premium = false;
   try { premium = typeof isPremium === "function" ? !!isPremium() : !!(u.premium || u.devUnlimitedPremium); } catch(e) { premium = !!(u.premium || u.devUnlimitedPremium); }
+  var premiumHtml = premium ? ' <span class="settings-blue-verified" aria-label="Premium verified">'+ICON.check+'</span>' : '';
   var bgUrl = String(s.bgUrl || "").replace(/'/g, "%27");
   var bgStyle = bgUrl ? "background-image:url('" + bgUrl + "');" : "";
   var level = Number(u.level) || 1;
   var diamonds = Number(u.diamonds) || 0;
 
   var html = '';
-  html += '<div class="settings-panel" style="--tier-color:' + esc(tier.color || '#2f7dff') + ';' + bgStyle + '">' + avatar + '<div class="settings-panel__info" style="margin-left:8px;"><div class="settings-panel__name"><span>' + esc(u.username || 'User') + '</span>' + (premium ? blueCheck(u.username) : '') + ' ' + badges + '</div><div class="settings-panel__id">' + esc(u.userId || '') + ' · Level ' + level + ' · Berlian ' + diamonds.toLocaleString('id-ID') + '</div></div></div>';
+  html += '<div class="settings-panel" style="--tier-color:' + esc(tier.color || '#2f7dff') + ';' + bgStyle + '">' + avatar + '<div class="settings-panel__info" style="margin-left:8px;"><div class="settings-panel__name"><span class="' + (premium ? 'premium-name' : '') + '">' + esc(u.username || 'User') + '</span>' + premiumHtml + ' ' + badges + '</div><div class="settings-panel__id">' + esc(u.userId || '') + ' · Level ' + level + ' · Berlian ' + diamonds.toLocaleString('id-ID') + '</div></div></div>';
 
   html += '<div class="settings-profile-actions">' +
-    '<button class="settings-profile-action-btn" id="changeUsernameBtn">' + ICON.pencil + 'Ganti Nama</button>' +
+    '<button class="settings-profile-action-btn" id="changeUsernameBtn">' + ICON.pencil + 'Ganti Username</button>' +
     '<button class="settings-profile-action-btn" id="changeAvatarBtn">' + ICON.camera + 'Ganti Foto</button>' +
     '</div>';
 
@@ -1880,7 +1819,6 @@ function appendChatBubble(m, noAnim) {
 }
 function updateMsgReactions(el, ctx, msgId) { if (!el) return; var disp = el.querySelector(".chat-msg__reactions-display"); var newHtml = renderReactionsHtml(ctx, msgId); if (disp) { if (newHtml) disp.outerHTML = newHtml; else disp.remove(); } else if (newHtml) { var meta = el.querySelector(".chat-msg__meta"); if (meta) meta.insertAdjacentHTML("beforebegin", newHtml); } el.querySelectorAll(".chat-msg__reaction-item").forEach(function (ri) { ri.addEventListener("click", function (e) { e.stopPropagation(); toggleReaction(ri.dataset.chattype, ri.dataset.msgid, ri.dataset.emoji); updateMsgReactions(el, ri.dataset.chattype, ri.dataset.msgid); }); }); }
 function openUserFullscreen(user) {
-  if (!user || typeof user !== "object") user = { name: "User", avatarUrl: "", isSelf: false };
   if (!userFullscreenOverlay || !userFullscreen) return;
   var isSelf = !!user.isSelf || user.name === userState.username;
   state.currentProfileTab = "comments";
@@ -1893,7 +1831,7 @@ function openUserFullscreen(user) {
     html += '<div class="acct" style="--tier-color:' + tier.color + ';--tier-color-light:' + tier.light + ';">';
     html += '<div class="acct__hero"><div class="acct__row">';
     html += '<div class="acct__avatar-box">' + avatarWithBorder(u, 84) + '<span class="acct__lvl" style="bottom:4px;left:4px;">Lv. ' + u.level + '</span></div>';
-    html += '<div class="acct__info"><div class="acct__name">' + esc(u.username) + '</div><div class="acct__badges">' + ((u.premium || u.devUnlimitedPremium) ? blueCheck(u.username) : '') + '<span class="acct__tier" style="color:' + tier.color + ';background:' + tier.color + '22;border-color:' + tier.color + '55;">' + getTierIcon(tier) + '<span>' + tier.name + '</span></span>' + badges + '</div><div class="acct__id">' + esc(u.userId) + '</div></div></div>';
+    html += '<div class="acct__info"><div class="acct__name">' + esc(u.username) + '</div><div class="acct__badges">' + ((u.premium || u.devUnlimitedPremium) ? '<span class="acct__chip-prem">' + ICON.crown + ' PREMIUM</span>' : '') + '<span class="acct__tier" style="color:' + tier.color + ';background:' + tier.color + '22;border-color:' + tier.color + '55;">' + getTierIcon(tier) + '<span>' + tier.name + '</span></span>' + badges + '</div><div class="acct__id">' + esc(u.userId) + '</div></div></div>';
     html += '<div class="acct__level-row"><span>Level <b>' + u.level + '</b></span><span>' + prog.text + '</span></div><div class="acct__bar"><div class="acct__bar-fill" style="width:' + prog.percent + '%"></div></div>';
     if (u.bio) html += '<div class="acct__bio">' + esc(u.bio) + '</div>';
     html += '</div>';
@@ -1917,7 +1855,7 @@ function openUserFullscreen(user) {
     html += '<div class="acct" style="--tier-color:' + tier2.color + ';--tier-color-light:' + tier2.light + ';">';
     html += '<div class="acct__hero"><div class="acct__row">';
     html += '<div class="acct__avatar-box">' + avatarWithBorder(fakeU, 84) + '<span class="acct__lvl" style="bottom:4px;left:4px;">Lv. ' + pseudo.level + '</span></div>';
-    html += '<div class="acct__info"><div class="acct__name">' + esc(user.name) + '</div><div class="acct__badges">' + (isUserPremium(user.name) ? blueCheck(user.name) : '') + '<span class="acct__tier" style="color:' + tier2.color + ';background:' + tier2.color + '22;border-color:' + tier2.color + '55;">' + getTierIcon(tier2) + '<span>' + tier2.name + '</span></span>' + badges2 + '</div><div class="acct__id">' + esc(fakeU.userId) + '</div></div></div>';
+    html += '<div class="acct__info"><div class="acct__name">' + esc(user.name) + '</div><div class="acct__badges">' + (isUserPremium(user.name) ? '<span class="acct__chip-prem">' + ICON.crown + ' PREMIUM</span>' : '') + '<span class="acct__tier" style="color:' + tier2.color + ';background:' + tier2.color + '22;border-color:' + tier2.color + '55;">' + getTierIcon(tier2) + '<span>' + tier2.name + '</span></span>' + badges2 + '</div><div class="acct__id">' + esc(fakeU.userId) + '</div></div></div>';
     html += '<div class="acct__level-row"><span>Level <b>' + pseudo.level + '</b></span><span>' + prog2.text + '</span></div><div class="acct__bar"><div class="acct__bar-fill" style="width:' + prog2.percent + '%"></div></div>';
     html += '<div class="acct__bio">Pengguna LStream yang suka nonton anime.</div></div>';
     html += '<div class="acct__stats"><div class="acct__stat"><b>' + pseudo.comments + '</b><span>Komentar</span></div><div class="acct__sep"></div><div class="acct__stat"><b>' + pseudo.history + '</b><span>History</span></div><div class="acct__sep"></div><div class="acct__stat"><b>' + pseudo.coins + '</b><span>Coin</span></div></div>';
@@ -1998,7 +1936,7 @@ function analyzePhoto(file, cb) { var fn = (file.name || "").toLowerCase(); var 
 function showWarningModal() { if (warningModal) warningModal.classList.add("open"); }
 if (warningCloseBtn) warningCloseBtn.addEventListener("click", function () { warningModal.classList.remove("open"); });
 if (warningOkBtn) warningOkBtn.addEventListener("click", function () { warningModal.classList.remove("open"); });
-if (photoChatInput) photoChatInput.addEventListener("change", function () { var file = this.files && this.files[0]; if (!file) return; if (!/^image\//.test(file.type)) { alert("Pilih gambar."); return; } if (file.size > 5 * 1024 * 1024) { alert("Maksimal 5MB."); return; } var reader = new FileReader(); reader.onload = function (ev) { var dataUrl = ev.target.result; if (analysisPreview) analysisPreview.src = dataUrl; if (analysisProgress) analysisProgress.style.width = "0%"; if (analysisOverlay) analysisOverlay.classList.add("open"); analyzePhoto(file, function (r) { if (!r.safe) { showWarningModal(); return; } if (state.activeChat === "clan") { sendClanPhoto(dataUrl); } else if (state.activeChat === "dm" && state.dmTarget && dmBox) { var e2 = dmBox.querySelector(".comments-empty"); if (e2) e2.remove(); var m = { from: "Kamu", type: "photo", url: dataUrl, time: Date.now() }; appendDMBubble(m, state.dmTarget); pushDMMessage(state.dmTarget.name, m); dmBox.scrollTop = dmBox.scrollHeight; } else if (chatBox) { var msgId = "gm_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6); var msg = { id: msgId, from: userState.userId, fromName: userState.username, fromAvatar: userState.avatarUrl, type: "photo", url: dataUrl, time: Date.now() }; pushGlobalChat(msg); appendChatBubble(msg, false); chatBox.scrollTop = chatBox.scrollHeight; } }); }; reader.readAsDataURL(file); });
+if (photoChatInput) photoChatInput.addEventListener("change", function () { var file = this.files && this.files[0]; if (!file) return; if (!/^image\//.test(file.type)) { alert("Pilih gambar."); return; } if (file.size > 5 * 1024 * 1024) { alert("Maksimal 5MB."); return; } var reader = new FileReader(); reader.onload = function (ev) { var dataUrl = ev.target.result; if (analysisPreview) analysisPreview.src = dataUrl; if (analysisProgress) analysisProgress.style.width = "0%"; if (analysisOverlay) analysisOverlay.classList.add("open"); analyzePhoto(file, function (r) { if (!r.safe) { showWarningModal(); return; } if (state.activeChat === "dm" && state.dmTarget && dmBox) { var e2 = dmBox.querySelector(".comments-empty"); if (e2) e2.remove(); var m = { from: "Kamu", type: "photo", url: dataUrl, time: Date.now() }; appendDMBubble(m, state.dmTarget); pushDMMessage(state.dmTarget.name, m); dmBox.scrollTop = dmBox.scrollHeight; } else if (chatBox) { var msgId = "gm_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6); var msg = { id: msgId, from: userState.userId, fromName: userState.username, fromAvatar: userState.avatarUrl, type: "photo", url: dataUrl, time: Date.now() }; pushGlobalChat(msg); appendChatBubble(msg, false); chatBox.scrollTop = chatBox.scrollHeight; } }); }; reader.readAsDataURL(file); });
 function openFilePicker(ct) { state.activeChat = ct; if (photoChatInput) { photoChatInput.value = ""; photoChatInput.click(); } }
 if ($("chatAttachBtn")) $("chatAttachBtn").addEventListener("click", function () { openFilePicker("global"); });
 if ($("dmAttachBtn")) $("dmAttachBtn").addEventListener("click", function () { openFilePicker("dm"); });
@@ -2196,83 +2134,12 @@ function initPage() {
   try { seedDummyChat(); } catch (e) {}
   try { startGuestTimer(); } catch (e) {}
   state.playbackSpeed = getSettings().playbackSpeed || 1;
-
-  /* Render usable content immediately. API data can replace it later, but the
-     user must never stare at a skeleton/loading screen while Jikan is slow. */
-  try {
-    if (statusMain) statusMain.textContent = "Siap";
-    if (statusSeason) statusSeason.textContent = "Siap";
-    if (mainGrid) renderAnimeGrid(FALLBACK_ANIME, mainGrid);
-    if (seasonAnimeGrid) renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid);
-    if (!state.heroAnimeData && FALLBACK_ANIME[0]) renderHero(FALLBACK_ANIME[0]);
-    if (infiniteLoader) infiniteLoader.classList.remove("active");
-  } catch(e) {}
-
-  Promise.all([loadGenreList(), fetchJikan("/seasons/now?limit=12")]).then(function (r) {
-    var sr = r[1];
-    if (sr && sr.data && sr.data.length > 0) {
-      if (statusSeason) statusSeason.textContent = sr.data.length + " anime";
-      renderAnimeGrid(sr.data, seasonAnimeGrid);
-    } else {
-      if (statusSeason) statusSeason.textContent = "Siap";
-      renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid);
-    }
-  }).catch(function () {
-    if (statusSeason) statusSeason.textContent = "Siap";
-    renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid);
-  });
+  renderSkeletons(mainGrid, 6);
+  Promise.all([loadGenreList(), fetchJikan("/seasons/now?limit=12")]).then(function (r) { var sr = r[1]; if (sr && sr.data && sr.data.length > 0) { if (statusSeason) statusSeason.textContent = sr.data.length + " anime"; renderAnimeGrid(sr.data, seasonAnimeGrid); } else { renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); } }).catch(function () { renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); });
   loadMainListPage();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initPage);
 else initPage();
-
-/* Emergency boot recovery: a stale/corrupt account or third-party script must
-   never leave the authentication gate permanently covering the application. */
-setTimeout(function(){
-  try{
-    var gate=document.getElementById("authGate");
-    var logged=SafeStorage.getItem(STORAGE_LOGGED_IN)==="1";
-    var saved=getUser();
-    if(gate && logged && saved && saved.loggedIn){
-      gate.classList.add("hidden");
-      gate.style.display="none";
-      document.body.classList.add("logged-in");
-      try{renderUserPanel();}catch(e){}
-      try{renderAccountPage();}catch(e){}
-    }
-  }catch(e){}
-}, 3500);
-</script>
-
-<style id="ls-no-stuck-loading-screen">
-/* Logged-in users should never have the startup splash above the application. */
-body.logged-in #authGate,
-body.logged-in .auth-gate,
-body.logged-in #authGate.hidden{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
-/* API loading indicators are informational, not blocking UI. */
-#infiniteLoader{pointer-events:none!important}
-</style>
-<script id="ls-no-stuck-loading-screen-js">
-(function(){
-  function removeStartupScreen(){
-    try{
-      var u = (typeof getUser === "function") ? getUser() : null;
-      var logged = false;
-      try { logged = SafeStorage.getItem(STORAGE_LOGGED_IN) === "1"; } catch(e) {}
-      if ((u && u.loggedIn) || logged || document.body.classList.contains("logged-in")) {
-        document.body.classList.add("logged-in");
-        var g=document.getElementById("authGate");
-        if(g){g.classList.add("hidden");g.style.display="none";g.style.visibility="hidden";g.style.opacity="0";g.style.pointerEvents="none";}
-        var o=document.getElementById("onboarding");
-        if(o){o.classList.remove("show");o.style.display="none";o.style.pointerEvents="none";}
-        var il=document.getElementById("infiniteLoader"); if(il)il.classList.remove("active");
-      }
-    }catch(e){}
-  }
-  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded",function(){setTimeout(removeStartupScreen,250);});
-  else setTimeout(removeStartupScreen,250);
-  [1000,2000,4000,7000].forEach(function(ms){setTimeout(removeStartupScreen,ms);});
-})();
 </script>
 
 <style id="ls-final-visual-fixes">
@@ -2783,6 +2650,7 @@ body.light-mode .bottom-nav{background:#000!important}
 (function(){
 'use strict';
 var $=function(id){return document.getElementById(id)};
+var icon=function(s){return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">'+s+'</svg>'};
 var I={
 back:icon('<path d="M15 18l-6-6 6-6"/>'),close:icon('<path d="M6 6l12 12M18 6L6 18"/>'),search:icon('<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>'),info:icon('<circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7.2h.01"/>'),bell:icon('<path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>'),alert:icon('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5h.01"/>'),plus:icon('<path d="M12 5v14M5 12h14"/>'),camera:icon('<path d="M4 7h3l1.5-2h7L17 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"/><circle cx="12" cy="13" r="3.2"/>'),users:icon('<path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM21 21v-2a4 4 0 0 0-3-3.87M16.5 3.13a4 4 0 0 1 0 7.75"/>'),searchUser:icon('<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/>'),diamond:icon('<path d="m7 3 10 0 4 6-9 12L3 9l4-6Z"/><path d="m3 9 18 0M7 3l5 18 5-18"/>'),gear:icon('<path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.06.06-1.8 1.8-.06-.06a1.8 1.8 0 0 0-1.98-.36 1.8 1.8 0 0 0-1.1 1.65V21h-2.55v-.09a1.8 1.8 0 0 0-1.1-1.65 1.8 1.8 0 0 0-1.98.36l-.06.06-1.8-1.8.06-.06A1.8 1.8 0 0 0 7.9 15.8a1.8 1.8 0 0 0-1.65-1.1H6.2v-2.55h.05A1.8 1.8 0 0 0 7.9 11.05a1.8 1.8 0 0 0-.36-1.98l-.06-.06 1.8-1.8.06.06a1.8 1.8 0 0 0 1.98.36 1.8 1.8 0 0 0 1.1-1.65V6h2.55v.08a1.8 1.8 0 0 0 1.1 1.65 1.8 1.8 0 0 0 1.98-.36l.06-.06 1.8 1.8-.06.06a1.8 1.8 0 0 0-.36 1.98 1.8 1.8 0 0 0 1.65 1.1h.05v2.55h-.05A1.8 1.8 0 0 0 19.4 15Z"/>'),logout:icon('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>'),chev:icon('<path d="m9 18 6-6-6-6"/>'),check:icon('<path d="m5 12 4 4L19 6"/>'),kick:icon('<path d="M7 7l10 10M17 7 7 17"/>'),shield:icon('<path d="M12 3 5 6v5c0 4.5 2.8 8 7 10 4.2-2 7-5.5 7-10V6l-7-3Z"/>'),sword:icon('<path d="m14.5 4.5 5 5M12 7l5 5M4 20l4.5-4.5M3 21l3-1 1-3 8.5-8.5-3-3L4 14l-1 3-1 3Z"/>'),apple:icon('<path d="M15 7c.7-1 .8-2.1.7-3-1.2.1-2.5.7-3.3 1.6-.7.8-1.2 2-.9 3 1.3.1 2.6-.6 3.5-1.6ZM18.5 13.2c0-2.7 2.2-4 2.3-4.1-1.2-1.8-3.2-2-3.9-2-1.7-.2-3.3 1-4.1 1-1 0-2.4-1-3.9-.9-2 .1-3.8 1.2-4.8 3.1-2.1 3.7-.5 9.2 1.5 12.2 1 1.4 2.1 3 3.6 2.9 1.5-.1 2-1 3.8-1s2.3 1 3.8 1c1.6 0 2.6-1.5 3.5-3 .9-1.3 1.3-2.7 1.4-2.8-.1 0-3.2-1.2-3.2-5.4Z"/>'),honey:icon('<path d="M7 4h10l4 7-4 9H7l-4-9 4-7Z"/><path d="M7 4 3 11h18l-4-7M7 20l-4-9M17 20l4-9"/>'),moon:icon('<path d="M20.5 14.7A8.7 8.7 0 0 1 9.3 3.5 9 9 0 1 0 20.5 14.7Z"/>'),water:icon('<path d="M12 3s7 7.1 7 12a7 7 0 0 1-14 0c0-4.9 7-12 7-12Z"/>'),arrow:icon('<path d="M5 12h14M13 6l6 6-6 6"/>'),fire:icon('<path d="M12 21c4.4 0 7-2.8 7-6.6 0-3.1-2-5.2-4.3-7.8.1 2.1-.7 3.2-1.8 4.1.1-3.6-1.7-6.1-4.1-8.7.2 4.3-3.8 6.5-3.8 11.2C5 18.1 7.8 21 12 21Z"/>')
 };
@@ -2812,14 +2680,11 @@ function requestStatus(c){return S.requests[c.id]&&S.requests[c.id][userState.us
 function requestClan(c){ensureUserClan();if(userState.clanId){toastClan('Kamu sudah bergabung ke sebuah clan.');return}var current=S.activeRequests[userState.username];if(current===c.id){if(S.requests[c.id])delete S.requests[c.id][userState.username];delete S.activeRequests[userState.username];storeSet(S);toastClan('Request clan dibatalkan.');renderClanJoin();return}if(current&&current!==c.id){toastClan('Kamu masih memiliki request clan yang menunggu jawaban.');return}S.requests[c.id]=S.requests[c.id]||{};S.requests[c.id][userState.username]=true;S.activeRequests[userState.username]=c.id;storeSet(S);toastClan('Request clan terkirim.');renderClanJoin();}
 function toastClan(t){var old=$('lsClanToast');if(old)old.remove();var d=document.createElement('div');d.id='lsClanToast';d.textContent=t;d.style.cssText='position:fixed;left:50%;bottom:92px;transform:translateX(-50%);z-index:100001;background:#101c30;border:1px solid rgba(255,255,255,.1);padding:10px 14px;border-radius:12px;color:#dce6ff;font:700 .7rem Segoe UI,sans-serif;box-shadow:0 18px 45px rgba(0,0,0,.45);animation:lsClanFade .25s ease';document.body.appendChild(d);setTimeout(function(){if(d.parentNode)d.remove()},2200)}
 function renderClanEmpty(){var v=$('lsClanView');if(!v)return;v.innerHTML='<div class="ls-clan-empty"><div class="ls-clan-empty__icon">'+ICON.alert+'</div><h3>Kamu Belum Bergabung Ke Clan Manapun</h3><p>Bergabung sekarang untuk ikut chat clan, mengumpulkan berlian, dan membangun level clan bersama member lainnya.</p><div class="ls-clan-actions"><button class="ls-clan-action" id="lsJoinClanBtn"><span class="icon-wrap">'+ICON.users+'</span><span><b>Gabung Clan</b><span>Cari clan yang tersedia</span></span></button><button class="ls-clan-action" id="lsCreateClanBtn"><span class="icon-wrap">'+ICON.plus+'</span><span><b>Bikin Clan</b><span>Biaya pembuatan 1.000 berlian</span></span></button></div></div>';var j=$('lsJoinClanBtn'),c=$('lsCreateClanBtn');if(j)j.onclick=renderClanJoin;if(c)c.onclick=openCreateClan}
-function renderClanChat(){var c=currentClan();if(!c){renderClanEmpty();return ''}return '<div class="ls-clan-chat-wrap"><button class="ls-clan-chat-head" id="lsClanChatInfoBtn"><span class="ls-clan-chat-head__left">'+clanTag(c)+'<span>Clan</span></span>'+ICON.chev+'</button><div id="lsClanChatBox" class="chat-box ls-clan-chat-box"></div><div class="chat-input-bar ls-clan-chat-inputbar"><div class="chat-input-row"><button type="button" class="chat-attach-btn" id="lsClanChatAttach" aria-label="Kirim foto">'+ICON.camera+'</button><textarea id="lsClanChatInput" placeholder="Tulis pesan di clan..." rows="1"></textarea><button class="send" id="lsClanChatSend">'+icon('<polygon points="3 11 22 2 13 21 11 13 3 11"/>')+'</button></div></div></div>'}
+function renderClanChat(){var c=currentClan();if(!c){renderClanEmpty();return ''}return '<div class="ls-clan-chat-wrap"><button class="ls-clan-chat-head" id="lsClanChatInfoBtn"><span class="ls-clan-chat-head__left">'+clanTag(c)+'<span>Clan</span></span>'+ICON.chev+'</button><div id="lsClanChatBox" class="chat-box ls-clan-chat-box"></div><div class="chat-input-bar ls-clan-chat-inputbar"><div class="chat-input-row"><textarea id="lsClanChatInput" placeholder="Tulis pesan di clan..." rows="1"></textarea><button class="send" id="lsClanChatSend">'+icon('<polygon points="3 11 22 2 13 21 11 13 3 11"/>')+'</button></div></div></div>'}
 function clanMsgKey(c){return 'lstream_clan_chat_'+c.id}function clanMsgs(c){try{return JSON.parse(localStorage.getItem(clanMsgKey(c))||'[]')}catch(e){return[]}}function clanSaveMsgs(c,a){try{localStorage.setItem(clanMsgKey(c),JSON.stringify(a.slice(-150)))}catch(e){}}
-function renderClanChatMessages(){var c=currentClan(),box=$('lsClanChatBox');if(!c||!box)return;var arr=clanMsgs(c);if(!arr.length){box.innerHTML='<div class="comments-empty" style="padding:55px 18px">Belum ada pesan di clan.</div>';return}box.innerHTML='';arr.forEach(function(m){var row=document.createElement('div'),isMe=m.name===userState.username,id=m.id||m.time;row.className='chat-msg '+(isMe?'chat-msg--me':'chat-msg--other')+' ls-global-msg';row.dataset.msgId=id;var reply=m.replyTo?'<div class="chat-msg__reply-quote"><b>'+esc2(m.replyTo.name)+'</b> · '+esc2(m.replyTo.text)+'</div>':'';var media=(m.type==='photo'||m.type==='gif'||m.type==='sticker')&&m.url;var content=media?'<div class="chat-msg__attachment"><img src="'+esc2(m.url)+'" alt="Foto" loading="lazy"></div>':'<div class="chat-msg__text">'+esc2(m.text||'')+'</div>';var bubbleCls=media?'chat-msg__bubble chat-msg__bubble--media':'chat-msg__bubble';var del=isMe?'<button type="button" class="chat-msg__del" data-clan-del="'+esc2(id)+'">'+ICON.trash+'Hapus</button>':'';var replyText=(m.text||'[foto]').slice(0,80);row.innerHTML='<div class="chat-msg__avatar '+(isMe?'has-profile-border':'')+'"><div class="chat-msg__avatar-fallback" style="'+(m.avatar?'background-image:url(\''+String(m.avatar).replace(/'/g,'%27')+'\');background-size:cover;background-position:center':'background:#000')+'"></div></div><div class="chat-msg__body"><div class="chat-msg__name"><span>'+esc2(m.name)+'</span>'+blueCheck(m.name)+' '+clanTag(c)+'</div><div class="'+bubbleCls+'">'+reply+content+'<button class="chat-msg__inline-reply" data-clan-reply="'+esc2(m.name)+'" data-clan-text="'+esc2(replyText)+'">'+ICON.reply+'<span>Balas</span></button></div>'+renderReactionsHtml('clan_'+c.id,id)+'<div class="chat-msg__meta"><div class="chat-msg__meta-row"><span class="chat-msg__time">'+(typeof formatRelativeTime==='function'?formatRelativeTime(m.time):'baru saja')+'</span><button class="chat-msg__react-btn" data-clan-react="'+esc2(id)+'">React</button>'+del+'</div></div></div>';var rp=row.querySelector('[data-clan-reply]');if(rp)rp.onclick=function(){state.clanReplyingTo={name:rp.dataset.clanReply,text:rp.dataset.clanText};var i=$('lsClanChatInput');if(i){i.value='@'+rp.dataset.clanReply+' ';i.focus({preventScroll:true})}};var rr=row.querySelector('[data-clan-react]');if(rr)rr.onclick=function(e){e.stopPropagation();showReactPicker(rr,'clan_'+c.id,id)};var db=row.querySelector('[data-clan-del]');if(db)db.onclick=function(){if(!confirm('Hapus pesan ini?'))return;clanSaveMsgs(c,clanMsgs(c).filter(function(x){return String(x.id||x.time)!==String(id)}));renderClanChatMessages()};row.querySelectorAll('.chat-msg__reaction-item').forEach(function(ri){ri.onclick=function(e){e.stopPropagation();toggleReaction(ri.dataset.chattype,ri.dataset.msgid,ri.dataset.emoji);updateMsgReactions(row,ri.dataset.chattype,ri.dataset.msgid)}});box.appendChild(row)});box.scrollTop=box.scrollHeight}
-
-function sendClanChat(){var c=currentClan(),i=$('lsClanChatInput');if(!c||!i||!userState.loggedIn)return;var text=i.value.trim();if(!text)return;if(typeof isUserMuted==='function'&&isUserMuted(userState.username)){if(typeof showMuteNotice==='function')showMuteNotice(isUserMuted(userState.username));return}var a=clanMsgs(c),m={id:'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),name:userState.username,text:text,time:Date.now(),avatar:userState.avatarUrl||'',replyTo:state.clanReplyingTo||null,type:'text'};a.push(m);clanSaveMsgs(c,a);i.value='';i.style.height='auto';state.clanReplyingTo=null;renderClanChatMessages();setTimeout(function(){i.focus({preventScroll:true})},0)}
-function sendClanPhoto(dataUrl){var c=currentClan();if(!c||!userState.loggedIn||!dataUrl)return;if(typeof isUserMuted==='function'&&isUserMuted(userState.username)){if(typeof showMuteNotice==='function')showMuteNotice(isUserMuted(userState.username));return}var a=clanMsgs(c),m={id:'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name:userState.username,text:'',time:Date.now(),avatar:userState.avatarUrl||'',replyTo:state.clanReplyingTo||null,type:'photo',url:dataUrl};a.push(m);clanSaveMsgs(c,a);state.clanReplyingTo=null;renderClanChatMessages();var box=$('lsClanChatBox');if(box)box.scrollTop=box.scrollHeight}
-
-function renderClanChatPage(){var v=$('lsClanView');if(!v)return;var c=currentClan();if(!c){renderClanEmpty();return}v.innerHTML=renderClanChat();renderClanChatMessages();var i=$('lsClanChatInput'),b=$('lsClanChatSend'),info=$('lsClanChatInfoBtn'),att=$('lsClanChatAttach');if(i){i.addEventListener('input',function(){autoResize(i)});i.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendClanChat()}})}if(b)b.onclick=sendClanChat;if(info)info.onclick=function(e){e.preventDefault();e.stopPropagation();openClanDashboard(c)};if(att)att.onclick=function(){openFilePicker('clan')}}
+function renderClanChatMessages(){var c=currentClan(),box=$('lsClanChatBox');if(!c||!box)return;var arr=clanMsgs(c);if(!arr.length){box.innerHTML='<div class="comments-empty" style="padding:55px 18px">Belum ada pesan di clan.</div>';return}box.innerHTML='';arr.forEach(function(m){var row=document.createElement('div'),isMe=m.name===userState.username,id=m.id||m.time;row.className='chat-msg '+(isMe?'chat-msg--me':'chat-msg--other')+' ls-global-msg';row.dataset.msgId=id;var reply=m.replyTo?'<div class="chat-msg__reply-quote"><b>'+esc2(m.replyTo.name)+'</b> · '+esc2(m.replyTo.text)+'</div>':'';var del=isMe?'<button type="button" class="chat-msg__del" data-clan-del="'+esc2(id)+'">'+ICON.trash+'Hapus</button>':'';row.innerHTML='<div class="chat-msg__avatar '+(isMe?'has-profile-border':'')+'"><div class="chat-msg__avatar-fallback" style="'+(m.avatar?'background-image:url(\''+String(m.avatar).replace(/'/g,'%27')+'\');background-size:cover;background-position:center':'background:#000')+'"></div></div><div class="chat-msg__body"><div class="chat-msg__name"><span>'+esc2(m.name)+'</span>'+blueCheck(m.name)+' '+clanTag(c)+'</div><div class="chat-msg__bubble">'+reply+'<div class="chat-msg__text">'+esc2(m.text||'')+'</div><button class="chat-msg__inline-reply" data-clan-reply="'+esc2(m.name)+'" data-clan-text="'+esc2((m.text||'').slice(0,80))+'">'+ICON.reply+'<span>Balas</span></button></div>'+renderReactionsHtml('clan_'+c.id,id)+'<div class="chat-msg__meta"><div class="chat-msg__meta-row"><span class="chat-msg__time">'+(typeof formatRelativeTime==='function'?formatRelativeTime(m.time):'baru saja')+'</span><button class="chat-msg__react-btn" data-clan-react="'+esc2(id)+'">React</button>'+del+'</div></div></div>';var rp=row.querySelector('[data-clan-reply]');if(rp)rp.onclick=function(){state.clanReplyingTo={name:rp.dataset.clanReply,text:rp.dataset.clanText};var i=$('lsClanChatInput');if(i){i.value='@'+rp.dataset.clanReply+' ';i.focus({preventScroll:true})}};var rr=row.querySelector('[data-clan-react]');if(rr)rr.onclick=function(e){e.stopPropagation();showReactPicker(rr,'clan_'+c.id,id)};var db=row.querySelector('[data-clan-del]');if(db)db.onclick=function(){if(!confirm('Hapus pesan ini?'))return;clanSaveMsgs(c,clanMsgs(c).filter(function(x){return String(x.id||x.time)!==String(id)}));renderClanChatMessages()};row.querySelectorAll('.chat-msg__reaction-item').forEach(function(ri){ri.onclick=function(e){e.stopPropagation();toggleReaction(ri.dataset.chattype,ri.dataset.msgid,ri.dataset.emoji);updateMsgReactions(row,ri.dataset.chattype,ri.dataset.msgid)}});box.appendChild(row)});box.scrollTop=box.scrollHeight}
+function sendClanChat(){var c=currentClan(),i=$('lsClanChatInput');if(!c||!i||!userState.loggedIn)return;var text=i.value.trim();if(!text)return;if(typeof isUserMuted==='function'&&isUserMuted(userState.username)){if(typeof showMuteNotice==='function')showMuteNotice(isUserMuted(userState.username));return}var a=clanMsgs(c),m={id:'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),name:userState.username,text:text,time:Date.now(),avatar:userState.avatarUrl||'',replyTo:state.clanReplyingTo||null};a.push(m);clanSaveMsgs(c,a);i.value='';i.style.height='auto';state.clanReplyingTo=null;renderClanChatMessages();setTimeout(function(){i.focus({preventScroll:true})},0)}
+function renderClanChatPage(){var v=$('lsClanView');if(!v)return;var c=currentClan();if(!c){renderClanEmpty();return}v.innerHTML=renderClanChat();renderClanChatMessages();var i=$('lsClanChatInput'),b=$('lsClanChatSend'),info=$('lsClanChatInfoBtn');if(i){i.addEventListener('input',function(){autoResize(i)});i.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendClanChat()}})}if(b)b.onclick=sendClanChat;if(info)info.onclick=function(){openClanInfo(c)}}
 function renderClanJoin(){var v=$('lsClanView');if(!v)return;v.innerHTML='<div class="ls-clan-toolbar"><div class="ls-clan-search">'+ICON.search+'<input id="lsClanSearch" class="ls-clan-input-focus" placeholder="Cari nama clan..."></div><button class="ls-clan-icon-btn" id="lsClanJoinBack">'+ICON.back+'</button></div><div class="ls-clan-filter"><button class="active" data-clan-filter="all">Semua</button><button data-clan-filter="top">Top Clan</button></div><div id="lsClanList"></div>';var search=$('lsClanSearch');var filter='all';function paint(){var q=(search.value||'').trim().toLowerCase();var arr=S.clans.filter(function(c){return !q||c.name.toLowerCase().indexOf(q)>=0||c.tag.toLowerCase().indexOf(q)>=0});if(filter==='top')arr.sort(function(a,b){return clanScore(b)-clanScore(a)});var list=$('lsClanList');list.innerHTML=arr.map(renderClanCard).join('')||'<div class="comments-empty" style="padding:50px 15px">Clan tidak ditemukan.</div>';list.querySelectorAll('[data-clan-id]').forEach(function(el){el.onclick=function(e){if(e.target.closest('[data-request]'))return;openClanDetail(S.clans.find(function(c){return c.id===el.dataset.clanId}))}});list.querySelectorAll('[data-request]').forEach(function(b){b.onclick=function(e){e.stopPropagation();requestClan(S.clans.find(function(c){return c.id===b.dataset.request}))}})}search.addEventListener('input',paint);document.querySelectorAll('[data-clan-filter]').forEach(function(b){b.onclick=function(){document.querySelectorAll('[data-clan-filter]').forEach(function(x){x.classList.remove('active')});b.classList.add('active');filter=b.dataset.clanFilter;paint()}});$('lsClanJoinBack').onclick=renderClanEmpty;paint()}
 function renderClanCard(c){var sent=requestStatus(c);return '<div class="ls-clan-card" data-clan-id="'+esc2(c.id)+'" style="--clan-bg:'+(c.bgUrl?'url(\''+esc2(c.bgUrl)+'\')':'none')+'"><div class="ls-clan-card__head">'+avatarFor(c.name,c.avatar).replace('<img','<img class="ls-clan-avatar"')+'<div style="flex:1;min-width:0"><div class="ls-clan-card__name">'+esc2(c.name)+' '+clanTag(c)+'</div><div class="ls-clan-card__tag">'+esc2(c.tag)+' · Level '+c.level+'</div></div></div><div class="ls-clan-card__stats"><div class="ls-clan-stat"><b>'+c.members.length+'</b><span>Member</span></div><div class="ls-clan-stat"><b>'+fmtAge(c.createdAt)+'</b><span>Dibuat</span></div><div class="ls-clan-stat"><b>'+Number(c.diamonds||0).toLocaleString('id-ID')+'</b><span>Donate</span></div></div><div class="ls-clan-card__foot"><span class="ls-clan-created">Level '+c.level+' · '+(c.level>=200?'MAX':'Aktif')+'</span><button class="ls-clan-request '+(sent?'sent':'')+'" data-request="'+esc2(c.id)+'">'+(sent?'Request Terkirim':'Request')+'</button></div></div>'}
 function openClanDetail(c){var v=$('lsClanView');if(!v||!c)return;window.__lsOpenClanId=c.id;var sent=requestStatus(c),memberCount=c.members.length,me=getClanMember(c,userState.username),canManage=me&&(me.role==='Leader'||me.role==='Officer');v.innerHTML='<div class="ls-clan-detail-top"><button class="ls-clan-back" id="lsClanDetailBack">'+ICON.back+'</button><div style="font-weight:900;font-size:.86rem">Detail Clan</div></div><div class="ls-clan-detail-head" style="--clan-bg:'+(c.bgUrl?'url(\''+esc2(c.bgUrl)+'\')':'none')+'"><div>'+avatarFor(c.name,c.avatar).replace('<img','<img class="ls-clan-detail-avatar"')+'</div><div style="min-width:0"><div class="ls-clan-detail-name">'+esc2(c.name)+'</div><div class="ls-clan-detail-tag">'+esc2(c.tag)+' · Level '+c.level+'</div><div style="margin-top:7px">'+clanTag(c)+'</div></div><div class="ls-clan-detail-actions">'+(canManage?'<button class="ls-clan-icon-btn" id="lsClanSettingsBtn">'+ICON.gear+'</button>':'')+'<button class="ls-clan-icon-btn" id="lsClanInfoBtn">'+ICON.info+'</button></div><button class="ls-clan-request-big '+(sent?'sent':'')+'" id="lsClanDetailRequest">'+(sent?'Request Terkirim':'Request Clan')+'</button></div><div class="ls-clan-member-count"><span>Jumlah member</span><b>'+memberCount+'</b></div>'+renderResource(c)+'<div class="ls-clan-subtabs"><button class="ls-clan-subtab active" data-detail-tab="members">Member</button><button class="ls-clan-subtab" data-detail-tab="top">Top Donate</button>'+(canManage?'<button class="ls-clan-subtab" data-detail-tab="requests">Request</button>':'')+'</div><div id="lsClanDetailBody"></div>';
@@ -2830,8 +2695,6 @@ function gradeForDonate(n){n=Number(n)||0;return n>=20000?'GRADE XF':n>=12000?'G
 function gradeBadge(g){var x=gradeInfo(g);return '<span class="ls-clan-grade" style="--grade-bg:'+x[1]+';--grade-glow:'+x[1]+'">'+ICON.diamond+esc2(g)+'</span>'}
 function renderClanRequests(c,body){var reqs=Object.keys(S.requests[c.id]||{}).filter(function(n){return S.requests[c.id][n]});if(!reqs.length){body.innerHTML='<div class="comments-empty" style="padding:45px 15px">Belum ada request masuk.</div>';return}body.innerHTML=reqs.map(function(n){return '<div class="ls-clan-request-row">'+avatarFor(n,'')+'<div><b>'+esc2(n)+'</b><span>Meminta request untuk masuk clan</span></div><div class="ls-clan-request-actions"><button class="ok" data-accept="'+esc2(n)+'">'+ICON.check+'</button><button class="no" data-reject="'+esc2(n)+'">'+ICON.close+'</button></div></div>'}).join('');body.querySelectorAll('[data-accept]').forEach(function(b){b.onclick=function(){acceptClanRequest(c,b.dataset.accept)}});body.querySelectorAll('[data-reject]').forEach(function(b){b.onclick=function(){rejectClanRequest(c,b.dataset.reject)}})}
 function acceptClanRequest(c,name){if(c.members.some(function(m){return m.name===name}))return;var role='Member';c.members.push({name:name,role:role,level:1,joinedAt:Date.now(),donate:0,donateToday:0,grade:'GRADE I',avatar:''});delete (S.requests[c.id]||{})[name];if(S.activeRequests[name]===c.id)delete S.activeRequests[name];storeSet(S);renderClanDetail(c);toastClan(name+' berhasil masuk ke clan.')}function rejectClanRequest(c,name){delete (S.requests[c.id]||{})[name];if(S.activeRequests[name]===c.id)delete S.activeRequests[name];storeSet(S);renderClanDetail(c);toastClan('Request '+name+' ditolak.')}
-function openClanDashboard(c){var m=$('lsClanDashboardModal');if(!m){m=document.createElement('div');m.id='lsClanDashboardModal';m.className='ls-clan-info-modal';document.body.appendChild(m);m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open')})}var me=getClanMember(c,userState.username),key=new Date().toISOString().slice(0,10),claimed=S.claims[c.id]===key,totalToday=c.members.reduce(function(a,x){return a+(x.donateToday||0)},0),top=c.members.slice().sort(function(a,b){return (b.donateToday||0)-(a.donateToday||0)}).slice(0,5);m.innerHTML='<div class="ls-clan-modal-box ls-clan-dashboard"><div class="ls-clan-modal-head"><div><div class="ls-clan-modal-title">'+esc2(c.name)+'</div><div style="font-size:.62rem;color:#8290aa;margin-top:3px">'+esc2(c.tag)+' · Level '+c.level+'</div></div><button class="ls-clan-close" id="lsClanDashClose">'+ICON.close+'</button></div><div class="ls-clan-dashboard-grid"><div class="ls-clan-dashboard-card"><span>'+ICON.diamond+'</span><b>'+Number(c.diamonds||0).toLocaleString('id-ID')+'</b><small>Total Berlian Clan</small></div><div class="ls-clan-dashboard-card"><span>'+ICON.users+'</span><b>'+c.members.length+'</b><small>Member</small></div><div class="ls-clan-dashboard-card"><span>'+ICON.fire+'</span><b>'+Number(totalToday).toLocaleString('id-ID')+'</b><small>Donate Hari Ini</small></div><div class="ls-clan-dashboard-card"><span>'+ICON.shield+'</span><b>'+esc2(me&&me.role||'Member')+'</b><small>Role Kamu</small></div></div><button class="ls-clan-claim ls-clan-dashboard-claim" id="lsDashClaim" '+(claimed?'disabled':'')+'>'+ICON.diamond+' '+(claimed?'Sudah di-claim hari ini':'Claim Berlian Harian')+'</button><button class="ls-clan-request-big" id="lsDashDonate">'+ICON.diamond+' Donate Berlian</button><div style="margin-top:16px;font-size:.72rem;font-weight:950;letter-spacing:.08em;color:#95a4c4">TOP DONATE HARI INI</div><div class="ls-clan-dashboard-top">'+(top.length?top.map(function(x,i){return '<div><strong>#'+(i+1)+'</strong>'+avatarFor(x.name,x.avatar)+'<span>'+esc2(x.name)+'<small>'+Number(x.donateToday||0).toLocaleString('id-ID')+' berlian</small></span></div>'}).join(''):'<div style="padding:18px;text-align:center;color:#73809b;font-size:.7rem">Belum ada donate hari ini.</div>')+'</div><button class="ls-clan-setting-btn" id="lsDashInfo">'+ICON.info+' Informasi & Role Clan</button></div>';m.classList.add('open');$('lsClanDashClose').onclick=function(){m.classList.remove('open')};$('lsDashClaim').onclick=function(){claimClan(c)};$('lsDashDonate').onclick=function(){m.classList.remove('open');openDonate(c)};$('lsDashInfo').onclick=function(){m.classList.remove('open');openClanInfo(c)}}
-
 function openClanInfo(c){var m=$('lsClanInfoModal');if(!m){m=document.createElement('div');m.id='lsClanInfoModal';m.className='ls-clan-info-modal';m.innerHTML='<div class="ls-clan-modal-box"><div class="ls-clan-modal-head"><div class="ls-clan-modal-title">INFORMASI CLAN</div><button class="ls-clan-close">'+ICON.close+'</button></div><div class="ls-clan-info-list"><div class="ls-clan-info-item"><span class="ls-clan-info-item__n">1</span><p>Clan memiliki chat sendiri yang terpisah dari Chat Global.</p></div><div class="ls-clan-info-item"><span class="ls-clan-info-item__n">2</span><p>Donate berlian membantu perkembangan level clan dan menambah total berlian clan.</p></div><div class="ls-clan-info-item"><span class="ls-clan-info-item__n">3</span><p>Role clan menentukan akses pengelolaan dan tanggung jawab member.</p></div></div><div style="margin-top:16px;font-size:.82rem;font-weight:950">PENJELASAN ROLE ROLE CLAN</div><div class="ls-clan-info-list" style="margin-top:9px"><div class="ls-clan-info-item"><span class="ls-clan-info-item__n">1</span><p><b>Leader</b> : Mengatur clan, Accept Request, mengatur settingan clan, dan punya akses full untuk settingan clan.</p></div><div class="ls-clan-info-item"><span class="ls-clan-info-item__n">2</span><p><b>Officer</b> : Accept permintaan request ke clan dan mengatur settingan clan.</p></div><div class="ls-clan-info-item"><span class="ls-clan-info-item__n">3</span><p><b>Victro</b> : Memberi peringatan kepada member atas perilaku atau tidak donate berlian ke clan.</p></div><div class="ls-clan-info-item"><span class="ls-clan-info-item__n">4</span><p><b>Hydler</b> : Memantau chat clan agar tidak ada tindakan tidak senonoh atau kata yang terlalu kasar.</p></div></div></div>';document.body.appendChild(m);m.querySelector('.ls-clan-close').onclick=function(){m.classList.remove('open')};m.onclick=function(e){if(e.target===m)m.classList.remove('open')}}m.classList.add('open')}
 function openDiamondInfo(){var m=$('lsClanDiamondInfoModal');if(!m){m=document.createElement('div');m.id='lsClanDiamondInfoModal';m.className='ls-clan-info-modal';m.innerHTML='<div class="ls-clan-modal-box"><div class="ls-clan-modal-head"><div class="ls-clan-modal-title">SYSTEM BERLIAN CLAN</div><button class="ls-clan-close">'+ICON.close+'</button></div><div class="ls-clan-info-list"><div class="ls-clan-info-item"><span class="ls-clan-info-item__n">1</span><p>Berlian akan bertambah seiring level clan naik.</p></div><div class="ls-clan-info-item"><span class="ls-clan-info-item__n">2</span><p>Berlian bisa digunakan untuk donate harian clan atau digunakan untuk fitur mendatang.</p></div><div class="ls-clan-info-item"><span class="ls-clan-info-item__n">3</span><p>Donate agar level naik dan berlian cepat bertambah jumlahnya.</p></div><div class="ls-clan-info-item"><span class="ls-clan-info-item__n">4</span><p>Level 1–10 membutuhkan total 700 berlian, level 11–49 total 6.000 berlian, dan level 50–200 total 17.000 berlian.</p></div></div></div>';document.body.appendChild(m);m.querySelector('.ls-clan-close').onclick=function(){m.classList.remove('open')};m.onclick=function(e){if(e.target===m)m.classList.remove('open')}}m.classList.add('open')}
 function openDonate(c){var m=$('lsClanDonateModal');if(!m){m=document.createElement('div');m.id='lsClanDonateModal';m.className='ls-clan-donate-modal';m.innerHTML='<div class="ls-clan-modal-box"><div class="ls-clan-modal-head"><div class="ls-clan-modal-title">DONATE BERLIAN</div><button class="ls-clan-close">'+ICON.close+'</button></div><div class="ls-clan-donate-orb"><div class="ls-clan-diamond">'+ICON.diamond+'</div><div class="ls-clan-donate-value" id="lsDonatePreview">0</div><div style="font-size:.58rem;color:#72809e">Berlian yang dipilih</div></div><div class="ls-clan-presets">'+[100,300,400,600,800,1000].map(function(n){return '<button data-donate="'+n+'">'+n+'</button>'}).join('')+'</div><input class="ls-clan-donate-input" id="lsDonateInput" type="number" min="1" placeholder="Masukkan nominal sendiri"><div style="font-size:.6rem;color:#71809e;margin-top:8px">Saldo berlian kamu: <b id="lsDonateBalance">'+Number(userState.diamonds||0).toLocaleString('id-ID')+'</b></div><button class="ls-clan-confirm" id="lsDonateConfirm">Confirm</button></div>';document.body.appendChild(m);m.querySelector('.ls-clan-close').onclick=function(){m.classList.remove('open')};m.onclick=function(e){if(e.target===m)m.classList.remove('open')};m.querySelectorAll('[data-donate]').forEach(function(b){b.onclick=function(){m.querySelectorAll('[data-donate]').forEach(function(x){x.classList.remove('active')});b.classList.add('active');$('lsDonateInput').value=b.dataset.donate;updateDonatePreview()}});$('lsDonateInput').addEventListener('input',updateDonatePreview);$('lsDonateConfirm').onclick=function(){var n=parseInt($('lsDonateInput').value)||0;if(n<1||n>(userState.diamonds||0)){toastClan('Nominal berlian tidak mencukupi.');return}userState.diamonds-=n;saveUserSafe();c.diamonds=(c.diamonds||0)+n;var me=getClanMember(c,userState.username);if(me){me.donate=(me.donate||0)+n;var dayKey=new Date().toISOString().slice(0,10);me.donateDay=dayKey;me.donateToday=(me.donateDay===dayKey?(me.donateToday||0):0)+n;me.grade=gradeForDonate(me.donate)}S.donations[userState.username]=(S.donations[userState.username]||0)+n;levelClan(c);storeSet(S);m.classList.remove('open');openClanDetail(c);toastClan('Donate '+n.toLocaleString('id-ID')+' berlian berhasil.')}}function updateDonatePreview(){var v=parseInt($('lsDonateInput').value)||0;if($('lsDonatePreview'))$('lsDonatePreview').textContent=v.toLocaleString('id-ID')}
@@ -2853,7 +2716,7 @@ function decorateProfileAreas(){var c=currentClan();if(!c)return;var me=getClanM
 function decorateGlobalTags(){/* handled by proxy renderer; preserve existing global renderer elsewhere. */}
 function patchKeyboard(){document.addEventListener('focusin',function(e){if(e.target&&e.target.matches('#lsGlobalInput,#lsClanChatInput,#lsClanSearch,#lsClanMemberSearch,#lsClanTopSearch,#lsDonateInput,#lsClanName,#lsClanTag,#lsClanBgUrl,#lsVictroMsg')){e.target.classList.add('ls-clan-input-focus')}},true);document.addEventListener('keydown',function(e){if(e.target&&e.target.matches('#lsGlobalInput,#lsClanChatInput,#lsClanSearch,#lsClanMemberSearch,#lsClanTopSearch,#lsDonateInput,#lsClanName,#lsClanTag,#lsClanBgUrl,#lsVictroMsg'))e.stopPropagation()},true)}
 function hookDetailButtons(){document.addEventListener('click',function(e){var id=e.target.closest&&e.target.closest('#lsClanDiamondInfo,#lsClanClaim,#lsClanDonateBtn');if(!id)return;var c=currentClan();try{if(!c&&window.__lsOpenClanId)c=S.clans.find(function(x){return x.id===window.__lsOpenClanId})||null}catch(_){}if(!c)return;if(id.id==='lsClanDiamondInfo')openDiamondInfo();if(id.id==='lsClanClaim')claimClan(c);if(id.id==='lsClanDonateBtn')openDonate(c)},true)}
-function patchPremium(){var style=document.createElement('style');style.textContent='.ls-blue-check{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-left:5px;vertical-align:-4px;flex:0 0 18px}.ls-blue-check .icon{width:18px;height:18px;fill:#55a7ff;stroke:#fff;stroke-width:1.7;filter:drop-shadow(0 0 5px rgba(85,167,255,.45))}.badge--premium,.user-panel__premium-chip,.acct__chip-prem{background:transparent!important;color:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;font-size:0!important;line-height:0!important}.badge--premium:after,.user-panel__premium-chip:after,.acct__chip-prem:after{content:"";display:inline-block;width:16px;height:16px;margin-left:3px;vertical-align:-3px;background:#55a7ff;clip-path:polygon(50% 0,62% 8%,76% 7%,83% 20%,96% 27%,91% 42%,100% 54%,91% 67%,93% 82%,78% 88%,68% 100%,50% 93%,32% 100%,22% 88%,7% 82%,9% 67%,0 54%,9% 42%,4% 27%,17% 20%,24% 7%,38% 8%);box-shadow:0 0 8px rgba(85,167,255,.45)}';document.head.appendChild(style)}
+function patchPremium(){var style=document.createElement('style');style.textContent='.badge--premium,.user-panel__premium-chip,.acct__chip-prem{background:transparent!important;color:#55a7ff!important;border:0!important;box-shadow:none!important;padding:0!important}.badge--premium:after,.user-panel__premium-chip:after,.acct__chip-prem:after{content:"";display:inline-block;width:14px;height:14px;margin-left:3px;vertical-align:-3px;background:#55a7ff;clip-path:polygon(50% 0,62% 8%,76% 7%,83% 20%,96% 27%,91% 42%,100% 54%,91% 67%,93% 82%,78% 88%,68% 100%,50% 93%,32% 100%,22% 88%,7% 82%,9% 67%,0 54%,9% 42%,4% 27%,17% 20%,24% 7%,38% 8%);box-shadow:0 0 8px rgba(85,167,255,.45)}';document.head.appendChild(style)}
 function patchHomeDiamond(){var p=document.querySelector('.user-panel');if(!p||!userState||!userState.loggedIn)return;var row=p.querySelector('.user-panel__name-row');if(!row)return;var old=row.querySelector('.ls-home-diamond');if(old)old.remove();var d=document.createElement('span');d.className='ls-home-diamond';d.innerHTML=ICON.diamond+'<b>'+Number(userState.diamonds||0).toLocaleString('id-ID')+'</b>';row.appendChild(d)}
   function boot(){ensureUserClan();applyDevUnlimitedDiamonds();syncClanMembership();patchAnimeGrid();patchKeyboard();hookDetailButtons();patchPremium();setTimeout(function(){try{if(typeof window.patchFinalVisuals === "function")window.patchFinalVisuals()}catch(e){console.error("LStream visual patch error",e)}},0);if(settingsBtn&&!settingsBtn.__lsRoleHook){settingsBtn.__lsRoleHook=true;settingsBtn.addEventListener('click',function(){setTimeout(function(){injectRolePanel()},45)})}setTimeout(patchSettings,0);var oldRUP=window.renderUserPanel;if(typeof oldRUP==='function'&&!oldRUP.__lsDiamondWrapped){var wr=function(){var r=oldRUP.apply(this,arguments);setTimeout(patchHomeDiamond,0);return r};wr.__lsDiamondWrapped=true;window.renderUserPanel=wr;setTimeout(patchHomeDiamond,50)}setInterval(function(){try{syncClanMembership();if($('settingsOverlay')&&$('settingsOverlay').classList.contains('open'))injectRolePanel();decorateProfileAreas()}catch(e){}},900);decorateProfileAreas();installChat()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
@@ -3070,7 +2933,6 @@ function patchedRestoreGlobal(){renderGlobalFixed()}
 </script>
 
 
-<style id="ls-clan-dashboard-fix">.ls-clan-dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 12px}.ls-clan-dashboard-card{padding:12px;border:1px solid rgba(255,255,255,.07);border-radius:15px;background:rgba(255,255,255,.025);display:grid;grid-template-columns:24px 1fr;column-gap:7px;align-items:center}.ls-clan-dashboard-card span{grid-row:1/3;display:grid;place-items:center;color:#65dcff}.ls-clan-dashboard-card span .icon{width:18px;height:18px}.ls-clan-dashboard-card b{font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ls-clan-dashboard-card small{font-size:.56rem;color:#73809b}.ls-clan-dashboard-claim{width:100%;margin-top:4px}.ls-clan-dashboard .ls-clan-request-big{width:100%;margin-top:8px}.ls-clan-dashboard-top{display:flex;flex-direction:column;gap:7px;margin-top:9px}.ls-clan-dashboard-top>div{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05)}.ls-clan-dashboard-top strong{width:24px;font-size:.65rem;color:#7aa9ff}.ls-clan-dashboard-top img{width:30px;height:30px;border-radius:9px;object-fit:cover}.ls-clan-dashboard-top span{font-size:.68rem;font-weight:850;min-width:0}.ls-clan-dashboard-top span small{display:block;color:#74829d;font-size:.55rem;margin-top:2px;font-weight:700}.ls-clan-chat-inputbar .chat-input-row{gap:7px}.ls-clan-chat-inputbar .chat-attach-btn{display:inline-flex!important}.ls-clan-chat-box .chat-msg__attachment img{max-width:min(270px,70vw);max-height:320px;border-radius:14px;display:block;object-fit:cover}.ls-clan-chat-box .chat-msg__bubble--media{padding:5px!important;background:transparent!important;border:0!important}.ls-clan-chat-head{cursor:pointer}.ls-clan-chat-head:active{transform:scale(.99)}</style>
 <style id="ls-settings-chat-fix">
 #settingsOverlay .sheet__content{min-height:0!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
 #settingsOverlay .settings-box,#settingsOverlay .settings-panel,#settingsOverlay .settings-profile-actions{visibility:visible!important;opacity:1!important}
@@ -3149,53 +3011,243 @@ function patchedRestoreGlobal(){renderGlobalFixed()}
 }
 </style>
 
-<!-- LStream final boot/button recovery -->
-<style id="ls-final-boot-recovery">
-  /* The auth splash must never remain as an invisible click-blocking layer after login. */
-  body.logged-in #authGate,
-  #authGate.hidden { opacity:0!important; visibility:hidden!important; pointer-events:none!important; }
-  body.logged-in #onboarding { pointer-events:none!important; }
+<!-- LStream focused repair + new requested features. Existing components are preserved; this layer only fills missing behavior/UI. -->
+<style id="ls-xch-repair-css">
+/* Missing icon compatibility */
+.icon{width:1em;height:1em;display:inline-block;vertical-align:-.16em;flex:0 0 auto}
+/* Make auth/onboarding controls reliably tappable on mobile */
+.auth-gate,.onboarding{pointer-events:auto!important;touch-action:manipulation}
+.auth-gate.hidden,.onboarding.hidden{pointer-events:none!important}
+/* Global account background */
+body.ls-has-custom-bg{background-image:var(--ls-body-bg)!important;background-size:cover!important;background-position:center!important;background-attachment:fixed!important}
+body.ls-has-custom-bg::after{content:"";position:fixed;inset:0;background:rgba(3,7,18,.55);z-index:-1;pointer-events:none}
+/* Small event gift */
+.ls-event-fab{position:fixed;right:14px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:7000;width:58px;height:58px;border-radius:20px;border:1px solid rgba(255,215,0,.35);background:linear-gradient(145deg,#18213a,#0b1120);box-shadow:0 12px 35px rgba(0,0,0,.45),0 0 24px rgba(255,215,0,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation}
+.ls-event-fab .gift{font-size:28px;filter:drop-shadow(0 0 8px rgba(255,215,0,.35))}.ls-event-fab__close{position:absolute;right:-7px;top:-7px;width:23px;height:23px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:#171d2d;color:#fff;font-size:14px;line-height:1;cursor:pointer}
+.ls-event-modal{position:fixed;inset:0;z-index:98000;background:rgba(2,5,12,.78);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:18px}.ls-event-modal.open{display:flex}
+.ls-event-box{width:min(430px,100%);max-height:min(84vh,700px);overflow:auto;border-radius:26px;padding:22px;background:linear-gradient(160deg,#17213b,#090f1d);border:1px solid rgba(255,215,0,.28);box-shadow:0 30px 100px rgba(0,0,0,.75);position:relative}.ls-event-close{position:absolute;right:12px;top:12px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:#fff;font-size:20px;cursor:pointer}.ls-event-title{text-align:center;font-size:1.15rem;font-weight:950;color:#fff;margin:8px 30px 6px}.ls-event-sub{text-align:center;color:#ffd84a;font-size:.78rem;font-weight:800;margin-bottom:18px}.ls-event-rules{display:flex;flex-direction:column;gap:9px}.ls-event-rule{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);font-size:.79rem;line-height:1.5;color:#dbe2f5}.ls-event-rule b{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 25px;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#0b1020;font-size:.72rem}
+/* Leaderboard */
+.ls-xp-leaderboard{margin:8px 0 18px;padding:15px;border-radius:20px;background:linear-gradient(160deg,#101a30,#0a1020);border:1px solid rgba(122,176,255,.12);box-shadow:0 15px 40px rgba(0,0,0,.2)}
+.ls-xp-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.ls-xp-title{font-weight:950;font-size:1rem}.ls-xp-sub{font-size:.68rem;color:var(--text-muted)}.ls-xp-tabs{display:flex;gap:6px;margin:12px 0;overflow:auto}.ls-xp-tab{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);color:var(--text-muted);padding:8px 11px;border-radius:11px;font:800 .7rem inherit;cursor:pointer;white-space:nowrap}.ls-xp-tab.active{background:linear-gradient(135deg,#4a8dff,#1a56cc);color:#fff;border-color:transparent}.ls-xp-top3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ls-xp-card{position:relative;text-align:center;padding:12px 7px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06)}.ls-xp-card__rank{font-weight:950;font-size:.72rem;color:#ffd84a;margin-bottom:7px}.ls-xp-card__avatar{width:54px;height:54px;border-radius:50%;margin:0 auto 7px;background:#000;overflow:hidden;background-size:cover;background-position:center;border:2px solid rgba(255,255,255,.12)}.ls-xp-card__name{font-size:.7rem;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ls-xp-card__xp{font-size:.65rem;color:#7ab0ff;margin-top:4px;font-weight:800}.ls-xp-list{display:flex;flex-direction:column;gap:7px;margin-top:10px}.ls-xp-row{display:flex;align-items:center;gap:9px;padding:9px;border-radius:13px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05)}.ls-xp-row__rank{width:24px;text-align:center;font-size:.7rem;font-weight:950;color:#7e8baa}.ls-xp-row__avatar{width:38px;height:38px;border-radius:50%;background:#000;background-size:cover;background-position:center;flex:0 0 38px}.ls-xp-row__info{min-width:0;flex:1}.ls-xp-row__name{font-size:.73rem;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ls-xp-row__xp{font-size:.65rem;color:var(--text-muted);margin-top:2px}.ls-xp-empty{text-align:center;padding:20px;color:var(--text-muted);font-size:.75rem}
+/* Game panel */
+.ls-game-panel{margin-top:4px}.ls-game-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ls-game-card{border:1px solid rgba(255,255,255,.08);background:linear-gradient(145deg,#121d35,#0a1020);border-radius:18px;padding:10px;cursor:pointer;text-align:left;color:#fff}.ls-game-card__pic{height:120px;border-radius:14px;background:radial-gradient(circle at 50% 35%,rgba(74,141,255,.22),rgba(255,255,255,.025));display:flex;align-items:center;justify-content:center;font-size:52px}.ls-game-card__name{font-weight:900;margin-top:8px}.ls-game-card__desc{font-size:.65rem;color:var(--text-muted);margin-top:3px}.ls-game-modal{position:fixed;inset:0;z-index:99000;background:rgba(2,5,12,.8);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:18px}.ls-game-modal.open{display:flex}.ls-game-box{width:min(430px,100%);border-radius:26px;padding:20px;background:linear-gradient(160deg,#16213a,#090f1c);border:1px solid rgba(74,141,255,.25);box-shadow:0 30px 100px rgba(0,0,0,.8);position:relative}.ls-game-close{position:absolute;right:12px;top:12px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;cursor:pointer}.ls-game-title{text-align:center;font-size:1.1rem;font-weight:950}.ls-game-balance{text-align:center;color:#65dcff;font-size:.72rem;font-weight:850;margin:5px 0 18px}.ls-click-circle{width:190px;height:190px;border-radius:50%;margin:0 auto 18px;border:8px solid rgba(74,141,255,.2);background:radial-gradient(circle,#277fff,#12306b);box-shadow:0 0 50px rgba(47,125,255,.25);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;font-weight:950;cursor:pointer;user-select:none;touch-action:manipulation}.ls-click-circle:active{transform:scale(.96)}.ls-game-stat{display:flex;justify-content:space-between;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.035);margin-top:7px;font-size:.72rem}.ls-game-stat span{color:var(--text-muted)}
+/* Cash + shop */
+.ls-currency-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ls-currency-card{padding:11px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06)}.ls-currency-card b{display:block;font-size:1rem}.ls-currency-card span{font-size:.65rem;color:var(--text-muted)}.ls-cash{color:#79e7a8}.ls-diamond{color:#65dcff}
+.ls-premium-shop{display:flex;flex-direction:column;gap:8px}.ls-premium-item{padding:12px;border-radius:15px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.035);display:flex;align-items:center;justify-content:space-between;gap:8px}.ls-premium-item__name{font-weight:850;font-size:.78rem}.ls-premium-item__price{font-size:.68rem;color:#65dcff}.ls-premium-item button,.ls-shop-buy{border:0;border-radius:10px;padding:8px 10px;background:#2f7dff;color:#fff;font-weight:850;font-size:.68rem;cursor:pointer}.ls-shop-buy:disabled{opacity:.45;cursor:not-allowed}
+/* Clan mini sheet */
+.ls-clan-mini-modal{position:fixed;inset:0;z-index:97000;background:rgba(2,5,12,.72);backdrop-filter:blur(10px);display:none;align-items:flex-start;justify-content:center;padding:74px 14px 20px}.ls-clan-mini-modal.open{display:flex}.ls-clan-mini-box{width:min(520px,100%);border-radius:22px;padding:16px;background:linear-gradient(160deg,#16213a,#090f1d);border:1px solid rgba(122,176,255,.2);box-shadow:0 28px 80px rgba(0,0,0,.72);position:relative}.ls-clan-mini-head{display:flex;align-items:center;gap:10px}.ls-clan-mini-title{font-weight:950}.ls-clan-mini-tag{font-size:.68rem;color:var(--text-muted);margin-top:2px}.ls-clan-mini-close{margin-left:auto;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;cursor:pointer}.ls-clan-mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}.ls-clan-mini-stat{padding:9px;border-radius:12px;background:rgba(255,255,255,.035);text-align:center}.ls-clan-mini-stat b{display:block;font-size:.78rem}.ls-clan-mini-stat span{font-size:.6rem;color:var(--text-muted)}.ls-clan-mini-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.ls-clan-mini-actions button{padding:10px;border-radius:11px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff;font-weight:800;font-size:.7rem;cursor:pointer}.ls-clan-mini-actions .danger{border-color:rgba(239,68,68,.25);color:#fca5a5}.ls-clan-mini-claim{grid-column:1/-1!important;background:linear-gradient(135deg,#4a8dff,#1a56cc)!important;border:0!important}.ls-clan-mini-claim:disabled{background:#171d28!important;color:#71809c!important}
+/* Prevent fullscreen clan detail from being used as the header popup */
+#lsClanChatInfoBtn{cursor:pointer;touch-action:manipulation}
 </style>
-<script id="ls-final-boot-recovery-js">
+<script id="ls-xch-repair-js">
 (function(){
   'use strict';
-  function hideGate(){
-    var g=document.getElementById('authGate');
-    if(g){g.classList.add('hidden');g.style.display='none';g.style.pointerEvents='none';g.style.visibility='hidden';g.style.opacity='0';}
-  }
-  function showOnboarding(){
-    var o=document.getElementById('onboarding');
-    if(o && !(document.body.classList.contains('logged-in'))){
-      o.style.display='flex'; o.classList.add('show');
-    }
-  }
-  function recover(){
+  function esc2(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+  function iconFallback(path){return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+path+'</svg>'}
+  /* Fill every icon key used by the existing Clan/settings patches. */
+  try{
+    var miss={
+      alert:iconFallback('<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>'),
+      bell:iconFallback('<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>'),
+      chev:iconFallback('<polyline points="9 18 15 12 9 6"/>'),
+      close:iconFallback('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'),
+      diamond:iconFallback('<path d="M6 3h12l4 6-10 12L2 9z"/>'),
+      gear:iconFallback('<circle cx="12" cy="12" r="3"/><path d="M19 13.5a7.8 7.8 0 0 0 0-3l-2-1.2 2-3.4-3-1.7a8 8 0 0 0-2.6-1.5L14 3h-4l-.3 2.7A8 8 0 0 0 7.1 7L4 5.3 2 8.7l2 1.8a7.8 7.8 0 0 0 0 3L2 15.3l2 3.4L7.1 17a8 8 0 0 0 2.6 1.5L10 21h4l.3-2.5a8 8 0 0 0 2.6-1.5l3 1.7 2-3.4-2-1.8z"/>')
+    };
+    /* gear path above intentionally replaced with a compact valid path */
+    miss.gear=iconFallback('<circle cx="12" cy="12" r="3"/><path d="M19 13.5a7.8 7.8 0 0 0 0-3l2-1.2-2-3.4-2.2 1a8 8 0 0 0-2.6-1.5L14 3h-4l-.3 2.4a8 8 0 0 0-2.6 1.5l-2.2-1-2 3.4 2 1.2a7.8 7.8 0 0 0 0 3l-2 1.2 2 3.4 2.2-1a8 8 0 0 0 2.6 1.5L10 21h4l.3-2.4a8 8 0 0 0 2.6-1.5l2.2 1 2-3.4z"/>');
+    miss.info=iconFallback('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>');
+    miss.moon=iconFallback('<path d="M20 15.5A8 8 0 0 1 8.5 4 8 8 0 1 0 20 15.5z"/>');
+    miss.plus=iconFallback('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>');
+    miss.search=iconFallback('<circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16" y2="16"/>');
+    miss.user=miss.userPlus || iconFallback('<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6"/>');
+    miss.users=iconFallback('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>');
+    Object.keys(miss).forEach(function(k){if(typeof ICON!=='undefined' && (!ICON[k] || ICON[k]==='undefined'))ICON[k]=miss[k]});
+    if(typeof window.I!=='undefined')Object.keys(ICON).forEach(function(k){window.I[k]=ICON[k]});
+  }catch(e){console.warn('icon compatibility',e)}
+
+  function storageGet(k,def){try{var r=SafeStorage.getItem(k);return r==null?def:r}catch(e){return def}}
+  function storageSet(k,v){try{SafeStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));return true}catch(e){return false}}
+  function accountKey(base){try{return typeof accountScopedKey==='function'?accountScopedKey(base):base+'::'+((userState&&userState.userId)||'anonymous')}catch(e){return base}}
+
+  /* Stable LS IDs: Firebase UID gets a permanent mapping; the old counter remains the fallback. */
+  function repairStableId(){
     try{
-      var logged=false, saved=null;
-      try{ logged=SafeStorage.getItem(STORAGE_LOGGED_IN)==='1'; saved=getUser(); }catch(e){}
-      var fbUser=null;
-      try{ fbUser=window.__fb && window.__fb.auth && window.__fb.auth.currentUser; }catch(e){}
-      if(document.body.classList.contains('logged-in') || (saved && saved.loggedIn) || logged || fbUser){
-        if(fbUser && (!saved || !saved.loggedIn) && typeof window.__lsHandleFirebaseUser==='function'){
-          try{window.__lsHandleFirebaseUser(fbUser);}catch(e){}
-        }
-        document.body.classList.add('logged-in');
-        hideGate();
-        var o=document.getElementById('onboarding'); if(o){o.classList.remove('show');o.style.display='none';o.style.pointerEvents='none';}
-        try{if(typeof renderUserPanel==='function')renderUserPanel();}catch(e){}
-        try{if(typeof renderAccountPage==='function')renderAccountPage();}catch(e){}
-        try{if(typeof bindNav==='function')bindNav();}catch(e){}
-      } else {
-        /* No session: remove only the loading splash and reveal the login/onboarding UI. */
-        hideGate(); showOnboarding();
-      }
-    }catch(e){ hideGate(); showOnboarding(); }
+      if(!window.userState || !userState.loggedIn || !userState.firebaseUid)return;
+      var key='lstream_identity_map_v2', map=JSON.parse(storageGet(key,'{}')||'{}'), uid=String(userState.firebaseUid);
+      var known=map[uid];
+      if(known){if(userState.userId!==known){userState.userId=known;saveUser(userState)}return}
+      var cur=String(userState.userId||'').match(/^#?LS-(\d+)$/i), curNum=cur?parseInt(cur[1],10):0;
+      var counter=parseInt(storageGet(STORAGE_USER_COUNTER,'0'),10)||0;
+      if(curNum>0 && !Object.values(map).includes('LS-'+String(curNum).padStart(5,'0'))){known='#LS-'+String(curNum).padStart(5,'0')}
+      else{counter=Math.max(counter,1);counter++;known='#LS-'+String(counter).padStart(5,'0');storageSet(STORAGE_USER_COUNTER,String(counter))}
+      map[uid]=known;storageSet(key,map);userState.userId=known;saveUser(userState);
+    }catch(e){}
   }
-  /* Firebase can be slow on mobile; recover at several checkpoints. */
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(recover,700);setTimeout(recover,2500);setTimeout(recover,5000);});
-  else {setTimeout(recover,700);setTimeout(recover,2500);setTimeout(recover,5000);}
-  window.addEventListener('load',function(){setTimeout(recover,300);});
+
+  /* Premium starter: once claimed, replace the claim card permanently with status. */
+  function premiumClaimRepair(){
+    try{
+      var old=window.renderSettingsPage;if(typeof old!=='function'||old.__xchPremium)return;
+      function wrapped(){old.apply(this,arguments);setTimeout(function(){
+        var box=document.querySelector('#settingsContent .premium-claim');if(!box||!userState)return;
+        if(userState.premiumClaimed){
+          var rem='Sudah di-claim';try{var rr=getPremiumRemaining&&getPremiumRemaining();if(rr&&rr.text)rem=rr.text}catch(e){}
+          box.innerHTML='<div class="premium-claim__crown">'+(ICON.crown||'♛')+'</div><div class="premium-claim__title">Premium Starter Sudah di-claim</div><div class="premium-claim__status">'+(isPremium()?'Premium aktif · Sisa '+esc2(rem):'Reward starter sudah pernah digunakan')+'</div>';
+        }
+      },0)}
+      wrapped.__xchPremium=true;window.renderSettingsPage=wrapped;
+    }catch(e){}
+  }
+
+  /* Background is shared by Home, Account and Settings. */
+  function applyGlobalBackground(){
+    try{
+      if(!userState||!userState.loggedIn)return;
+      var s=getSettings(), url=String(s.bgUrl||'').trim();
+      if(url){document.body.classList.add('ls-has-custom-bg');document.body.style.setProperty('--ls-body-bg','url("'+url.replace(/"/g,'%22')+'")');}
+      else{document.body.classList.remove('ls-has-custom-bg');document.body.style.removeProperty('--ls-body-bg')}
+    }catch(e){}
+  }
+  var oldApplySettings=window.applySettings;
+  if(typeof oldApplySettings==='function'&&!oldApplySettings.__xchBg){
+    window.applySettings=function(){oldApplySettings.apply(this,arguments);applyGlobalBackground()};window.applySettings.__xchBg=true;
+  }
+
+  /* Check-in: persist reward info and make the already-checked state visible. */
+  function repairCheckin(){
+    try{
+      var old=window.doCheckin;if(typeof old!=='function'||old.__xch)return;
+      function wrapped(){
+        var before=getCheckinData();var day=before.currentDay||1;old.apply(this,arguments);try{var d=getCheckinData();d.lastRewardDay=day;d.lastRewardAt=Date.now();storageSet(accountKey(STORAGE_CHECKIN),d)}catch(e){};try{renderSettingsPage();renderUserPanel();renderAccountPage()}catch(e){}}
+      wrapped.__xch=true;window.doCheckin=wrapped;
+    }catch(e){}
+  }
+  var oldRenderCheckin=window.renderCheckinBoxInner;
+  if(typeof oldRenderCheckin==='function'&&!oldRenderCheckin.__xch){
+    window.renderCheckinBoxInner=function(){var h=oldRenderCheckin.apply(this,arguments);try{var d=getCheckinData();if(isTodayChecked())h=h.replace('</div></div>','<div style="margin-top:9px;text-align:center;font-size:.68rem;color:#6ee7b7;font-weight:800">✓ Check-in hari ini sudah diterima</div></div></div>')}catch(e){}return h};window.renderCheckinBoxInner.__xch=true;
+  }
+
+  /* Premium badge: same blue verified mark on Home, Account and Settings. */
+  function premiumCheckHtml(){return '<span class="ls-blue-check" aria-label="Premium verified">'+(ICON.check||'✓')+'</span>'}
+  function decoratePremiumSurfaces(){
+    try{
+      var premium=typeof isPremium==='function'&&isPremium();
+      if(!premium)return;
+      document.querySelectorAll('.user-panel__name,.acct__name,.settings-panel__name').forEach(function(el){
+        if(el.querySelector('.ls-blue-check'))return;el.insertAdjacentHTML('beforeend',' '+premiumCheckHtml());
+      });
+    }catch(e){}
+  }
+
+  /* Dev controls: rerender the actual row after every role/badge/moderation change. */
+  function refreshDevRowFor(name){try{if(typeof renderSettingsPage==='function')renderSettingsPage();setTimeout(function(){var q=document.getElementById('devUserSearch');if(q&&q.value){q.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter'}))}},0)}catch(e){}}
+  function patchDevActions(){
+    try{
+      var old=window.bindDevUserActions;if(typeof old!=='function'||old.__xch)return;
+      function wrapped(){old.apply(this,arguments);document.querySelectorAll('[data-dev-give-dev],[data-dev-give-mod],[data-dev-give-tester],[data-dev-unlimited-diamond],[data-dev-unban],[data-dev-unmute]').forEach(function(btn){if(btn.dataset.xchBound)return;btn.dataset.xchBound='1';btn.addEventListener('click',function(){var n=btn.dataset.devGiveDev||btn.dataset.devGiveMod||btn.dataset.devGiveTester||btn.dataset.devUnlimitedDiamond||btn.dataset.devUnban||btn.dataset.devUnmute;setTimeout(function(){refreshDevRowFor(n)},80)})})}
+      wrapped.__xch=true;window.bindDevUserActions=wrapped;
+    }catch(e){}
+  }
+
+  /* Clan header = small summary popup; detail page remains available from clan cards. */
+  function openClanMini(c){
+    if(!c)return;
+    var m=document.getElementById('lsClanMiniModal');
+    if(!m){m=document.createElement('div');m.id='lsClanMiniModal';m.className='ls-clan-mini-modal';document.body.appendChild(m)}
+    var me=typeof getClanMember==='function'?getClanMember(c,userState.username):null, joined=!!me;
+    var key=new Date().toISOString().slice(0,10),claimed=!!(S&&S.claims&&S.claims[c.id]===key);
+    var top=c.members.slice().sort(function(a,b){return Number(b.donateToday||0)-Number(a.donateToday||0)}).slice(0,3);
+    m.innerHTML='<div class="ls-clan-mini-box"><div class="ls-clan-mini-head"><div style="min-width:0"><div class="ls-clan-mini-title">'+esc2(c.name)+'</div><div class="ls-clan-mini-tag">'+esc2(c.tag)+' · Level '+Number(c.level||1)+' · '+c.members.length+' member</div></div><button class="ls-clan-mini-close" id="lsClanMiniClose">×</button></div><div class="ls-clan-mini-stats"><div class="ls-clan-mini-stat"><b>'+c.members.length+'</b><span>Member</span></div><div class="ls-clan-mini-stat"><b>'+Number(c.diamonds||0).toLocaleString('id-ID')+'</b><span>Donate</span></div><div class="ls-clan-mini-stat"><b>'+Number(top[0]&&top[0].donateToday||0).toLocaleString('id-ID')+'</b><span>Top Donate</span></div></div><div style="font-size:.7rem;color:var(--text-muted);margin-bottom:8px">Top donate hari ini: '+(top.length?top.map(function(x,i){return '#'+(i+1)+' '+esc2(x.name)+' ('+Number(x.donateToday||0).toLocaleString('id-ID')+')'}).join(' · '):'Belum ada')+'</div><div class="ls-clan-mini-actions"><button class="ls-clan-mini-claim" id="lsClanMiniClaim" '+(!joined||claimed?'disabled':'')+'>'+(!joined?'Gabung dulu':(claimed?'✓ Sudah claim hari ini':'💎 Claim Berlian Harian'))+'</button><button id="lsClanMiniDonate">💎 Donate</button><button id="lsClanMiniTop">Top Donate</button><button id="lsClanMiniDetail">Detail Clan</button>'+(joined?'<button class="danger" id="lsClanMiniLeave">Keluar Clan</button>':'')+'</div></div>';
+    m.classList.add('open');
+    document.getElementById('lsClanMiniClose').onclick=function(){m.classList.remove('open')};
+    document.getElementById('lsClanMiniClaim').onclick=function(){if(typeof claimClan==='function'){claimClan(c);m.classList.remove('open')}};
+    document.getElementById('lsClanMiniTop').onclick=function(){m.classList.remove('open');if(typeof openClanDetail==='function'){openClanDetail(c);setTimeout(function(){var b=document.querySelector('[data-detail-tab="top"]');if(b)b.click()},30)}};
+    document.getElementById('lsClanMiniDetail').onclick=function(){m.classList.remove('open');if(typeof openClanDetail==='function')openClanDetail(c)};
+    document.getElementById('lsClanMiniDonate').onclick=function(){m.classList.remove('open');if(typeof openClanDonate==='function')openClanDonate(c);else if(typeof openClanDetail==='function')openClanDetail(c)};
+    var leave=document.getElementById('lsClanMiniLeave');if(leave)leave.onclick=function(){if(confirm('Keluar dari clan ini?')){try{c.members=c.members.filter(function(x){return x.name!==userState.username});userState.clanId='';userState.clanRole='';saveUserSafe();storeSet(S);m.classList.remove('open');renderClanEmpty()}catch(e){}}};
+    m.onclick=function(e){if(e.target===m)m.classList.remove('open')};
+  }
+  function patchClanHeader(){
+    var old=window.renderClanChat;if(typeof old==='function'&&!old.__xch){window.renderClanChat=function(){var h=old.apply(this,arguments);setTimeout(function(){var b=document.getElementById('lsClanChatInfoBtn');if(b&&!b.dataset.xch){b.dataset.xch='1';b.onclick=function(e){e.preventDefault();e.stopPropagation();var c=currentClan();if(c)openClanMini(c)}}},0);return h};window.renderClanChat.__xch=true}
+    var od=window.openClanDetail;if(typeof od==='function'&&!od.__xch){window.openClanDetail=function(c){var me=c&&getClanMember?getClanMember(c,userState.username):null;var oldHtml=od.apply(this,arguments);setTimeout(function(){var btn=document.getElementById('lsClanDetailRequest');if(btn){if(me){btn.disabled=true;btn.classList.add('sent');btn.textContent='✓ Sudah Bergabung'}else{btn.disabled=false;btn.classList.remove('sent')}}},0);return oldHtml};window.openClanDetail.__xch=true}
+  }
+
+  /* Event Creator */
+  function installEventCreator(){
+    if(document.getElementById('lsEventFab'))return;
+    var fab=document.createElement('button');fab.id='lsEventFab';fab.className='ls-event-fab';fab.type='button';fab.innerHTML='<span class="gift">🎁</span><button type="button" class="ls-event-fab__close" aria-label="Tutup">×</button>';document.body.appendChild(fab);
+    fab.querySelector('.ls-event-fab__close').onclick=function(e){e.stopPropagation();fab.remove()};
+    var modal=document.createElement('div');modal.id='lsEventModal';modal.className='ls-event-modal';modal.innerHTML='<div class="ls-event-box"><button class="ls-event-close" id="lsEventClose">×</button><div style="text-align:center;font-size:2rem">🎁</div><div class="ls-event-title">EVENT CREATOR LSTREAM BERHADIAH PREMIUM</div><div class="ls-event-sub">Upload • Raih views • Dapatkan Premium & Badge Creator</div><div class="ls-event-rules"><div class="ls-event-rule"><b>1</b><span>Upload video tentang LStream di Tiktok dan YouTube.</span></div><div class="ls-event-rule"><b>2</b><span>Raih minimal <strong>500 views</strong> dan <strong>20 likes</strong> untuk mendapatkan 2 hari premium, dengan batas maksimal <strong>3k views dan 50 likes</strong>.</span></div><div class="ls-event-rule"><b>3</b><span>Jika sudah meraih views dan likes minimal/maximal tersebut, kirim link video ke Gmail LStream.</span></div><div class="ls-event-rule"><b>4</b><span>Tidak boleh memakai link video orang lain.</span></div><div class="ls-event-rule"><b>5</b><span>Semakin rajin upload video tentang LStream semakin banyak peluang untuk mendapatkan banyak premium dan badge Creator.</span></div></div></div>';document.body.appendChild(modal);
+    fab.onclick=function(){modal.classList.add('open')};document.getElementById('lsEventClose').onclick=function(){modal.classList.remove('open')};modal.onclick=function(e){if(e.target===modal)modal.classList.remove('open')};
+  }
+
+  /* XP leaderboard: current/clan-known users are persisted locally, with daily/weekly/monthly buckets. */
+  var LBKEY='lstream_xp_leaderboard_v1';
+  function lbLoad(){try{return JSON.parse(storageGet(LBKEY,'{}')||'{}')}catch(e){return {}}}
+  function lbSave(x){storageSet(LBKEY,x)}
+  function updateLB(){try{if(!userState||!userState.loggedIn)return;var x=lbLoad(),id=userState.firebaseUid||userState.userId||userState.username,day=new Date().toISOString().slice(0,10),week=new Date();var jan=new Date(week.getFullYear(),0,1),wk=Math.ceil((((week-jan)/86400000)+jan.getDay()+1)/7),month=week.toISOString().slice(0,7);x.users=x.users||{};x.users[id]=Object.assign(x.users[id]||{name:userState.username,avatar:userState.avatarUrl||''},{name:userState.username,avatar:userState.avatarUrl||'',level:userState.level||1,dayKey:day,weekKey:week.getFullYear()+'-W'+wk,monthKey:month,dayXp:Number(userState.xp||0),weekXp:Number(userState.xp||0),monthXp:Number(userState.xp||0)});lbSave(x)}catch(e){}}
+  function lbUsers(){var x=lbLoad(),arr=Object.keys(x.users||{}).map(function(k){return x.users[k]});try{if(userState&&userState.loggedIn&&!arr.some(function(a){return a.name===userState.username})){arr.push({name:userState.username,avatar:userState.avatarUrl||'',dayXp:Number(userState.xp||0),weekXp:Number(userState.xp||0),monthXp:Number(userState.xp||0)})}}catch(e){};return arr}
+  function lbValue(u,period){return Number(u[period+'Xp']||0)}
+  function renderLB(period){var box=document.getElementById('lsXpBoard');if(!box)return;updateLB();var arr=lbUsers().sort(function(a,b){return lbValue(b,period)-lbValue(a,period)});var top=arr.slice(0,3);var rest=arr.slice(3,50);box.querySelectorAll('.ls-xp-tab').forEach(function(t){t.classList.toggle('active',t.dataset.period===period)});var topHtml=(top.length?top.map(function(u,i){return '<div class="ls-xp-card"><div class="ls-xp-card__rank">'+(i+1)+'</div><div class="ls-xp-card__avatar" style="'+(u.avatar?'background-image:url(\''+esc2(u.avatar)+'\')':'')+'"></div><div class="ls-xp-card__name">'+esc2(u.name||'User')+'</div><div class="ls-xp-card__xp">'+lbValue(u,period).toLocaleString('id-ID')+' XP</div></div>'}).join(''):'<div class="ls-xp-empty" style="grid-column:1/-1">Belum ada data XP.</div>');var restHtml=rest.map(function(u,i){return '<div class="ls-xp-row"><div class="ls-xp-row__rank">'+(i+4)+'</div><div class="ls-xp-row__avatar" style="'+(u.avatar?'background-image:url(\''+esc2(u.avatar)+'\')':'')+'"></div><div class="ls-xp-row__info"><div class="ls-xp-row__name">'+esc2(u.name||'User')+'</div><div class="ls-xp-row__xp">'+lbValue(u,period).toLocaleString('id-ID')+' XP</div></div></div>'}).join('');box.querySelector('.ls-xp-top3').innerHTML=topHtml;box.querySelector('.ls-xp-list').innerHTML=restHtml||'<div class="ls-xp-empty">Belum ada peringkat 4–50.</div>'}
+  function installLeaderboard(){
+    if(document.getElementById('lsXpBoard'))return;var anchor=document.querySelector('.user-panel-wrap');if(!anchor)return;var b=document.createElement('section');b.id='lsXpBoard';b.className='ls-xp-leaderboard';b.innerHTML='<div class="ls-xp-head"><div><div class="ls-xp-title">🏆 Top XP</div><div class="ls-xp-sub">Leaderboard XP Harian, Mingguan, dan Bulanan</div></div><span class="ls-xp-sub">Top 50</span></div><div class="ls-xp-tabs"><button class="ls-xp-tab active" data-period="day">Harian</button><button class="ls-xp-tab" data-period="week">Mingguan</button><button class="ls-xp-tab" data-period="month">Bulanan</button></div><div class="ls-xp-top3"></div><div class="ls-xp-list"></div>';anchor.insertAdjacentElement('afterend',b);b.querySelectorAll('.ls-xp-tab').forEach(function(t){t.onclick=function(){renderLB(t.dataset.period)}});renderLB('day')}
+
+  /* Games: Clicker + Whack-a-Mole. Rewards are account-scoped. */
+  var GAMEKEY='lstream_games_v1';
+  function gameLoad(){try{return JSON.parse(storageGet(accountKey(GAMEKEY),'{}')||'{}')}catch(e){return {}}}
+  function gameSave(x){storageSet(accountKey(GAMEKEY),x)}
+  function addDiamonds(n){userState.diamonds=Number(userState.diamonds||0)+Number(n||0);saveUser(userState);try{renderUserPanel();renderAccountPage();renderSettingsPage()}catch(e){}}
+  function openGame(kind){
+    var m=document.getElementById('lsGameModal');if(!m){m=document.createElement('div');m.id='lsGameModal';m.className='ls-game-modal';document.body.appendChild(m)}
+    var g=gameLoad();g.clicks=Number(g.clicks||0);g.hits=Number(g.hits||0);g.moleLevel=Number(g.moleLevel||1);m.innerHTML='<div class="ls-game-box"><button class="ls-game-close" id="lsGameClose">×</button><div class="ls-game-title">'+(kind==='clicker'?'⚡ Clicker':'🔨 Whack-a-Mole')+'</div><div class="ls-game-balance">💎 Berlian: '+Number(userState.diamonds||0).toLocaleString('id-ID')+'</div>'+(kind==='clicker'?'<div class="ls-click-circle" id="lsClickTarget">CLICK</div><div class="ls-game-stat"><span>Progress</span><b id="lsClickProgress">'+(g.clicks%5)+'/5</b></div><div class="ls-game-stat"><span>Reward</span><b>3 berlian / 5 click</b></div>':'<div class="ls-click-circle" id="lsMoleTarget">🔨 HIT!</div><div class="ls-game-stat"><span>Level</span><b id="lsMoleLevel">'+g.moleLevel+'</b></div><div class="ls-game-stat"><span>Progress</span><b id="lsMoleProgress">'+(g.hits%((g.moleLevel-1)*10+10))+'/'+((g.moleLevel-1)*10+10)+'</b></div><div class="ls-game-stat"><span>Reward level ini</span><b>'+((g.moleLevel-1)*25+50)+' gems</b></div>')+'</div>';m.classList.add('open');document.getElementById('lsGameClose').onclick=function(){m.classList.remove('open')};
+    if(kind==='clicker'){document.getElementById('lsClickTarget').onclick=function(){g.clicks++;if(g.clicks%5===0){addDiamonds(3);g.rewarded=(g.rewarded||0)+3}gameSave(g);document.getElementById('lsClickProgress').textContent=(g.clicks%5)+'/5';m.querySelector('.ls-game-balance').textContent='💎 Berlian: '+Number(userState.diamonds||0).toLocaleString('id-ID')}}
+    else{document.getElementById('lsMoleTarget').onclick=function(){g.hits++;var need=(g.moleLevel-1)*10+10;if(g.hits%need===0){var reward=(g.moleLevel-1)*25+50;addDiamonds(reward);g.moleLevel++;}gameSave(g);var next=(g.moleLevel-1)*10+10;document.getElementById('lsMoleLevel').textContent=g.moleLevel;document.getElementById('lsMoleProgress').textContent=(g.hits%next)+'/'+next;m.querySelector('.ls-game-balance').textContent='💎 Berlian: '+Number(userState.diamonds||0).toLocaleString('id-ID')}}
+  }
+  function injectGamePanel(){
+    if(document.getElementById('lsGamePanel'))return;var box=document.getElementById('settingsContent');if(!box)return;var s=document.createElement('div');s.className='settings-box ls-game-panel';s.id='lsGamePanel';s.innerHTML='<div class="settings-box__title">🎮 Panel Game</div><div class="settings-row"><div class="settings-row__label"><div class="settings-row__title">Game Center</div><div class="settings-row__desc">Mainkan game untuk mengumpulkan berlian.</div></div><div class="settings-row__control"><button class="btn btn--primary btn--sm" id="lsOpenGames">Main</button></div></div><div class="ls-game-list"><button class="ls-game-card" id="lsGameClicker"><div class="ls-game-card__pic">⚡</div><div class="ls-game-card__name">Clicker</div><div class="ls-game-card__desc">5 click = 3 berlian</div></button><button class="ls-game-card" id="lsGameMole"><div class="ls-game-card__pic">🔨</div><div class="ls-game-card__name">Whack-a-Mole</div><div class="ls-game-card__desc">Pukul target, naik level, reward makin besar.</div></button></div>';box.insertBefore(s,box.querySelector('.settings-box:nth-of-type(1)')||box.firstChild);s.querySelector('#lsOpenGames').onclick=function(){openGame('clicker')};s.querySelector('#lsGameClicker').onclick=function(){openGame('clicker')};s.querySelector('#lsGameMole').onclick=function(){openGame('mole')};
+  }
+
+  /* Cash fallback + premium/banner/nametag shop. */
+  function ensureCash(){if(userState.cash==null)userState.cash=0}
+  function buyWithCurrency(costD,costC,apply){ensureCash();var d=Number(userState.diamonds||0),c=Number(userState.cash||0);if(d>=costD){userState.diamonds=d-costD;apply();saveUser(userState);return true}if(c>=costC){userState.cash=c-costC;apply();saveUser(userState);return true}return false}
+  function openCurrencyShop(){
+    var m=document.getElementById('lsCurrencyShop');if(!m){m=document.createElement('div');m.id='lsCurrencyShop';m.className='ls-game-modal';document.body.appendChild(m)}ensureCash();m.innerHTML='<div class="ls-game-box"><button class="ls-game-close" id="lsCurrencyClose">×</button><div class="ls-game-title">🛒 LS PREMIUM SHOP</div><div class="ls-currency-row" style="margin:12px 0"><div class="ls-currency-card"><b class="ls-diamond">💎 '+Number(userState.diamonds||0).toLocaleString('id-ID')+'</b><span>Diamond</span></div><div class="ls-currency-card"><b class="ls-cash">💵 '+Number(userState.cash||0).toLocaleString('id-ID')+'</b><span>Cash</span></div></div><div class="ls-premium-shop"><div class="ls-premium-item"><div><div class="ls-premium-item__name">Premium 1 Hari</div><div class="ls-premium-item__price">100 Diamond / 10.000 Cash</div></div><button data-shop-prem="1">Beli</button></div><div class="ls-premium-item"><div><div class="ls-premium-item__name">Premium 7 Hari</div><div class="ls-premium-item__price">500 Diamond / 50.000 Cash</div></div><button data-shop-prem="7">Beli</button></div><div class="ls-premium-item"><div><div class="ls-premium-item__name">Banner Profile</div><div class="ls-premium-item__price">250 Diamond / 25.000 Cash</div></div><button data-shop-item="banner">Beli</button></div><div class="ls-premium-item"><div><div class="ls-premium-item__name">Custom Nametag Color</div><div class="ls-premium-item__price">150 Diamond / 15.000 Cash</div></div><button data-shop-item="nametag">Beli</button></div></div></div>';m.classList.add('open');document.getElementById('lsCurrencyClose').onclick=function(){m.classList.remove('open')};m.querySelectorAll('[data-shop-prem]').forEach(function(b){b.onclick=function(){var days=Number(b.dataset.shopPrem),ok=buyWithCurrency(days===1?100:500,days===1?10000:50000,function(){addPremiumDays(days)});if(ok){userState.premiumClaimed=true;saveUser(userState);alert('Premium berhasil dibeli.')}else alert('Diamond dan Cash tidak cukup.');m.remove();openCurrencyShop()}});m.querySelector('[data-shop-item="banner"]').onclick=function(){var ok=buyWithCurrency(250,25000,function(){userState.bannerOwned=true});alert(ok?'Banner berhasil dibeli.':'Saldo tidak cukup.');m.remove();openCurrencyShop()};m.querySelector('[data-shop-item="nametag"]').onclick=function(){var ok=buyWithCurrency(150,15000,function(){userState.nametagColorOwned=true});alert(ok?'Custom nametag color berhasil dibeli.':'Saldo tidak cukup.');m.remove();openCurrencyShop()};
+  }
+  function injectCurrencySettings(){
+    ensureCash();var box=document.getElementById('settingsContent');if(!box||document.getElementById('lsCurrencyBox'))return;var s=document.createElement('div');s.className='settings-box';s.id='lsCurrencyBox';s.innerHTML='<div class="settings-box__title">💰 Saldo</div><div class="ls-currency-row"><div class="ls-currency-card"><b class="ls-diamond">💎 '+Number(userState.diamonds||0).toLocaleString('id-ID')+'</b><span>Diamond — Premium & item</span></div><div class="ls-currency-card"><b class="ls-cash">💵 '+Number(userState.cash||0).toLocaleString('id-ID')+'</b><span>Cash — pengganti Diamond & item profile</span></div></div><button class="btn btn--primary" id="lsOpenCurrencyShop" style="width:100%;margin-top:10px">Buka Premium & Custom Shop</button>';box.insertBefore(s,box.firstChild);s.querySelector('#lsOpenCurrencyShop').onclick=openCurrencyShop;saveUser(userState)}
+
+  /* Wrap settings so the new panels reappear after every rerender. */
+  function patchSettings(){
+    var old=window.renderSettingsPage;if(typeof old!=='function'||old.__xchAll)return;
+    function wrapped(){old.apply(this,arguments);setTimeout(function(){repairStableId();applyGlobalBackground();premiumClaimRepair();injectGamePanel();injectCurrencySettings();decoratePremiumSurfaces();patchClanHeader();patchDevActions()},0)}
+    wrapped.__xchAll=true;window.renderSettingsPage=wrapped;
+  }
+
+  /* Fix background/save button and premium claim handlers after the original renderer is replaced. */
+  function patchSettingsEvents(){
+    document.addEventListener('click',function(e){
+      var b=e.target.closest('#claimPremiumBtn');if(b){e.preventDefault();e.stopImmediatePropagation();if(userState.premiumClaimed)return;addPremiumDays(3);userState.premiumClaimed=true;saveUser(userState);setTimeout(function(){renderSettingsPage();renderUserPanel();renderAccountPage();decoratePremiumSurfaces()},0)}
+      var bg=e.target.closest('#bgUrlOkBtn');if(bg){setTimeout(applyGlobalBackground,20)}
+    },true);
+  }
+
+  /* Hide the boot/loading gate once the app has resolved a local session; never leave the UI stuck. */
+  function bootRepair(){
+    try{
+      var gate=document.getElementById('authGate');
+      if(userState&&userState.loggedIn){document.body.classList.add('logged-in');if(gate){gate.classList.add('hidden');gate.style.display='none';}}
+      setTimeout(function(){if(userState&&userState.loggedIn&&gate){gate.classList.add('hidden');gate.style.display='none'}},2500);
+    }catch(e){}
+  }
+
+  function init(){
+    try{repairStableId();applyGlobalBackground();patchSettings();premiumClaimRepair();repairCheckin();patchDevActions();patchClanHeader();patchSettingsEvents();installEventCreator();installLeaderboard();updateLB();setTimeout(function(){injectGamePanel();injectCurrencySettings();decoratePremiumSurfaces();bootRepair()},300)}catch(e){console.warn('LStream repair layer',e)}
+    setInterval(function(){try{applyGlobalBackground();decoratePremiumSurfaces();updateLB()}catch(e){}},2500);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
+
 </body>
 </html>
