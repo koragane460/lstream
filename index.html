@@ -522,6 +522,16 @@ body:not(.logged-in) .navbar,body:not(.logged-in) .user-panel-wrap,body:not(.log
 .watch-synopsis{font-size:.8rem;line-height:1.55;color:#c8cee0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .watch-synopsis.expanded{display:block;-webkit-line-clamp:unset}
 .watch-synopsis-btn{background:transparent;border:none;color:var(--accent);font-size:.76rem;font-weight:700;cursor:pointer;padding:4px 0;font-family:inherit}
+ .watch-episode-section{margin:8px 0 18px;padding:14px 0 2px;border-top:1px solid rgba(255,255,255,.05)}
+.watch-episode-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.watch-episode-head h3{font-size:.92rem;font-weight:800}
+.watch-episode-head span{font-size:.68rem;color:var(--text-muted)}
+.watch-episode-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;max-height:270px;overflow-y:auto;padding-right:2px}
+.watch-episode-btn{position:relative;min-height:42px;padding:8px 5px;border-radius:11px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);color:var(--text-main);font:700 .7rem inherit;cursor:pointer;text-align:center;overflow:hidden}
+.watch-episode-btn.active{background:rgba(47,125,255,.18);border-color:rgba(47,125,255,.55);color:#fff}
+.watch-episode-btn .watch-ep-progress{position:absolute;left:0;bottom:0;height:2px;background:var(--accent)}
+.watch-autonext{margin-left:auto}
+.watch-autonext.active{background:rgba(16,185,129,.16);border-color:rgba(16,185,129,.5)}
 .watch-controls{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
 .watch-controls::-webkit-scrollbar{display:none}
 .watch-ctrl-btn{flex-shrink:0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--text-main);padding:9px 14px;border-radius:14px;font-size:.76rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
@@ -956,11 +966,12 @@ body.light-mode .user-fullscreen-overlay{background:#f0f3f9}
   <div class="watch-video-wrap" id="watchVideoWrap"><video id="watchVideoEl" controls playsinline preload="metadata"></video></div>
   <div class="watch-scroll-area" id="watchScrollArea">
     <div class="watch-info"><img class="watch-poster" id="watchPoster" src="" alt=""><div class="watch-info__body"><div class="watch-title" id="watchTitle">Judul</div><div class="watch-meta" id="watchMeta">Episode 1</div><div class="watch-synopsis" id="watchSynopsis"><span id="watchSynopsisText">Sinopsis...</span></div><button class="watch-synopsis-btn" id="watchSynopsisBtn">Lihat Selengkapnya</button></div></div>
+    <section class="watch-episode-section"><div class="watch-episode-head"><h3>Daftar Episode</h3><span id="watchEpisodeCount">Memuat...</span></div><div class="watch-episode-list" id="watchEpisodeList"></div></section>
     <div class="watch-controls">
       <button class="watch-ctrl-btn" id="watchSpeedBtn" type="button"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Kecepatan</span></button>
       <button class="watch-ctrl-btn" id="watchDownloadBtn" type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Download</span></button>
       <button class="watch-ctrl-btn" id="watchQualityBtn" type="button"><svg class="icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg><span>Kualitas</span></button>
-      <button class="watch-ctrl-btn" id="watchMiniBtn" type="button"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="14" height="10" rx="1.5"/><rect x="13" y="12" width="9" height="7" rx="1.5"/></svg><span>Mini</span></button>
+      <button class="watch-ctrl-btn" id="watchMiniBtn" type="button"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="14" height="10" rx="1.5"/><rect x="13" y="12" width="9" height="7" rx="1.5"/></svg><span>Mini</span></button><button class="watch-ctrl-btn watch-autonext" id="watchAutoNextBtn" type="button"><svg class="icon" viewBox="0 0 24 24"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg><span>Auto Next: OFF</span></button>
     </div>
     <div class="comments-section"><div class="comments-section__title">Komentar <span class="comments-section__count" id="commentCount">0</span></div>
       <div class="comment-form"><div class="comment-form__avatar" id="commentMyAvatar"></div><div class="comment-form__body"><textarea id="commentInput" placeholder="Tulis komentar..." rows="1"></textarea><div class="comment-form__actions"><button class="send-comment-btn" id="sendCommentBtn" disabled>Kirim</button></div></div></div>
@@ -1037,7 +1048,9 @@ var APP_VERSION = "6.7";
 var JIKAN_URL = "https://api.jikan.moe/v4";
 var STREAM_API_BASE = "https://api.aniheist.com";
 var streamApiCache = {};
+var streamAnimeIdCache = {};
 var streamHlsInstance = null;
+var watchAutoNext = true;
 var ANILIST_URL = "https://graphql.anilist.co";
 window.addEventListener("error", function (e) { try { var b = document.createElement("div"); b.className = "err-banner"; b.textContent = "JS Error: " + e.message; document.body.appendChild(b); setTimeout(function () { if (b.parentNode) b.parentNode.removeChild(b); }, 6000); } catch (er) {} });
 function setCookie(k, v, days) { try { var d = new Date(); d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000)); document.cookie = k + "=" + encodeURIComponent(v) + "; expires=" + d.toUTCString() + "; path=/; SameSite=Lax"; } catch (e) {} }
@@ -1283,7 +1296,7 @@ var continueWatchSection = $("continueWatchSection"), continueWatchGrid = $("con
 var qualityModal = $("qualityModal"), closeQualityModal = $("closeQualityModal"), qualityModalOpts = $("qualityModalOpts");
 var speedPopup = $("speedPopup"), closeSpeedPopup = $("closeSpeedPopup"), speedPopupOpts = $("speedPopupOpts");
 var downloadPopup = $("downloadPopup"), closeDownloadPopup = $("closeDownloadPopup"), downloadPopupOpts = $("downloadPopupOpts");
-var watchOverlay = $("watchOverlay"), closeWatchBtn = $("closeWatchBtn"), watchTopTitle = $("watchTopTitle"), watchVideoEl = $("watchVideoEl"), watchVideoWrap = $("watchVideoWrap"), watchPoster = $("watchPoster"), watchTitle = $("watchTitle"), watchMeta = $("watchMeta"), watchSynopsis = $("watchSynopsis"), watchSynopsisText = $("watchSynopsisText"), watchSynopsisBtn = $("watchSynopsisBtn"), commentInput = $("commentInput"), sendCommentBtn = $("sendCommentBtn"), commentList = $("commentList"), commentCount = $("commentCount"), commentMyAvatar = $("commentMyAvatar"), watchScrollArea = $("watchScrollArea");
+var watchOverlay = $("watchOverlay"), closeWatchBtn = $("closeWatchBtn"), watchTopTitle = $("watchTopTitle"), watchVideoEl = $("watchVideoEl"), watchVideoWrap = $("watchVideoWrap"), watchPoster = $("watchPoster"), watchTitle = $("watchTitle"), watchMeta = $("watchMeta"), watchSynopsis = $("watchSynopsis"), watchSynopsisText = $("watchSynopsisText"), watchSynopsisBtn = $("watchSynopsisBtn"), watchEpisodeList = $("watchEpisodeList"), watchEpisodeCount = $("watchEpisodeCount"), watchAutoNextBtn = $("watchAutoNextBtn"), commentInput = $("commentInput"), sendCommentBtn = $("sendCommentBtn"), commentList = $("commentList"), commentCount = $("commentCount"), commentMyAvatar = $("commentMyAvatar"), watchScrollArea = $("watchScrollArea");
 var watchSpeedBtn = $("watchSpeedBtn"), watchDownloadBtn = $("watchDownloadBtn"), watchQualityBtn = $("watchQualityBtn"), watchMiniBtn = $("watchMiniBtn");
 var replyPopup = $("replyPopup"), replyPopupClose = $("replyPopupClose"), replyPopupBackdrop = $("replyPopupBackdrop"), replyPopupScroll = $("replyPopupScroll"), replyPopupInput = $("replyPopupInput"), replyPopupSend = $("replyPopupSend");
 var avatarFileInput = $("avatarFileInput"), photoChatInput = $("photoChatInput");
@@ -1924,6 +1937,7 @@ function resolveStreamSource(anime, episode) {
   var title = anime.title || "";
   var cacheKey = String(anime.mal_id || title).toLowerCase() + "|" + String(episode.mal_id || 1);
   if (streamApiCache[cacheKey]) return Promise.resolve(streamApiCache[cacheKey]);
+  var titleKey = String(anime.mal_id || title).toLowerCase();
   function pickId(searchJson) {
     var list = searchJson && (searchJson.data || searchJson.results || searchJson);
     if (!Array.isArray(list) || !list.length) return null;
@@ -1935,22 +1949,31 @@ function resolveStreamSource(anime, episode) {
     var hit = exact || list[0];
     return hit && (hit.anime_id || hit.anilist_id || hit.id || hit.mal_id || hit.anilistId) || null;
   }
-  return streamApiFetch("/api/search?q=" + encodeURIComponent(title))
-    .then(function (j) {
-      var id = pickId(j);
-      if (!id) throw new Error("Anime tidak ditemukan di streaming API");
-      return streamApiFetch("/api/stream?anime_id=" + encodeURIComponent(id) + "&episode=" + encodeURIComponent(episode.mal_id || 1));
-    })
-    .then(function (j) {
-      var d = j && (j.data || j.result || j);
-      var url = d && (d.video_url || d.stream_url || d.url);
-      var format = d && (d.format || d.type || (url && /\\.m3u8(?:$|\\?)/i.test(url) ? "hls" : "mp4"));
-      if (!url) throw new Error("Sumber video tidak tersedia");
-      var result = { url: url, format: String(format || "mp4").toLowerCase(), subtitles: d.subtitles || [], headers: d.headers || {} };
-      streamApiCache[cacheKey] = result;
-      return result;
-    });
+  var idPromise = streamAnimeIdCache[titleKey]
+    ? Promise.resolve(streamAnimeIdCache[titleKey])
+    : streamApiFetch("/api/search?q=" + encodeURIComponent(title)).then(function (j) {
+        var id = pickId(j);
+        if (!id) throw new Error("Anime tidak ditemukan di streaming API");
+        streamAnimeIdCache[titleKey] = id;
+        return id;
+      });
+  return idPromise.then(function (id) {
+    return streamApiFetch("/api/stream?anime_id=" + encodeURIComponent(id) + "&episode=" + encodeURIComponent(episode.mal_id || 1));
+  }).then(function (j) {
+    var d = j && (j.data || j.result || j);
+    var url = d && (d.video_url || d.stream_url || d.url);
+    var format = d && (d.format || d.type || (url && /\.m3u8(?:$|\?)/i.test(url) ? "hls" : "mp4"));
+    if (!url) throw new Error("Sumber video tidak tersedia");
+    var result = { url: url, format: String(format || "mp4").toLowerCase(), subtitles: d.subtitles || [], headers: d.headers || {} };
+    streamApiCache[cacheKey] = result;
+    return result;
+  });
 }
+function preloadWatchStream(anime, episode) {
+  if (!anime || !episode) return;
+  resolveStreamSource(anime, episode).catch(function () {});
+}
+
 function destroyWatchHls() {
   try { if (streamHlsInstance) streamHlsInstance.destroy(); } catch (e) {}
   streamHlsInstance = null;
@@ -1985,26 +2008,115 @@ function setWatchVideoMessage(text) {
 }
 function loadWatchStream(anime, episode, resumeTime) {
   if (!watchVideoEl) return;
-  setWatchVideoMessage("Memuat sumber video...");
+  setWatchVideoMessage("Menyiapkan video...");
   resolveStreamSource(anime, episode).then(function (source) {
     setWatchVideoMessage("");
     setWatchStream(source);
     var onMeta = function () {
       try { if (resumeTime > 0 && isFinite(resumeTime)) watchVideoEl.currentTime = resumeTime; } catch (e) {}
       watchVideoEl.removeEventListener("loadedmetadata", onMeta);
+      try { watchVideoEl.play(); } catch (e) {}
     };
     watchVideoEl.addEventListener("loadedmetadata", onMeta);
-    setTimeout(function () { try { watchVideoEl.play(); } catch (e) {} }, 250);
+    setTimeout(function () { try { watchVideoEl.play(); } catch (e) {} }, 500);
+    var nextEp = getWatchEpisodeByNumber(anime.mal_id, episode.mal_id + 1);
+    if (nextEp) preloadWatchStream(anime, nextEp);
   }).catch(function () {
     destroyWatchHls();
     try { watchVideoEl.pause(); watchVideoEl.removeAttribute("src"); watchVideoEl.load(); } catch (e) {}
     setWatchVideoMessage("Video episode belum tersedia dari sumber streaming saat ini.");
   });
 }
-function openWatch(anime, episode, opts) { opts = opts || {}; if (!anime || !episode) return; state.currentWatch = { anime: anime, episode: episode }; try { if (!opts.noHistory) { userState.stats.history = (userState.stats.history || 0) + 1; addUserHistory(anime.title || "-", "Episode " + episode.mal_id, episode.title || ""); saveUser(userState); } } catch (e) {} if (watchTopTitle) watchTopTitle.textContent = (anime.title || "Anime") + " · Eps " + episode.mal_id; if (watchTitle) watchTitle.textContent = anime.title || "Anime"; if (watchMeta) watchMeta.textContent = "Episode " + episode.mal_id + " · " + (episode.title || "Untitled"); if (watchPoster) { watchPoster.src = _lg(anime.images); watchPoster.onerror = function () { this.src = PLACEHOLDER_IMG; }; } if (watchSynopsisText) watchSynopsisText.textContent = anime.synopsis || "—"; if (watchVideoEl) { watchVideoEl.pause(); watchVideoEl.playbackRate = state.playbackSpeed; var resumeTime = opts.resumeTime || opts.currentTime || 0; loadWatchStream(anime, episode, resumeTime); } if (commentInput) { commentInput.value = ""; autoResize(commentInput); } if (sendCommentBtn) sendCommentBtn.disabled = true; renderWatchComments(); if (watchOverlay) watchOverlay.classList.add("open"); renderContinueWatching(); if (watchScrollArea) watchScrollArea.scrollTop = 0; if (watchVideoEl) { if (watchVideoEl._progressHandler) watchVideoEl.removeEventListener("timeupdate", watchVideoEl._progressHandler); watchVideoEl._progressHandler = function () { try { var d = watchVideoEl.duration, ct = watchVideoEl.currentTime; if (!d || d <= 0) return; setEpisodeProgress(anime.mal_id, episode.mal_id, (ct / d) * 100, ct, d, anime, episode); } catch (e) {} }; watchVideoEl.addEventListener("timeupdate", watchVideoEl._progressHandler); } if (opts.autoPlay !== false) { setTimeout(function () { try { if (watchVideoEl) watchVideoEl.play(); } catch (e) {} }, 200); } }
+
+function getWatchEpisodeByNumber(animeId, num) {
+  var list = state.watchEpisodes || [];
+  for (var i = 0; i < list.length; i++) if (Number(list[i].mal_id) === Number(num)) return list[i];
+  return null;
+}
+function renderWatchEpisodeList(animeId, currentEp) {
+  if (!watchEpisodeList) return;
+  var eps = state.watchEpisodes || [];
+  if (!eps.length) { watchEpisodeList.innerHTML = '<span style="grid-column:1/-1;color:var(--text-muted);font-size:.75rem;padding:10px 0;">Episode belum tersedia.</span>'; if (watchEpisodeCount) watchEpisodeCount.textContent = "-"; return; }
+  if (watchEpisodeCount) watchEpisodeCount.textContent = eps.length + " episode";
+  watchEpisodeList.innerHTML = eps.map(function(ep) {
+    var prog = getEpisodeProgress(animeId, ep.mal_id);
+    var pct = prog && prog.percent > 0 && prog.percent < 98 ? Math.min(100, Number(prog.percent) || 0) : 0;
+    return '<button type="button" class="watch-episode-btn' + (Number(ep.mal_id) === Number(currentEp) ? ' active' : '') + '" data-watch-ep="' + ep.mal_id + '">Eps ' + ep.mal_id + (pct ? '<span class="watch-ep-progress" style="width:' + pct + '%"></span>' : '') + '</button>';
+  }).join('');
+  watchEpisodeList.querySelectorAll('[data-watch-ep]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var ep = getWatchEpisodeByNumber(animeId, parseInt(btn.dataset.watchEp,10));
+      if (!ep || !state.currentWatch) return;
+      var prog = getEpisodeProgress(animeId, ep.mal_id);
+      openWatch(state.currentWatch.anime, ep, { resumeTime: prog && prog.percent > 0 && prog.percent < 98 ? prog.currentTime : 0, noHistory: true });
+    });
+  });
+}
+function loadWatchEpisodes(animeId, currentEp) {
+  if (!watchEpisodeList) return;
+  watchEpisodeList.innerHTML = '<span style="grid-column:1/-1;color:var(--text-muted);font-size:.75rem;padding:10px 0;">Memuat episode...</span>';
+  fetchJikan('/anime/' + animeId + '/episodes?page=1').then(function(r) {
+    var eps = (r && Array.isArray(r.data)) ? r.data : [];
+    var total = (state.currentWatch && state.currentWatch.anime && state.currentWatch.anime.episodes) || 0;
+    if (!eps.length && total) for (var i=1;i<=Math.min(total,100);i++) eps.push({mal_id:i,title:'Episode '+i,aired:null});
+    state.watchEpisodes = eps;
+    renderWatchEpisodeList(animeId, currentEp);
+    var next = getWatchEpisodeByNumber(animeId, Number(currentEp)+1);
+    if (next && state.currentWatch) preloadWatchStream(state.currentWatch.anime, next);
+  }).catch(function(){ state.watchEpisodes=[]; renderWatchEpisodeList(animeId,currentEp); });
+}
+function updateAutoNextButton() {
+  if (!watchAutoNextBtn) return;
+  watchAutoNextBtn.classList.toggle('active', watchAutoNext);
+  var sp = watchAutoNextBtn.querySelector('span');
+  if (sp) sp.textContent = 'Auto Next: ' + (watchAutoNext ? 'ON' : 'OFF');
+}
+function playNextWatchEpisode() {
+  if (!state.currentWatch) return;
+  var anime = state.currentWatch.anime, cur = Number(state.currentWatch.episode && state.currentWatch.episode.mal_id) || 0;
+  var next = getWatchEpisodeByNumber(anime.mal_id, cur + 1);
+  if (!next) return;
+  openWatch(anime, next, { noHistory: true, resumeTime: 0 });
+}
+function openWatch(anime, episode, opts) {
+  opts = opts || {};
+  if (!anime || !episode) return;
+  state.currentWatch = { anime: anime, episode: episode };
+  try { if (!opts.noHistory) { userState.stats.history = (userState.stats.history || 0) + 1; addUserHistory(anime.title || "-", "Episode " + episode.mal_id, episode.title || ""); saveUser(userState); } } catch (e) {}
+  if (watchTopTitle) watchTopTitle.textContent = (anime.title || "Anime") + " · Eps " + episode.mal_id;
+  if (watchTitle) watchTitle.textContent = anime.title || "Anime";
+  if (watchMeta) watchMeta.textContent = "Episode " + episode.mal_id + " · " + (episode.title || "Untitled");
+  if (watchPoster) { watchPoster.src = _lg(anime.images); watchPoster.onerror = function () { this.src = PLACEHOLDER_IMG; }; }
+  if (watchSynopsisText) watchSynopsisText.textContent = anime.synopsis || "—";
+  if (watchOverlay) watchOverlay.classList.add("open");
+  if (watchScrollArea) watchScrollArea.scrollTop = 0;
+  renderWatchEpisodeList(anime.mal_id, episode.mal_id);
+  loadWatchEpisodes(anime.mal_id, episode.mal_id);
+  if (watchVideoEl) {
+    watchVideoEl.pause(); watchVideoEl.playbackRate = state.playbackSpeed;
+    var resumeTime = opts.resumeTime || opts.currentTime || 0;
+    loadWatchStream(anime, episode, resumeTime);
+  }
+  if (commentInput) { commentInput.value = ""; autoResize(commentInput); }
+  if (sendCommentBtn) sendCommentBtn.disabled = true;
+  renderWatchComments();
+  renderContinueWatching();
+  if (watchVideoEl) {
+    if (watchVideoEl._progressHandler) watchVideoEl.removeEventListener("timeupdate", watchVideoEl._progressHandler);
+    watchVideoEl._progressHandler = function () { try { var d = watchVideoEl.duration, ct = watchVideoEl.currentTime; if (!d || d <= 0) return; setEpisodeProgress(anime.mal_id, episode.mal_id, (ct / d) * 100, ct, d, anime, episode); } catch (e) {} };
+    watchVideoEl.addEventListener("timeupdate", watchVideoEl._progressHandler);
+    if (watchVideoEl._endedHandler) watchVideoEl.removeEventListener("ended", watchVideoEl._endedHandler);
+    watchVideoEl._endedHandler = function () { if (watchAutoNext) playNextWatchEpisode(); };
+    watchVideoEl.addEventListener("ended", watchVideoEl._endedHandler);
+  }
+  updateAutoNextButton();
+}
+
 function closeWatch() { try { if (watchVideoEl) watchVideoEl.pause(); destroyWatchHls(); } catch (e) {} if (watchOverlay) watchOverlay.classList.remove("open"); var an = state.currentWatch ? state.currentWatch.anime : null; state.currentWatch = null; state.replyCommentId = null; if (replyPopup) replyPopup.classList.remove("open"); if (an) setTimeout(function () { openAnimeModal(an.mal_id); }, 100); }
 if (closeWatchBtn) closeWatchBtn.addEventListener("click", closeWatch);
 if (watchSynopsisBtn) watchSynopsisBtn.addEventListener("click", function () { if (!watchSynopsis) return; watchSynopsis.classList.toggle("expanded"); watchSynopsisBtn.textContent = watchSynopsis.classList.contains("expanded") ? "Sembunyikan" : "Lihat Selengkapnya"; });
+if (watchAutoNextBtn) watchAutoNextBtn.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); watchAutoNext = !watchAutoNext; updateAutoNextButton(); });
+updateAutoNextButton();
 if (watchSpeedBtn) watchSpeedBtn.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openSpeedModal(); });
 if (watchQualityBtn) watchQualityBtn.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openQualityModal(); });
 if (watchDownloadBtn) watchDownloadBtn.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); openDownloadModal(); });
