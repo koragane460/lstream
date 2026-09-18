@@ -5655,7 +5655,28 @@ try{
     return row;
   }
   function buildClan(){var v=document.getElementById('lsClanView'),c=clanForChat();if(!v)return;if(!c){v.innerHTML='<div class="ls-clan-empty"><div class="ls-clan-empty__icon">'+ICON.users+'</div><h3>Clan belum dipilih</h3><p>Gabung atau buat clan untuk menggunakan Chat Clan.</p><div class="ls-clan-actions"><button class="ls-clan-action" id="lsStableJoinClan">'+ICON.users+'<span><b>Gabung Clan</b><span>Cari clan yang tersedia</span></span></button><button class="ls-clan-action" id="lsStableCreateClan">'+ICON.plus+'<span><b>Bikin Clan</b><span>Biaya pembuatan 1.000 berlian</span></span></button></div></div>';var j=document.getElementById('lsStableJoinClan'),cr=document.getElementById('lsStableCreateClan');if(j)j.onclick=function(){if(typeof renderClanJoin==='function')renderClanJoin()};if(cr)cr.onclick=function(){if(typeof openCreateClan==='function')openCreateClan()};return}v.innerHTML='<div class="ls-clan-chat-wrap"><button class="ls-clan-chat-head" id="lsStableClanInfo"><span class="ls-clan-chat-head__left">'+clanTag(c)+'<span>Clan</span></span>'+ICON.chev+'</button><div id="lsStableClanBox" class="chat-box ls-clan-chat-box"></div><div class="chat-input-bar ls-clan-chat-inputbar"><div class="chat-input-row"><textarea id="lsStableClanInput" placeholder="Tulis pesan di clan..." rows="1"></textarea><button class="send" id="lsStableClanSend">'+icon('<polygon points="3 11 22 2 13 21 11 13 3 11"/>')+'</button></div></div></div>';var box=document.getElementById('lsStableClanBox'),arr=clanMsgs(c)||[];if(!arr.length)box.innerHTML='<div class="comments-empty" style="padding:55px 18px">Belum ada pesan di clan.</div>';else arr.forEach(function(m){box.appendChild(makeClanRow(m,c))});box.scrollTop=box.scrollHeight;var inp=document.getElementById('lsStableClanInput'),send=document.getElementById('lsStableClanSend');function sendClan(){if(!userState.loggedIn)return;var t=inp.value.trim();if(!t)return;var cs=currentCos(),m={id:'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name:userState.username,avatar:userState.avatarUrl||'',text:t,time:Date.now(),nameTagId:cs.tag||0,customMessageId:cs.msg||0};var a=clanMsgs(c)||[];a.push(m);clanSaveMsgs(c,a);var empty=box.querySelector('.comments-empty');if(empty)empty.remove();box.appendChild(makeClanRow(m,c));box.scrollTop=box.scrollHeight;inp.value='';inp.focus({preventScroll:true})}send.onclick=sendClan;inp.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendClan()}};var info=document.getElementById('lsStableClanInfo');if(info)info.onclick=function(){if(typeof openClanInfo==='function')openClanInfo(c)}}
-  function renderShellStable(mode){var ov=document.getElementById('chatOverlay');if(!ov)return;ov.classList.add('open');var sheet=ov.querySelector('.sheet');if(!sheet)return;sheet.innerHTML='<div class="sheet__header"><button class="icon-btn" id="lsStableChatClose">'+ICON.back+'</button><span class="sheet__title">'+(mode==='clan'?'Chat Clan':'Chat Global')+'</span></div><div class="ls-clan-shell ls-stable-shell"><div class="ls-clan-tabs ls-forced-chat-tabs"><button class="ls-clan-tab '+(mode!=='clan'?'active':'')+'" data-stable-chat="global">Global</button><button class="ls-clan-tab '+(mode==='clan'?'active':'')+'" data-stable-chat="clan">Clan</button></div><div class="ls-clan-view" id="lsClanView"></div></div>';document.getElementById('lsStableChatClose').onclick=function(){ov.classList.remove('open')};sheet.querySelectorAll('[data-stable-chat]').forEach(function(b){b.onclick=function(e){e.preventDefault();e.stopPropagation();sheet.querySelectorAll('.ls-clan-tab').forEach(function(x){x.classList.remove('active')});b.classList.add('active');if(b.dataset.stableChat==='clan'){sheet.querySelector('.sheet__title').textContent='Chat Clan';buildClan()}else{sheet.querySelector('.sheet__title').textContent='Chat Global';buildGlobal()}}});if(mode==='clan')buildClan();else buildGlobal()}
+  function renderShellStable(mode){
+    var ov=document.getElementById('chatOverlay');if(!ov)return;
+    ov.classList.add('open');
+    var sheet=ov.querySelector('.sheet');if(!sheet)return;
+    sheet.innerHTML='<div class="sheet__header"><button class="icon-btn" id="lsStableChatClose">'+ICON.back+'</button><span class="sheet__title">'+(mode==='clan'?'Chat Clan':'Chat Global')+'</span></div><div class="ls-clan-shell ls-stable-shell"><div class="ls-clan-tabs ls-forced-chat-tabs"><button class="ls-clan-tab '+(mode!=='clan'?'active':'')+'" data-stable-chat="global">Global</button><button class="ls-clan-tab '+(mode==='clan'?'active':'')+'" data-stable-chat="clan">Clan</button></div><div class="ls-clan-view" id="lsClanView"></div></div>';
+    var close=document.getElementById('lsStableChatClose');if(close)close.onclick=function(){ov.classList.remove('open')};
+    var title=sheet.querySelector('.sheet__title');
+    sheet.querySelectorAll('[data-stable-chat]').forEach(function(b){b.onclick=function(e){
+      e.preventDefault();e.stopPropagation();
+      sheet.querySelectorAll('.ls-clan-tab').forEach(function(x){x.classList.remove('active')});b.classList.add('active');
+      if(b.dataset.stableChat==='clan'){
+        if(title)title.textContent='Chat Clan';
+        if(typeof renderClanChatPage==='function')renderClanChatPage();else if(typeof renderClanEmpty==='function')renderClanEmpty();
+      }else{
+        if(title)title.textContent='Chat Global';
+        if(typeof restoreGlobalChatUI==='function')restoreGlobalChatUI();
+      }
+    }});
+    if(mode==='clan'){
+      if(typeof renderClanChatPage==='function')renderClanChatPage();else if(typeof renderClanEmpty==='function')renderClanEmpty();
+    }else if(typeof restoreGlobalChatUI==='function')restoreGlobalChatUI();
+  }
   renderShellStable.__lsStable=true;window.renderClanShell=renderShellStable;
   /* Any existing Home Chat Bareng click is intercepted and opened synchronously. */
   document.addEventListener('click',function(e){var card=e.target&&e.target.closest?e.target.closest('#lsHomeChatBareng'):null;if(card){e.preventDefault();e.stopImmediatePropagation();renderShellStable('global');return}},true);
@@ -5666,9 +5687,10 @@ try{
     if(!board||!tools)return;
     var c=document.getElementById('lsHomeChatBareng');
     if(!c){c=document.createElement('div');c.id='lsHomeChatBareng';board.insertAdjacentElement('afterend',c)}
-    if(!c.__lsStableClick){c.__lsStableClick=true;c.onclick=function(e){e.preventDefault();renderShellStable('global')}}
-    var arr=[];try{arr=(getGlobalChat()||[]).slice(-8).reverse()}catch(e){arr=[]}
-    var shown=arr.length?arr[0]:null,feedHtml='';
+    if(!c.__lsStableClick){c.__lsStableClick=true;c.onclick=function(e){e.preventDefault();e.stopPropagation();if(typeof window.renderClanShell==='function')window.renderClanShell('global')}}
+    var arr=[];try{arr=(getGlobalChat()||[]).slice(-20).reverse()}catch(e){arr=[]}
+    var idx=Number(c.dataset.idx||0);if(arr.length)idx=((idx%arr.length)+arr.length)%arr.length;
+    var shown=arr.length?arr[idx]:null,feedHtml='';
     if(shown){
       var n=shown.fromName||shown.name||'User',t=shown.type==='photo'?'Foto':(shown.text||''),a=shown.fromAvatar||'';
       var av=a?'background-image:url(\''+esc(a).replace(/'/g,'%27')+'\');background-size:cover;background-position:center':'display:grid;place-items:center';
@@ -5687,5 +5709,85 @@ try{
 })();
 </script>
 
+
+<style id="ls-chat-final-user-fix-2026-09-19">
+/* Requested chat tabs: no blue cards, only the active white underline. */
+#chatOverlay .ls-clan-tabs.ls-forced-chat-tabs,
+#chatOverlay .ls-clan-shell .ls-clan-tabs{display:flex!important;grid-template-columns:none!important;gap:0!important;padding:10px 14px 0!important;border-bottom:1px solid rgba(255,255,255,.06)!important;background:rgba(7,12,22,.96)!important}
+#chatOverlay .ls-clan-tabs.ls-forced-chat-tabs .ls-clan-tab,
+#chatOverlay .ls-clan-shell .ls-clan-tab{position:relative!important;flex:1!important;display:block!important;min-height:46px!important;padding:12px 8px 11px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#7784a4!important;box-shadow:none!important;font-weight:800!important}
+#chatOverlay .ls-clan-tabs.ls-forced-chat-tabs .ls-clan-tab.active,
+#chatOverlay .ls-clan-shell .ls-clan-tab.active{color:#fff!important;background:transparent!important;border:0!important;box-shadow:none!important}
+#chatOverlay .ls-clan-tabs.ls-forced-chat-tabs .ls-clan-tab:after,
+#chatOverlay .ls-clan-shell .ls-clan-tab:after{content:""!important;position:absolute!important;left:22%!important;right:22%!important;bottom:-1px!important;height:2px!important;background:#fff!important;transform:scaleX(0)!important;transition:transform .22s ease!important;border-radius:2px!important}
+#chatOverlay .ls-clan-tabs.ls-forced-chat-tabs .ls-clan-tab.active:after,
+#chatOverlay .ls-clan-shell .ls-clan-tab.active:after{transform:scaleX(1)!important}
+/* Keep Global/Clan chat usable; the composer stays visible at the bottom. */
+#chatOverlay .ls-global-fixed,#chatOverlay .ls-clan-chat-wrap{display:flex!important;flex-direction:column!important;min-height:0!important;height:100%!important}
+#chatOverlay .ls-global-box,#chatOverlay .ls-clan-chat-box{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important}
+#chatOverlay .ls-global-inputbar,#chatOverlay .ls-clan-chat-inputbar{flex:0 0 auto!important;display:block!important}
+#lsHomeChatBareng .ls-home-chat-feed{display:block!important}
+#lsHomeChatBareng .ls-home-chat-feed .ls-home-chat-item{display:flex!important}
+</style>
+<script id="ls-chat-final-user-fix-2026-09-19-js">
+(function(){'use strict';
+try{
+  /* Fallback for older repair code that references icon as a global. */
+  if(typeof window.icon!=='function')window.icon=function(s){return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">'+s+'</svg>'};
+
+  /* Final renderer: use the original Clan V2 layout/components, only changing the tab labels. */
+  window.renderClanShell=function(mode){
+    var ov=document.getElementById('chatOverlay');if(!ov)return;
+    ov.classList.add('open');
+    var sheet=ov.querySelector('.sheet');if(!sheet)return;
+    sheet.innerHTML='<div class="sheet__header"><button class="icon-btn" id="lsFinalChatClose">'+ICON.back+'</button><span class="sheet__title">'+(mode==='clan'?'Chat Clan':'Chat Global')+'</span></div><div class="ls-clan-shell"><div class="ls-clan-tabs"><button class="ls-clan-tab '+(mode==='global'?'active':'')+'" data-final-chat-mode="global">Global</button><button class="ls-clan-tab '+(mode==='clan'?'active':'')+'" data-final-chat-mode="clan">Clan</button></div><div class="ls-clan-view" id="lsClanView"></div></div>';
+    var close=document.getElementById('lsFinalChatClose');if(close)close.onclick=function(){ov.classList.remove('open')};
+    var title=sheet.querySelector('.sheet__title');
+    sheet.querySelectorAll('[data-final-chat-mode]').forEach(function(b){b.onclick=function(e){
+      e.preventDefault();e.stopPropagation();
+      sheet.querySelectorAll('.ls-clan-tab').forEach(function(x){x.classList.remove('active')});b.classList.add('active');
+      var m=b.dataset.finalChatMode;
+      if(m==='clan'){
+        if(title)title.textContent='Chat Clan';
+        if(typeof renderClanChatPage==='function')renderClanChatPage();else if(typeof renderClanEmpty==='function')renderClanEmpty();
+      }else{
+        if(title)title.textContent='Chat Global';
+        if(typeof restoreGlobalChatUI==='function')restoreGlobalChatUI();
+      }
+    }});
+    if(mode==='clan'){
+      if(typeof renderClanChatPage==='function')renderClanChatPage();else if(typeof renderClanEmpty==='function')renderClanEmpty();
+    }else if(typeof restoreGlobalChatUI==='function')restoreGlobalChatUI();
+  };
+
+  /* Rebuild Home Chat Bareng as one message only and rotate to another message every 5 seconds. */
+  function renderOneHomeChat(){
+    var board=document.getElementById('lsBoardCard'),tools=document.getElementById('lsHomeTools');if(!board||!tools)return;
+    var c=document.getElementById('lsHomeChatBareng');if(!c){c=document.createElement('div');c.id='lsHomeChatBareng';board.insertAdjacentElement('afterend',c)}
+    var arr=[];try{arr=(getGlobalChat()||[]).slice(-20).reverse()}catch(e){arr=[]}
+    var idx=Number(c.dataset.finalIdx||0);if(arr.length)idx=((idx%arr.length)+arr.length)%arr.length;
+    var m=arr.length?arr[idx]:null;
+    if(!m){c.innerHTML='<div class="ls-home-chat-head"><div class="ls-home-chat-title">Chat Bareng</div><div style="font-size:.58rem;color:#8ea0bf">Global dan Clan</div></div><div class="ls-home-chat-feed"><div class="ls-home-chat-item"><div><div class="ls-home-chat-name">LStream</div><div class="ls-home-chat-text">Belum ada percakapan</div></div></div></div>';return}
+    var n=m.fromName||m.name||'User',t=m.type==='photo'?'Foto':(m.text||''),a=m.fromAvatar||'';
+    var avatar=a?'<img class="ls-home-chat-avatar" src="'+String(a).replace(/"/g,'%22')+'" alt="">':'<div class="ls-home-chat-avatar" style="display:grid;place-items:center;font-weight:900;color:#dfe7f8">'+esc(n.charAt(0).toUpperCase())+'</div>';
+    c.innerHTML='<div class="ls-home-chat-head"><div class="ls-home-chat-title">Chat Bareng</div><div style="font-size:.58rem;color:#8ea0bf">Global dan Clan</div></div><div class="ls-home-chat-feed"><div class="ls-home-chat-item">'+avatar+'<div><div class="ls-home-chat-name">'+esc(n)+'</div><div class="ls-home-chat-text">'+esc(t)+'</div><div class="ls-home-chat-time">'+(typeof formatRelativeTime==='function'?formatRelativeTime(m.time):'')+'</div></div></div></div>';
+    c.onclick=function(e){e.preventDefault();if(typeof window.renderClanShell==='function')window.renderClanShell('global')};
+    tools.querySelectorAll('.user-panel .ls-home-chat-card,.ls-home-chat-card').forEach(function(x){if(x!==c)x.remove()});
+  }
+  renderOneHomeChat();
+  if(!window.__lsFinalHomeChatTimer){window.__lsFinalHomeChatTimer=setInterval(function(){
+    var c=document.getElementById('lsHomeChatBareng'),arr=[];try{arr=(getGlobalChat()||[]).slice(-20).reverse()}catch(e){}
+    if(!c){renderOneHomeChat();return}
+    if(arr.length>1){c.dataset.finalIdx=String((Number(c.dataset.finalIdx||0)+1)%arr.length);renderOneHomeChat()}
+  },5000)}
+
+  /* If an older event listener fires first, it now resolves to this renderer. */
+  document.addEventListener('click',function(e){
+    var home=e.target&&e.target.closest?e.target.closest('#lsHomeChatBareng'):null;
+    if(home){e.preventDefault();e.stopImmediatePropagation();window.renderClanShell('global')}
+  },true);
+}catch(e){console.warn('LStream final chat fix',e)}
+})();
+</script>
 </body>
 </html>
