@@ -4178,5 +4178,208 @@ try{
 .shop-card__preview:before{content:"";position:absolute;inset:7px;border:1px solid rgba(101,165,255,.08);border-radius:12px;pointer-events:none}
 .shop-card__preview{position:relative!important;overflow:hidden!important}
 </style>
+
+<style id="ls-final-avatar-border-and-neon-theme-2026-09-18">
+/* ===== LStream unified avatar/border system ===== */
+.ls-avatar-shell{position:relative!important;display:inline-block!important;vertical-align:middle!important;flex:0 0 auto!important;width:var(--ls-avatar-size,72px)!important;height:var(--ls-avatar-size,72px)!important;overflow:visible!important;border-radius:50%!important;isolation:isolate!important;line-height:0!important}
+.ls-avatar-photo-wrap{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border-radius:50%!important;overflow:hidden!important;background:#070d18!important;z-index:1!important}
+.ls-avatar-photo{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important;border-radius:50%!important}
+.ls-avatar-border{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;object-fit:fill!important;object-position:center!important;border-radius:50%!important;pointer-events:none!important;z-index:20!important}
+.ls-avatar-shell:not(.has-border){overflow:hidden!important}
+.user-panel__avatar-wrap,.acct__avatar-box,.comment-form__avatar,.comment-item__avatar,.chat-msg__avatar{overflow:visible!important;position:relative!important}
+.user-panel__avatar-wrap .ls-avatar-shell,.acct__avatar-box .ls-avatar-shell,.comment-form__avatar .ls-avatar-shell,.comment-item__avatar .ls-avatar-shell,.chat-msg__avatar .ls-avatar-shell{z-index:80!important}
+.user-panel__status,.user-panel__level-chip,.acct__dot,.acct__lvl{z-index:250!important}
+.user-panel__status{right:-5px!important;bottom:-5px!important}
+.user-panel__level-chip{left:-6px!important;bottom:-6px!important}
+.acct__dot{right:-6px!important;bottom:-6px!important}
+.acct__lvl{left:-6px!important;bottom:-6px!important}
+.comment-form__avatar,.comment-item__avatar,.chat-msg__avatar{width:38px!important;height:38px!important;background:transparent!important;border:0!important}
+.comment-item__avatar{width:36px!important;height:36px!important}
+.chat-msg__avatar{width:38px!important;height:38px!important}
+/* Border stays over the photo, while status/level chips stay readable at the rim. */
+.user-panel__avatar-wrap .ls-avatar-border,.acct__avatar-box .ls-avatar-border,.comment-form__avatar .ls-avatar-border,.comment-item__avatar .ls-avatar-border,.chat-msg__avatar .ls-avatar-border{z-index:220!important}
+
+/* ===== Unified LStream visual language: apply the same generated dark/neon glass theme everywhere ===== */
+:root{
+  --ls-bg0:#040812;--ls-bg1:#071224;--ls-bg2:#0b1830;--ls-panel:rgba(9,20,39,.86);--ls-panel2:rgba(13,28,53,.78);
+  --ls-line:rgba(105,170,255,.20);--ls-line2:rgba(105,170,255,.34);--ls-blue:#4d8dff;--ls-cyan:#6fdcff;--ls-purple:#8d6cff;
+  --ls-text:#eef5ff;--ls-muted:#8495b5;--ls-shadow:0 18px 50px rgba(0,0,0,.42)
+}
+html,body{background:radial-gradient(900px 520px at 50% -140px,rgba(53,108,205,.18),transparent 65%),linear-gradient(180deg,var(--ls-bg1),var(--ls-bg0))!important;color:var(--ls-text)!important}
+body{background-attachment:fixed!important}
+button,input,textarea,select{font-family:inherit!important}
+button{transition:transform .16s ease,filter .16s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease!important}
+button:not(:disabled):active{transform:translateY(1px) scale(.985)!important}
+button:not(:disabled):hover{filter:brightness(1.08)!important}
+
+/* top chrome */
+.navbar{background:linear-gradient(180deg,rgba(7,16,32,.96),rgba(5,12,25,.91))!important;border-bottom:1px solid var(--ls-line)!important;box-shadow:0 12px 34px rgba(0,0,0,.28)!important;backdrop-filter:blur(18px)!important}
+.navbar__iconbtn,.icon-btn,.quick-panel__item{background:linear-gradient(145deg,rgba(22,43,76,.72),rgba(8,19,38,.9))!important;border:1px solid var(--ls-line)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 22px rgba(0,0,0,.18)!important}
+.navbar__iconbtn:hover,.icon-btn:hover{border-color:var(--ls-line2)!important;box-shadow:0 0 18px rgba(77,141,255,.16),inset 0 1px 0 rgba(255,255,255,.08)!important}
+.quick-panel{background:linear-gradient(160deg,rgba(13,29,55,.98),rgba(5,13,27,.98))!important;border-color:var(--ls-line)!important;box-shadow:var(--ls-shadow)!important}
+
+/* shared cards / containers */
+.user-panel,.card,.anime-card,.shop-card,.settings-box,.comments-section,.friends-card,.notif-card,.sheet,.modal,.popup-sheet,.simple-modal,.user-fullscreen,.acct__hero,.acct__stats,.acct__tabs,.tab-list-item,.ls-clan-card,.ls-clan-detail-head,.ls-clan-member-count,.ls-clan-level,.ls-clan-resource,.ls-clan-subtabs,.ls-clan-chat-wrap,.watch-panel,.watch-episodes,.watch-video-wrap{background:linear-gradient(145deg,rgba(12,27,52,.92),rgba(5,14,29,.94))!important;border-color:var(--ls-line)!important;box-shadow:var(--ls-shadow),inset 0 1px 0 rgba(255,255,255,.035)!important}
+.anime-card,.shop-card,.settings-box,.tab-list-item,.ls-clan-card{border-radius:18px!important}
+.anime-card:hover,.shop-card:hover,.ls-clan-card:hover{border-color:rgba(111,190,255,.38)!important;box-shadow:0 18px 44px rgba(0,0,0,.42),0 0 26px rgba(77,141,255,.09)!important;transform:translateY(-2px)!important}
+
+/* all primary/secondary/action buttons */
+.btn,.shop-card__buy,.watch-ctrl-btn,.quality-btn,.checkin-btn,.checkin-popup__confirm,.settings-profile-action-btn,.settings-logout,.dev-mini-btn,.ls-clan-action,.ls-clan-request,.ls-clan-request-big,.ls-clan-setting-btn,.ls-clan-create-btn,.ls-clan-claim,.ls-clan-leave,.ls-clan-icon-btn,.ls-clan-back,.ls-broadcast-btn,.ls-mod-btn,.send-comment-btn,.send,.chat-msg__react-btn,.chat-msg__del,.comment-action,.bottom-nav__item,.acct__tab,.ls-clan-subtab,.popup-sheet__opts button,.simple-modal__actions button,.user-fullscreen__back{background:linear-gradient(145deg,rgba(18,39,72,.96),rgba(7,18,37,.98))!important;border:1px solid var(--ls-line)!important;color:#dfeaff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 7px 20px rgba(0,0,0,.18)!important}
+.btn--primary,.shop-card__buy:not(.owned):not(.equipped),.send-comment-btn:not(:disabled),.checkin-btn:not(:disabled),.ls-clan-create-btn,.ls-clan-request-big:not(.sent),.ls-clan-claim{background:linear-gradient(135deg,#367cff,#5d9cff 52%,#6fdcff)!important;border-color:rgba(136,207,255,.5)!important;color:#fff!important;box-shadow:0 10px 28px rgba(50,120,255,.25),inset 0 1px 0 rgba(255,255,255,.22)!important}
+.btn--ghost,.settings-logout{background:linear-gradient(145deg,rgba(12,27,52,.9),rgba(5,14,29,.98))!important}
+.btn:disabled,.shop-card__buy:disabled,.send-comment-btn:disabled{opacity:.45!important;filter:none!important}
+.shop-card__buy.equipped{background:linear-gradient(135deg,rgba(44,145,255,.22),rgba(78,93,190,.22))!important;border-color:rgba(104,191,255,.48)!important;color:#9fdcff!important}
+.shop-card__buy.owned{color:#8ee5ff!important;border-color:rgba(111,220,255,.26)!important}
+
+/* forms / search / textareas */
+input,textarea,select,.settings-input,.chat-input-row textarea,.comment-form textarea{background:linear-gradient(145deg,rgba(5,16,32,.96),rgba(10,25,48,.92))!important;border:1px solid var(--ls-line)!important;color:#eef5ff!important;box-shadow:inset 0 1px 8px rgba(0,0,0,.16)!important}
+input:focus,textarea:focus,select:focus{border-color:rgba(111,190,255,.52)!important;box-shadow:0 0 0 3px rgba(77,141,255,.10),0 0 20px rgba(77,141,255,.08)!important}
+::placeholder{color:#627594!important}
+
+/* tabs/nav */
+.bottom-nav{background:linear-gradient(180deg,rgba(8,18,36,.94),rgba(4,10,22,.98))!important;border-top:1px solid var(--ls-line)!important;box-shadow:0 -12px 35px rgba(0,0,0,.3)!important;backdrop-filter:blur(18px)!important}
+.bottom-nav__item.active,.acct__tab.active,.ls-clan-subtab.active{color:#8bdfff!important;background:linear-gradient(145deg,rgba(64,131,255,.20),rgba(34,73,140,.12))!important;border-color:rgba(95,178,255,.32)!important;box-shadow:0 0 20px rgba(77,141,255,.10),inset 0 1px 0 rgba(255,255,255,.06)!important}
+
+/* overlays / dialogs */
+.overlay-backdrop{background:rgba(1,5,13,.76)!important;backdrop-filter:blur(13px)!important}
+.sheet,.simple-modal,.popup-sheet,.user-fullscreen{background:linear-gradient(160deg,rgba(10,24,47,.98),rgba(4,10,22,.99))!important;border-color:var(--ls-line)!important}
+.sheet__header{background:linear-gradient(180deg,rgba(17,35,64,.9),rgba(8,19,38,.72))!important;border-bottom-color:var(--ls-line)!important}
+
+/* chat/comment */
+.chat-msg__bubble{background:linear-gradient(145deg,rgba(20,40,70,.94),rgba(9,21,42,.96))!important;border:1px solid rgba(109,173,255,.13)!important;box-shadow:0 8px 24px rgba(0,0,0,.18)!important}
+.chat-msg--me .chat-msg__bubble{background:linear-gradient(135deg,#2869e9,#3e87ff 55%,#4dbce8)!important;border-color:rgba(142,215,255,.3)!important}
+.chat-input-bar{background:linear-gradient(180deg,rgba(8,18,36,.92),rgba(4,10,22,.98))!important;border-top:1px solid var(--ls-line)!important}
+.comments-section{background:linear-gradient(145deg,rgba(12,27,52,.72),rgba(5,14,29,.82))!important}
+
+/* watch page */
+.watch-topbar,.watch-controls,.watch-episode-section{background:transparent!important}
+.watch-video-wrap{background:#02050a!important;border-color:rgba(105,170,255,.24)!important;box-shadow:0 20px 55px rgba(0,0,0,.48),0 0 30px rgba(40,102,255,.08)!important}
+.watch-episode-item,.episode-item,.watch-episode-more{background:linear-gradient(145deg,rgba(13,30,57,.9),rgba(6,16,33,.96))!important;border-color:var(--ls-line)!important}
+.watch-episode-item.active,.episode-item.active{border-color:rgba(111,205,255,.48)!important;background:linear-gradient(145deg,rgba(38,87,160,.34),rgba(14,33,63,.96))!important}
+
+/* shop / settings */
+.shop-card__preview{background:radial-gradient(circle,rgba(66,126,255,.12),transparent 68%)!important;border-radius:16px!important}
+.shop-card__price{color:#75dfff!important;text-shadow:0 0 14px rgba(111,220,255,.18)!important}
+.settings-box__title,.section-title,.watch-episode-head h3{color:#f3f7ff!important}
+.settings-row{border-bottom-color:rgba(105,170,255,.11)!important}
+.settings-profile-actions{gap:9px!important}
+
+/* badges/chips */
+.user-panel__tier-tag,.acct__tier,.ls-profile-clan-tag,.comments-section__count,.acct__chip-prem,.user-panel__premium-chip{box-shadow:0 0 18px rgba(77,141,255,.10)!important}
+
+/* clan */
+.ls-clan-detail-head,.ls-clan-create__hero,.ls-clan-full-inner{box-shadow:var(--ls-shadow),inset 0 1px 0 rgba(255,255,255,.04)!important;border-color:var(--ls-line)!important}
+.ls-clan-chat-head{background:linear-gradient(145deg,rgba(14,31,59,.94),rgba(6,15,31,.98))!important;border:1px solid var(--ls-line)!important}
+
+/* links and highlights */
+a{color:#75cfff!important}
+</style>
+<script id="ls-final-avatar-border-and-neon-theme-2026-09-18-js">
+(function(){
+  'use strict';
+  try{
+    var escA=window.esc||function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})};
+    function ownUser(u){return !!(u&&window.userState&&((u.userId&&u.userId===window.userState.userId)||u===window.userState||u.username===window.userState.username));}
+    function avatarBorderUnified(u,size){
+      size=Math.max(24,Number(size)||72);
+      var own=ownUser(u),eq=0,frame='';
+      try{eq=own&&typeof getShopStore==='function'?Number(getShopStore().equipped)||0:0;frame=eq&&window.LS_BORDER_ART?String(window.LS_BORDER_ART[eq]||''):''}catch(e){}
+      var src=u&&u.avatarUrl?String(u.avatarUrl):'';
+      var photo=src?'<img class="ls-avatar-photo" alt="" src="'+escA(src)+'">':'<div class="ls-avatar-photo" aria-hidden="true"></div>';
+      return '<div class="ls-avatar-shell '+(frame?'has-border':'')+'" style="--ls-avatar-size:'+size+'px;width:'+size+'px;height:'+size+'px">'+
+        '<div class="ls-avatar-photo-wrap">'+photo+'</div>'+
+        (frame?'<img class="ls-avatar-border" alt="" src="'+escA(frame)+'">':'')+
+        '</div>';
+    }
+    window.avatarWithBorder=avatarBorderUnified;
+    if(typeof avatarWithBorder!=='undefined') avatarWithBorder=avatarBorderUnified;
+    window.profileAvatarForUser=avatarBorderUnified;
+
+    /* Clan messages were the one chat surface that rendered a plain fallback for the owner. */
+    function decorateClanOwnAvatars(){
+      try{
+        var box=document.getElementById('lsClanChatBox'); if(!box||!window.userState)return;
+        box.querySelectorAll('.chat-msg--me .chat-msg__avatar').forEach(function(w){
+          if(w.querySelector('.ls-avatar-shell'))return;
+          w.innerHTML=avatarBorderUnified(window.userState,32);
+        });
+      }catch(e){}
+    }
+    var oldClan=window.renderClanChatMessages;
+    if(typeof oldClan==='function'&&!oldClan.__lsUnifiedBorder){
+      var wrapClan=function(){var r=oldClan.apply(this,arguments);setTimeout(decorateClanOwnAvatars,0);return r};wrapClan.__lsUnifiedBorder=true;window.renderClanChatMessages=wrapClan;
+    }
+    setTimeout(decorateClanOwnAvatars,100);
+    new MutationObserver(function(){decorateClanOwnAvatars()}).observe(document.body,{subtree:true,childList:true});
+
+    /* Make the streaming API endpoint editable from Settings and keep it dynamic. */
+    var API_KEY='lstream_stream_api_base';
+    function cleanBase(v){v=String(v||'').trim();if(!v)return'/api';return v.replace(/\/$/,'').replace(/\s+/g,'')}
+    function getApiBase(){try{return cleanBase(SafeStorage.getItem(API_KEY)||window.STREAM_API_BASE||'/api')}catch(e){return'/api'}}
+    function saveApiBase(v){v=cleanBase(v);try{SafeStorage.setItem(API_KEY,v)}catch(e){}window.STREAM_API_BASE=v;streamApiCache={};return v}
+    window.getLStreamApiBase=getApiBase;
+    window.setLStreamApiBase=saveApiBase;
+    window.STREAM_API_BASE=getApiBase();
+    try{STREAM_API_BASE=getApiBase()}catch(e){}
+
+    if(typeof streamApiFetch==='function'&&!streamApiFetch.__lsDynamicApi){
+      var oldFetch=streamApiFetch;
+      var dynamicFetch=function(path){
+        var base=getApiBase();
+        return fetch(base+path,{headers:{'Accept':'application/json'}}).then(function(r){
+          if(!r.ok){var e=new Error('HTTP '+r.status);e.status=r.status;throw e}
+          return r.json();
+        });
+      };
+      dynamicFetch.__lsDynamicApi=true;streamApiFetch=dynamicFetch;window.streamApiFetch=dynamicFetch;
+    }
+
+    function injectApiSettings(){
+      var root=document.getElementById('settingsContent');if(!root||!userState||!userState.loggedIn)return;
+      if(document.getElementById('lsStreamApiSettings'))return;
+      var box=document.createElement('div');box.className='settings-box';box.id='lsStreamApiSettings';
+      box.innerHTML='<div class="settings-box__title">Streaming API</div>'+
+        '<div style="font-size:.72rem;color:var(--text-muted);line-height:1.55;margin-bottom:10px">Atur alamat API yang menyediakan data episode dan <b>stream_url</b>. Default: <code>/api</code>.</div>'+
+        '<div class="settings-row" style="border:0;padding:0;display:block"><div class="settings-row__label" style="margin-bottom:7px"><div class="settings-row__title">API Base URL</div><div class="settings-row__desc">Contoh: https://domain-kamu.com/api</div></div><div style="display:flex;gap:8px;align-items:center"><input id="lsStreamApiInput" class="settings-input" style="flex:1;min-width:0" value="'+escA(getApiBase())+'" placeholder="/api atau https://.../api"><button class="btn btn--primary btn--sm" id="lsStreamApiSave">Simpan</button></div><div id="lsStreamApiStatus" style="font-size:.66rem;min-height:18px;margin-top:8px;color:#7f9cc8"></div></div>';
+      var general=root.querySelector('.settings-box');
+      root.insertBefore(box,general||root.firstChild);
+      var save=document.getElementById('lsStreamApiSave'),input=document.getElementById('lsStreamApiInput'),st=document.getElementById('lsStreamApiStatus');
+      if(save)save.onclick=function(){var v=saveApiBase(input?input.value:'/api');if(input)input.value=v;if(st)st.textContent='✓ API disimpan: '+v;setTimeout(function(){if(st)st.textContent=''},2200)};
+      if(input)input.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();if(save)save.click()}});
+    }
+    var oldRS=window.renderSettingsPage;
+    if(typeof oldRS==='function'&&!oldRS.__lsApiSettings){
+      var rs=function(){var r=oldRS.apply(this,arguments);setTimeout(injectApiSettings,0);return r};rs.__lsApiSettings=true;window.renderSettingsPage=rs;
+      setTimeout(injectApiSettings,80);
+    }else setTimeout(injectApiSettings,80);
+
+    /* Broaden response parsing so the frontend can consume common API shapes. */
+    if(typeof resolveStreamSource==='function'&&!resolveStreamSource.__lsFlexible){
+      var oldResolve=resolveStreamSource;
+      var flex=function(anime,episode){
+        return oldResolve(anime,episode).catch(function(firstErr){
+          var title=anime&&anime.title||'',ep=episode&&episode.mal_id||1;
+          return streamApiFetch('/stream?title='+encodeURIComponent(title)+'&episode='+encodeURIComponent(ep)).then(function(j){
+            var roots=[];if(j)roots.push(j,j.data,j.result,j.stream,j.video,j.episode,j.episode_detail);
+            var url=null,format=null,subs=[],headers={};
+            roots.forEach(function(r){
+              if(!r||url)return;
+              var candidates=[r.stream_url,r.stream_link,r.video_url,r.videoUrl,r.url,r.file,r.src,r.source];
+              for(var i=0;i<candidates.length;i++)if(typeof candidates[i]==='string'&&/^https?:/i.test(candidates[i])){url=candidates[i];break}
+              if(!url&&Array.isArray(r.sources)){
+                for(var k=0;k<r.sources.length;k++){var q=r.sources[k];if(q&&(q.url||q.file)){url=q.url||q.file;format=q.type||q.format;break}}
+              }
+              if(r.format||r.type)format=r.format||r.type;if(Array.isArray(r.subtitles))subs=r.subtitles;if(r.headers)headers=r.headers;
+            });
+            if(!url)throw firstErr||new Error('Sumber video tidak tersedia');
+            return {url:url,format:String(format||(/\.m3u8(?:$|\?)/i.test(url)?'hls':'mp4')).toLowerCase(),subtitles:subs,headers:headers};
+          });
+        });
+      };
+      flex.__lsFlexible=true;resolveStreamSource=flex;window.resolveStreamSource=flex;
+    }
+  }catch(e){console.warn('LStream unified final patch',e)}
+})();
+</script>
 </body>
 </html>
