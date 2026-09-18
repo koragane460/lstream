@@ -990,12 +990,12 @@ body.light-mode .user-fullscreen-overlay{background:#f0f3f9}
   <section class="section"><div class="section__head"><h2>Jelajahi Genre</h2><span class="status" id="statusGenreList"></span></div><div class="genre-bar-wrap"><div class="genre-bar" id="genreBar"><button class="genre-chip active" data-genre="" data-name="Semua">Semua</button></div><button class="genre-expand-btn" id="genreExpandBtn"><svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button></div></section>
   <section class="section"><div class="section__head"><h2 id="mainListTitle">Top Anime</h2><span class="status" id="statusMain">Loading...</span></div><div class="card-grid" id="mainGrid"></div><div id="infiniteLoader" class="infinite-loader"><div class="spinner"></div><span>Memuat...</span></div><p id="endOfList" class="end-of-list" style="display:none;">— Akhir daftar —</p><div id="scrollSentinel"></div></section>
   <section class="section"><div class="section__head"><h2>Anime Musim Ini</h2><span class="status" id="statusSeason">Loading...</span></div><div class="card-grid" id="seasonAnimeGrid"></div></section>
+  <section class="section" id="animeScheduleSection"><div class="section__head"><h2>Jadwal Episode Anime</h2><span class="status" id="animeScheduleStatus">Minggu ini</span></div><div class="anime-schedule" id="animeScheduleList"></div></section>
 </main>
 
 <nav class="bottom-nav" id="bottomNav">
   <button class="bottom-nav__item active" data-tab="home"><svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="bottom-nav__label">Home</span></button>
   <button class="bottom-nav__item" data-tab="search"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span class="bottom-nav__label">Cari</span></button>
-  <button class="bottom-nav__item" data-tab="chat"><svg class="icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><span class="bottom-nav__label">Chat</span></button>
   <button class="bottom-nav__item" data-tab="account"><svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="bottom-nav__label">Account</span></button>
 </nav>
 
@@ -2217,7 +2217,7 @@ function appendChatBubble(m, noAnim) {
   var bubbleCls = isMedia ? "chat-msg__bubble chat-msg__bubble--media" : "chat-msg__bubble";
   var displayName = isMe ? userState.username : m.fromName;
   var avatarStyle = (!isMe && m.fromAvatar) ? ' style="background-image:url(\'' + String(m.fromAvatar).replace(/'/g, "%27") + '\');background-size:cover;background-position:center"' : ' style="background:#000"';
-  var avatarHtml = isMe ? avatarWithBorder(userState, 32) : '<div class="chat-msg__avatar-fallback"' + avatarStyle + '></div>';
+  var avatarHtml = isMe ? avatarWithBorder(userState, 50) : '<div class="chat-msg__avatar-fallback"' + avatarStyle + '></div>';
   var replyBtn = '<button type="button" class="chat-msg__inline-reply" data-reply-name="' + esc(isMe ? userState.username : m.fromName) + '" data-reply-text="' + esc((m.text || "").slice(0, 40)) + '">' + ICON.reply + '<span>Balas</span></button>';
   var msgId = m.id || m.time;
   var reactBtn = '<button type="button" class="chat-msg__react-btn" data-react-msg="' + esc(msgId) + '" data-react-ctx="global">React</button>';
@@ -2346,7 +2346,7 @@ if (dmInput) dmInput.addEventListener("input", function () { autoResize(this); }
 if (chatSendBtn) chatSendBtn.addEventListener("click", sendChatMessage);
 if (chatInput) chatInput.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } });
 function openDM(u) { state.dmTarget = u; state.dmReplyingTo = null; if (dmHeaderAvatar) { if (u.avatarUrl) { dmHeaderAvatar.style.backgroundImage = "url('" + String(u.avatarUrl).replace(/'/g, "%27") + "')"; dmHeaderAvatar.innerHTML = ""; } else { dmHeaderAvatar.style.backgroundImage = ""; dmHeaderAvatar.innerHTML = ""; dmHeaderAvatar.style.background = "#000"; } } if (dmHeaderName) dmHeaderName.textContent = u.name; if (dmBox) { dmBox.innerHTML = ""; var hist = getDMMessages(u.name); if (hist.length === 0) { dmBox.innerHTML = '<div class="comments-empty" style="padding:40px 20px;">Belum ada pesan.<br>Mulai percakapan!</div>'; } else hist.forEach(function (m) { appendDMBubble(m, u); }); dmBox.scrollTop = dmBox.scrollHeight; } if (dmReplyPreview) dmReplyPreview.classList.remove("show"); if (dmOverlay) dmOverlay.classList.add("open"); }
-function appendDMBubble(m, u) { if (!dmBox) return; var isMe = m.from === "Kamu"; var el = document.createElement("div"); el.className = "chat-msg chat-msg--" + (isMe ? "me" : "other"); el.dataset.msgId = m.time; var replyQuote = m.replyTo ? '<div class="chat-msg__reply-quote"><b>' + esc(m.replyTo.name) + '</b> · ' + esc(m.replyTo.text) + '</div>' : ""; var isMedia = (m.type === "photo"); var content = isMedia ? '<div class="chat-msg__attachment"><img src="' + esc(m.url) + '"></div>' : '<div class="chat-msg__text">' + esc(m.text) + '</div>'; var bubbleCls = isMedia ? "chat-msg__bubble chat-msg__bubble--media" : "chat-msg__bubble"; var replyBtn = '<button type="button" class="chat-msg__inline-reply" data-dm-reply-name="' + esc(isMe ? userState.username : u.name) + '" data-dm-reply-text="' + esc((m.text || "[media]").slice(0, 40)) + '">' + ICON.reply + '<span>Balas</span></button>'; var msgId = m.time; var reactBtn = '<button type="button" class="chat-msg__react-btn" data-react-msg="' + msgId + '" data-react-ctx="dm">React</button>'; var reactionsHtml = renderReactionsHtml("dm_" + u.name, msgId); var displayName = isMe ? userState.username : u.name; var avatarHtml = isMe ? avatarWithBorder(userState, 32) : (u.avatarUrl ? '<div class="chat-msg__avatar-fallback" style="background-image:url(\'' + String(u.avatarUrl).replace(/'/g, "%27") + '\');background-size:cover;background-position:center"></div>' : '<div class="chat-msg__avatar-fallback" style="background:#000"></div>'); var badges = renderDisplayBadges(displayName); el.innerHTML = '<div class="chat-msg__avatar ' + (isMe ? "has-profile-border" : "") + '">' + avatarHtml + '</div><div class="chat-msg__body"><div class="chat-msg__name">' + esc(displayName) + badges + '</div><div class="' + bubbleCls + '">' + replyQuote + content + replyBtn + '</div>' + reactionsHtml + '<div class="chat-msg__meta"><div class="chat-msg__meta-row"><span class="chat-msg__time">' + formatRelativeTime(m.time) + '</span>' + reactBtn + '</div></div></div>'; var inl = el.querySelector("[data-dm-reply-name]"); if (inl) inl.addEventListener("click", function (e) { e.stopPropagation(); state.dmReplyingTo = { name: inl.dataset.dmReplyName, text: inl.dataset.dmReplyText }; if (dmReplyPreview && dmReplyText) { dmReplyText.innerHTML = 'Membalas <b>' + esc(inl.dataset.dmReplyName) + '</b>'; dmReplyPreview.classList.add("show"); } if (dmInput) dmInput.focus(); }); var rb = el.querySelector("[data-react-msg]"); if (rb) rb.addEventListener("click", function (e) { e.stopPropagation(); showReactPicker(rb, "dm_" + u.name, msgId); }); el.querySelectorAll(".chat-msg__reaction-item").forEach(function (ri) { ri.addEventListener("click", function (e) { e.stopPropagation(); toggleReaction(ri.dataset.chattype, ri.dataset.msgid, ri.dataset.emoji); updateMsgReactions(el, ri.dataset.chattype, ri.dataset.msgid); }); }); dmBox.appendChild(el); }
+function appendDMBubble(m, u) { if (!dmBox) return; var isMe = m.from === "Kamu"; var el = document.createElement("div"); el.className = "chat-msg chat-msg--" + (isMe ? "me" : "other"); el.dataset.msgId = m.time; var replyQuote = m.replyTo ? '<div class="chat-msg__reply-quote"><b>' + esc(m.replyTo.name) + '</b> · ' + esc(m.replyTo.text) + '</div>' : ""; var isMedia = (m.type === "photo"); var content = isMedia ? '<div class="chat-msg__attachment"><img src="' + esc(m.url) + '"></div>' : '<div class="chat-msg__text">' + esc(m.text) + '</div>'; var bubbleCls = isMedia ? "chat-msg__bubble chat-msg__bubble--media" : "chat-msg__bubble"; var replyBtn = '<button type="button" class="chat-msg__inline-reply" data-dm-reply-name="' + esc(isMe ? userState.username : u.name) + '" data-dm-reply-text="' + esc((m.text || "[media]").slice(0, 40)) + '">' + ICON.reply + '<span>Balas</span></button>'; var msgId = m.time; var reactBtn = '<button type="button" class="chat-msg__react-btn" data-react-msg="' + msgId + '" data-react-ctx="dm">React</button>'; var reactionsHtml = renderReactionsHtml("dm_" + u.name, msgId); var displayName = isMe ? userState.username : u.name; var avatarHtml = isMe ? avatarWithBorder(userState, 50) : (u.avatarUrl ? '<div class="chat-msg__avatar-fallback" style="background-image:url(\'' + String(u.avatarUrl).replace(/'/g, "%27") + '\');background-size:cover;background-position:center"></div>' : '<div class="chat-msg__avatar-fallback" style="background:#000"></div>'); var badges = renderDisplayBadges(displayName); el.innerHTML = '<div class="chat-msg__avatar ' + (isMe ? "has-profile-border" : "") + '">' + avatarHtml + '</div><div class="chat-msg__body"><div class="chat-msg__name">' + esc(displayName) + badges + '</div><div class="' + bubbleCls + '">' + replyQuote + content + replyBtn + '</div>' + reactionsHtml + '<div class="chat-msg__meta"><div class="chat-msg__meta-row"><span class="chat-msg__time">' + formatRelativeTime(m.time) + '</span>' + reactBtn + '</div></div></div>'; var inl = el.querySelector("[data-dm-reply-name]"); if (inl) inl.addEventListener("click", function (e) { e.stopPropagation(); state.dmReplyingTo = { name: inl.dataset.dmReplyName, text: inl.dataset.dmReplyText }; if (dmReplyPreview && dmReplyText) { dmReplyText.innerHTML = 'Membalas <b>' + esc(inl.dataset.dmReplyName) + '</b>'; dmReplyPreview.classList.add("show"); } if (dmInput) dmInput.focus(); }); var rb = el.querySelector("[data-react-msg]"); if (rb) rb.addEventListener("click", function (e) { e.stopPropagation(); showReactPicker(rb, "dm_" + u.name, msgId); }); el.querySelectorAll(".chat-msg__reaction-item").forEach(function (ri) { ri.addEventListener("click", function (e) { e.stopPropagation(); toggleReaction(ri.dataset.chattype, ri.dataset.msgid, ri.dataset.emoji); updateMsgReactions(el, ri.dataset.chattype, ri.dataset.msgid); }); }); dmBox.appendChild(el); }
 function sendDMMessage() { try { if (!dmInput || !state.dmTarget || !dmBox) return; if (isUserMuted(userState.username)) { alert("Kamu sedang di-mute."); return; } var t = dmInput.value.trim(); if (!t) return; var e = dmBox.querySelector(".comments-empty"); if (e) e.remove(); var rc = state.dmReplyingTo; var m = { from: "Kamu", type: "text", text: t, time: Date.now(), replyTo: rc }; appendDMBubble(m, state.dmTarget); pushDMMessage(state.dmTarget.name, m); dmBox.scrollTop = dmBox.scrollHeight; dmInput.value = ""; state.dmReplyingTo = null; if (dmReplyPreview) dmReplyPreview.classList.remove("show"); } catch (e) {} }
 if (dmSendBtn) dmSendBtn.addEventListener("click", sendDMMessage);
 if (dmInput) dmInput.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendDMMessage(); } });
@@ -2487,13 +2487,14 @@ if($('accountInfoModal')) $('accountInfoModal').addEventListener('click',functio
 /* Render own profile with the currently active account's border everywhere. */
 var __oldAvatarWithBorder = avatarWithBorder;
 avatarWithBorder = function(u,size){
-  size=size||72;
-  var isOwn = u && userState && ((u.userId && u.userId===userState.userId) || u===userState);
-  var shop = isOwn ? getShopStore() : {equipped:0};
-  var eq=shop.equipped||0, borderCls=eq>0?'border-frame border-frame--'+eq:'';
-  var innerHtml='';
-  if(u && u.avatarUrl){var url=String(u.avatarUrl).replace(/"/g,'%22').replace(/'/g,'%27');innerHtml='<div style="position:absolute;inset:0;border-radius:50%;background-image:url(\''+url+'\');background-size:cover;background-position:center;background-repeat:no-repeat;"></div>';}else innerHtml='<div class="avatar-blank"></div>';
-  return '<div class="'+borderCls+'" style="width:'+(size+6)+'px;height:'+(size+6)+'px;"><div class="border-frame__inner" style="position:relative;width:'+size+'px;height:'+size+'px;display:flex;align-items:center;justify-content:center;">'+innerHtml+'</div></div>';
+  size=Math.max(24,Number(size)||72);
+  var isOwn=!!(u&&userState&&((u.userId&&u.userId===userState.userId)||u===userState||u.username===userState.username));
+  var eq=0,frame='';
+  try{var shop=isOwn?getShopStore():{equipped:0};eq=Number(shop&&shop.equipped)||0;frame=eq&&window.LS_BORDER_ART?String(window.LS_BORDER_ART[eq]||''):'';}catch(e){}
+  var src=u&&u.avatarUrl?String(u.avatarUrl):'';
+  var safe=src.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;');
+  var photo=src?'<img class="ls-avatar-photo" alt="" src="'+safe+'">':'<div class="ls-avatar-photo ls-avatar-photo--blank" aria-hidden="true"></div>';
+  return '<div class="ls-avatar-shell '+(frame?'has-border':'')+'" style="width:'+size+'px;height:'+size+'px;--ls-avatar-size:'+size+'px"><div class="ls-avatar-photo-wrap">'+photo+'</div>'+(frame?'<img class="ls-avatar-border" alt="" src="'+frame.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">':'')+'</div>';
 };
 
 /* Make every account's customization isolated. Existing current-account data is migrated once. */
@@ -2571,7 +2572,7 @@ function initPage() {
   try { startGuestTimer(); } catch (e) {}
   state.playbackSpeed = getSettings().playbackSpeed || 1;
   renderSkeletons(mainGrid, 6);
-  Promise.all([loadGenreList(), fetchJikan("/seasons/now?limit=12")]).then(function (r) { var sr = r[1]; var seasonItems = normalizeAnimeList(sr && sr.data); if (seasonItems.length > 0) { if (statusSeason) statusSeason.textContent = seasonItems.length + " anime"; renderAnimeGrid(seasonItems, seasonAnimeGrid); } else { renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); } }).catch(function () { renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); });
+  Promise.all([loadGenreList(), fetchJikan("/seasons/now?limit=12")]).then(function (r) { var sr = r[1]; var seasonItems = normalizeAnimeList(sr && sr.data); window.__lsSeasonAnime = seasonItems.slice(); if (seasonItems.length > 0) { if (statusSeason) statusSeason.textContent = seasonItems.length + " anime"; renderAnimeGrid(seasonItems, seasonAnimeGrid); } else { window.__lsSeasonAnime = (FALLBACK_ANIME || []).slice(); renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); } if (typeof window.renderAnimeSchedule === "function") window.renderAnimeSchedule(window.__lsSeasonAnime); }).catch(function () { window.__lsSeasonAnime = (FALLBACK_ANIME || []).slice(); renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); if (typeof window.renderAnimeSchedule === "function") window.renderAnimeSchedule(window.__lsSeasonAnime); });
   loadMainListPage();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initPage);
@@ -3118,8 +3119,22 @@ function toastClan(t){var old=$('lsClanToast');if(old)old.remove();var d=documen
 function renderClanEmpty(){var v=$('lsClanView');if(!v)return;v.innerHTML='<div class="ls-clan-empty"><div class="ls-clan-empty__icon">'+ICON.alert+'</div><h3>Kamu Belum Bergabung Ke Clan Manapun</h3><p>Bergabung sekarang untuk ikut chat clan, mengumpulkan berlian, dan membangun level clan bersama member lainnya.</p><div class="ls-clan-actions"><button class="ls-clan-action" id="lsJoinClanBtn"><span class="icon-wrap">'+ICON.users+'</span><span><b>Gabung Clan</b><span>Cari clan yang tersedia</span></span></button><button class="ls-clan-action" id="lsCreateClanBtn"><span class="icon-wrap">'+ICON.plus+'</span><span><b>Bikin Clan</b><span>Biaya pembuatan 1.000 berlian</span></span></button></div></div>';var j=$('lsJoinClanBtn'),c=$('lsCreateClanBtn');if(j)j.onclick=renderClanJoin;if(c)c.onclick=openCreateClan}
 function renderClanChat(){var c=currentClan();if(!c){renderClanEmpty();return ''}return '<div class="ls-clan-chat-wrap"><button class="ls-clan-chat-head" id="lsClanChatInfoBtn"><span class="ls-clan-chat-head__left">'+clanTag(c)+'<span>Clan</span></span>'+ICON.chev+'</button><div id="lsClanChatBox" class="chat-box ls-clan-chat-box"></div><div class="chat-input-bar ls-clan-chat-inputbar"><div class="chat-input-row"><textarea id="lsClanChatInput" placeholder="Tulis pesan di clan..." rows="1"></textarea><button class="send" id="lsClanChatSend">'+icon('<polygon points="3 11 22 2 13 21 11 13 3 11"/>')+'</button></div></div></div>'}
 function clanMsgKey(c){return 'lstream_clan_chat_'+c.id}function clanMsgs(c){try{return JSON.parse(localStorage.getItem(clanMsgKey(c))||'[]')}catch(e){return[]}}function clanSaveMsgs(c,a){try{localStorage.setItem(clanMsgKey(c),JSON.stringify(a.slice(-150)))}catch(e){}}
-function renderClanChatMessages(){var c=currentClan(),box=$('lsClanChatBox');if(!c||!box)return;var arr=clanMsgs(c);if(!arr.length){box.innerHTML='<div class="comments-empty" style="padding:55px 18px">Belum ada pesan di clan.</div>';return}box.innerHTML='';arr.forEach(function(m){var row=document.createElement('div'),isMe=m.name===userState.username,id=m.id||m.time;row.className='chat-msg '+(isMe?'chat-msg--me':'chat-msg--other')+' ls-global-msg';row.dataset.msgId=id;var reply=m.replyTo?'<div class="chat-msg__reply-quote"><b>'+esc2(m.replyTo.name)+'</b> · '+esc2(m.replyTo.text)+'</div>':'';var del=isMe?'<button type="button" class="chat-msg__del" data-clan-del="'+esc2(id)+'">'+ICON.trash+'Hapus</button>':'';row.innerHTML='<div class="chat-msg__avatar '+(isMe?'has-profile-border':'')+'"><div class="chat-msg__avatar-fallback" style="'+(m.avatar?'background-image:url(\''+String(m.avatar).replace(/'/g,'%27')+'\');background-size:cover;background-position:center':'background:#000')+'"></div></div><div class="chat-msg__body"><div class="chat-msg__name"><span>'+esc2(m.name)+'</span>'+blueCheck(m.name)+' '+clanTag(c)+'</div><div class="chat-msg__bubble">'+reply+'<div class="chat-msg__text">'+esc2(m.text||'')+'</div><button class="chat-msg__inline-reply" data-clan-reply="'+esc2(m.name)+'" data-clan-text="'+esc2((m.text||'').slice(0,80))+'">'+ICON.reply+'<span>Balas</span></button></div>'+renderReactionsHtml('clan_'+c.id,id)+'<div class="chat-msg__meta"><div class="chat-msg__meta-row"><span class="chat-msg__time">'+(typeof formatRelativeTime==='function'?formatRelativeTime(m.time):'baru saja')+'</span><button class="chat-msg__react-btn" data-clan-react="'+esc2(id)+'">React</button>'+del+'</div></div></div>';var rp=row.querySelector('[data-clan-reply]');if(rp)rp.onclick=function(){state.clanReplyingTo={name:rp.dataset.clanReply,text:rp.dataset.clanText};var i=$('lsClanChatInput');if(i){i.value='@'+rp.dataset.clanReply+' ';i.focus({preventScroll:true})}};var rr=row.querySelector('[data-clan-react]');if(rr)rr.onclick=function(e){e.stopPropagation();showReactPicker(rr,'clan_'+c.id,id)};var db=row.querySelector('[data-clan-del]');if(db)db.onclick=function(){if(!confirm('Hapus pesan ini?'))return;clanSaveMsgs(c,clanMsgs(c).filter(function(x){return String(x.id||x.time)!==String(id)}));renderClanChatMessages()};row.querySelectorAll('.chat-msg__reaction-item').forEach(function(ri){ri.onclick=function(e){e.stopPropagation();toggleReaction(ri.dataset.chattype,ri.dataset.msgid,ri.dataset.emoji);updateMsgReactions(row,ri.dataset.chattype,ri.dataset.msgid)}});box.appendChild(row)});box.scrollTop=box.scrollHeight}
-function sendClanChat(){var c=currentClan(),i=$('lsClanChatInput');if(!c||!i||!userState.loggedIn)return;var text=i.value.trim();if(!text)return;if(typeof isUserMuted==='function'&&isUserMuted(userState.username)){if(typeof showMuteNotice==='function')showMuteNotice(isUserMuted(userState.username));return}var a=clanMsgs(c),m={id:'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),name:userState.username,text:text,time:Date.now(),avatar:userState.avatarUrl||'',replyTo:state.clanReplyingTo||null};a.push(m);clanSaveMsgs(c,a);i.value='';i.style.height='auto';state.clanReplyingTo=null;renderClanChatMessages();setTimeout(function(){i.focus({preventScroll:true})},0)}
+function renderClanChatMessages(){
+ var c=currentClan(),box=$('lsClanChatBox');if(!c||!box)return;var arr=clanMsgs(c);
+ if(!arr.length){box.innerHTML='<div class="comments-empty" style="padding:55px 18px">Belum ada pesan di clan.</div>';return}
+ box.innerHTML='';
+ arr.forEach(function(m){
+  var row=document.createElement('div'),isMe=m.name===userState.username,id=m.id||m.time;row.className='chat-msg '+(isMe?'chat-msg--me':'chat-msg--other')+' ls-global-msg';row.dataset.msgId=id;
+  var av=document.createElement('div');av.className='chat-msg__avatar '+(isMe?'has-profile-border':'');
+  if(isMe){av.innerHTML=avatarWithBorder(userState,62)}else{var f=document.createElement('div');f.className='chat-msg__avatar-fallback';if(m.avatar)f.style.backgroundImage='url("'+String(m.avatar).replace(/"/g,'%22')+'")';else f.style.background='#000';f.style.backgroundSize='cover';f.style.backgroundPosition='center';av.appendChild(f)}
+  var body=document.createElement('div');body.className='chat-msg__body';
+  var name=document.createElement('div');name.className='chat-msg__name';name.innerHTML='<span>'+esc2(m.name)+'</span>'+blueCheck(m.name)+' '+clanTag(c);
+  var bubble=document.createElement('div');bubble.className='chat-msg__bubble';if(m.replyTo)bubble.innerHTML='<div class="chat-msg__reply-quote"><b>'+esc2(m.replyTo.name)+'</b> · '+esc2(m.replyTo.text)+'</div>';
+  var text=document.createElement('div');text.className='chat-msg__text';text.textContent=m.text||'';bubble.appendChild(text);
+  var replyBtn=document.createElement('button');replyBtn.className='chat-msg__inline-reply';replyBtn.innerHTML=ICON.reply+'<span>Balas</span>';replyBtn.onclick=function(){state.clanReplyingTo={name:m.name,text:(m.text||'').slice(0,80)};var i=$('lsClanChatInput');if(i){i.value='@'+m.name+' ';i.focus({preventScroll:true})}};bubble.appendChild(replyBtn);body.appendChild(name);body.appendChild(bubble);body.insertAdjacentHTML('beforeend',renderReactionsHtml('clan_'+c.id,id));var meta=document.createElement('div');meta.className='chat-msg__meta';meta.innerHTML='<div class="chat-msg__meta-row"><span class="chat-msg__time">'+(typeof formatRelativeTime==='function'?formatRelativeTime(m.time):'baru saja')+'</span><button class="chat-msg__react-btn" data-clan-react="'+esc2(id)+'">React</button>'+(isMe?'<button type="button" class="chat-msg__del" data-clan-del="'+esc2(id)+'">'+ICON.trash+'Hapus</button>':'')+'</div>';body.appendChild(meta);row.appendChild(av);row.appendChild(body);box.appendChild(row);
+  var rr=row.querySelector('[data-clan-react]');if(rr)rr.onclick=function(e){e.stopPropagation();showReactPicker(rr,'clan_'+c.id,id)};var db=row.querySelector('[data-clan-del]');if(db)db.onclick=function(){if(!confirm('Hapus pesan ini?'))return;clanSaveMsgs(c,clanMsgs(c).filter(function(x){return String(x.id||x.time)!==String(id)}));renderClanChatMessages()};row.querySelectorAll('.chat-msg__reaction-item').forEach(function(ri){ri.onclick=function(e){e.stopPropagation();toggleReaction(ri.dataset.chattype,ri.dataset.msgid,ri.dataset.emoji);updateMsgReactions(row,ri.dataset.chattype,ri.dataset.msgid)}});
+ });box.scrollTop=box.scrollHeight;
+}
 function renderClanChatPage(){var v=$('lsClanView');if(!v)return;var c=currentClan();if(!c){renderClanEmpty();return}v.innerHTML=renderClanChat();renderClanChatMessages();var i=$('lsClanChatInput'),b=$('lsClanChatSend'),info=$('lsClanChatInfoBtn');if(i){i.addEventListener('input',function(){autoResize(i)});i.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendClanChat()}})}if(b)b.onclick=sendClanChat;if(info)info.onclick=function(){openClanInfo(c)}}
 function renderClanJoin(){var v=$('lsClanView');if(!v)return;v.innerHTML='<div class="ls-clan-toolbar"><div class="ls-clan-search">'+ICON.search+'<input id="lsClanSearch" class="ls-clan-input-focus" placeholder="Cari nama clan..."></div><button class="ls-clan-icon-btn" id="lsClanJoinBack">'+ICON.back+'</button></div><div class="ls-clan-filter"><button class="active" data-clan-filter="all">Semua</button><button data-clan-filter="top">Top Clan</button></div><div id="lsClanList"></div>';var search=$('lsClanSearch');var filter='all';function paint(){var q=(search.value||'').trim().toLowerCase();var arr=S.clans.filter(function(c){return !q||c.name.toLowerCase().indexOf(q)>=0||c.tag.toLowerCase().indexOf(q)>=0});if(filter==='top')arr.sort(function(a,b){return clanScore(b)-clanScore(a)});var list=$('lsClanList');list.innerHTML=arr.map(renderClanCard).join('')||'<div class="comments-empty" style="padding:50px 15px">Clan tidak ditemukan.</div>';list.querySelectorAll('[data-clan-id]').forEach(function(el){el.onclick=function(e){if(e.target.closest('[data-request]'))return;openClanDetail(S.clans.find(function(c){return c.id===el.dataset.clanId}))}});list.querySelectorAll('[data-request]').forEach(function(b){b.onclick=function(e){e.stopPropagation();requestClan(S.clans.find(function(c){return c.id===b.dataset.request}))}})}search.addEventListener('input',paint);document.querySelectorAll('[data-clan-filter]').forEach(function(b){b.onclick=function(){document.querySelectorAll('[data-clan-filter]').forEach(function(x){x.classList.remove('active')});b.classList.add('active');filter=b.dataset.clanFilter;paint()}});$('lsClanJoinBack').onclick=renderClanEmpty;paint()}
 function renderClanCard(c){var sent=requestStatus(c);return '<div class="ls-clan-card" data-clan-id="'+esc2(c.id)+'" style="--clan-bg:'+(c.bgUrl?'url(\''+esc2(c.bgUrl)+'\')':'none')+'"><div class="ls-clan-card__head">'+avatarFor(c.name,c.avatar).replace('<img','<img class="ls-clan-avatar"')+'<div style="flex:1;min-width:0"><div class="ls-clan-card__name">'+esc2(c.name)+' '+clanTag(c)+'</div><div class="ls-clan-card__tag">'+esc2(c.tag)+' · Level '+c.level+'</div></div></div><div class="ls-clan-card__stats"><div class="ls-clan-stat"><b>'+c.members.length+'</b><span>Member</span></div><div class="ls-clan-stat"><b>'+fmtAge(c.createdAt)+'</b><span>Dibuat</span></div><div class="ls-clan-stat"><b>'+Number(c.diamonds||0).toLocaleString('id-ID')+'</b><span>Donate</span></div></div><div class="ls-clan-card__foot"><span class="ls-clan-created">Level '+c.level+' · '+(c.level>=200?'MAX':'Aktif')+'</span><button class="ls-clan-request '+(sent?'sent':'')+'" data-request="'+esc2(c.id)+'">'+(sent?'Request Terkirim':'Request')+'</button></div></div>'}
@@ -3178,7 +3193,7 @@ window.__lsClanV2={render:renderClanShell,openCreateClan:openCreateClan,join:ren
     el.dataset.msgId=id;
     if(noAnim)el.style.animation='none';
     var displayName=isMe?userState.username:(m.fromName||'User');
-    var avatar=isMe?avatarWithBorder(userState,32):'<div class="chat-msg__avatar-fallback" style="'+(m.fromAvatar?'background-image:url(\''+String(m.fromAvatar).replace(/'/g,'%27')+'\');background-size:cover;background-position:center':'background:#000')+'"></div>';
+    var avatar=isMe?avatarWithBorder(userState,50):'<div class="chat-msg__avatar-fallback" style="'+(m.fromAvatar?'background-image:url(\''+String(m.fromAvatar).replace(/'/g,'%27')+'\');background-size:cover;background-position:center':'background:#000')+'"></div>';
     var c=lsFindClanForUser(displayName);
     var ctag=c?(' '+clanTag(c)):'';
     var replyQuote=m.replyTo?'<div class="chat-msg__reply-quote"><b>'+esc(m.replyTo.name)+'</b> · '+esc(m.replyTo.text)+'</div>':'';
@@ -4109,277 +4124,354 @@ try{
 })();
 </script>
 
-<style id="ls-xch-ui-polish-2026-09-18">
-/* Xch Shop / UI visual language: dark navy panels, jewel gradients, angular accents. */
-:root{
-  --xch-navy:#071224;
-  --xch-navy2:#0c1930;
-  --xch-blue:#4d8dff;
-  --xch-cyan:#72d9ff;
-  --xch-purple:#8b6cff;
-  --xch-line:rgba(117,173,255,.22);
-}
 
-/* Shared buttons */
-.btn,.shop-card__buy,.watch-ctrl-btn,.quality-opt,.simple-modal__actions button,.popup-sheet__opts button,.checkin-popup__confirm,.checkin-btn,.settings-profile-action-btn,.settings-logout,.dev-mini-btn,.ls-clan-action,.ls-clan-request,.ls-clan-setting-btn,.ls-mod-btn,.ls-broadcast-btn{
-  position:relative;
-  border:1px solid rgba(108,171,255,.22)!important;
-  background:linear-gradient(145deg,#14294a 0%,#091426 68%,#070f1d 100%)!important;
-  color:#edf5ff!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 8px 20px rgba(0,0,0,.22),0 0 0 1px rgba(38,94,174,.06);
-  border-radius:12px!important;
-  overflow:hidden;
-  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,filter .16s ease;
-}
-.btn:before,.shop-card__buy:before,.watch-ctrl-btn:before,.quality-opt:before{
-  content:"";position:absolute;left:9%;right:9%;top:0;height:1px;background:linear-gradient(90deg,transparent,#9adfff,transparent);opacity:.6;pointer-events:none;
-}
-.btn:hover,.shop-card__buy:hover,.watch-ctrl-btn:hover,.quality-opt:hover{transform:translateY(-1px);border-color:rgba(113,190,255,.5)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 10px 24px rgba(0,0,0,.28),0 0 16px rgba(47,125,255,.08)}
-.btn:active,.shop-card__buy:active,.watch-ctrl-btn:active,.quality-opt:active{transform:translateY(0) scale(.985)}
 
-/* Panels/cards */
-.shop-card,.settings-box,.quality-modal__box,.simple-modal__box,.popup-sheet__box,.watch-episode-section,.watch-controls{
-  background:linear-gradient(145deg,rgba(15,31,55,.97),rgba(6,13,25,.98))!important;
-  border-color:rgba(105,162,238,.14)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 18px 42px rgba(0,0,0,.25);
-}
-.shop-card{border-radius:17px!important;padding:13px!important;gap:10px!important}
-.shop-card__preview{background:radial-gradient(circle at 50% 35%,rgba(72,142,255,.12),transparent 58%),linear-gradient(145deg,#0a1528,#050b15)!important;border:1px solid rgba(105,162,238,.1);border-radius:14px!important}
-.shop-card__name{letter-spacing:.2px}
-.shop-card__price{background:linear-gradient(145deg,rgba(83,137,255,.12),rgba(139,108,255,.06))!important;border-color:rgba(111,166,255,.2)!important;color:#a9d8ff!important}
-.shop-card__price .icon{color:#79cfff!important;fill:#79cfff!important}
-.shop-card__buy{min-height:40px!important;font-weight:850!important;letter-spacing:.15px}
-.shop-card__buy.equipped{background:linear-gradient(135deg,rgba(66,143,255,.3),rgba(102,79,214,.22))!important;color:#b8dcff!important;border-color:rgba(94,169,255,.62)!important;box-shadow:0 0 18px rgba(47,125,255,.13),inset 0 1px 0 rgba(255,255,255,.08)!important}
-.shop-card__buy.owned{background:linear-gradient(135deg,rgba(22,150,121,.2),rgba(25,91,91,.12))!important;color:#7ff2d2!important;border-color:rgba(48,207,171,.42)!important}
-.shop-card__buy:disabled{opacity:1!important;cursor:default!important}
 
-/* Border artwork: keep a visible support ring so an installed frame never becomes visually empty. */
-.ls-border-art-frame{filter:drop-shadow(0 6px 13px rgba(0,0,0,.32)) drop-shadow(0 0 8px rgba(61,137,255,.08))!important}
-.ls-border-art-frame:after{content:"";position:absolute;inset:2px;border-radius:50%;border:1px solid rgba(114,190,255,.18);box-shadow:0 0 0 1px rgba(15,29,52,.7) inset;pointer-events:none;z-index:2}
-.ls-border-art-image{image-rendering:auto!important}
 
-/* Watch screen */
-.watch-topbar{background:linear-gradient(180deg,rgba(13,27,48,.96),rgba(6,13,24,.92))!important;border-bottom-color:rgba(105,166,245,.13)!important}
-.watch-close-btn{background:linear-gradient(145deg,#14294a,#091426)!important;border-color:rgba(106,172,255,.25)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 20px rgba(0,0,0,.25)}
-.watch-video-wrap{box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 12px 32px rgba(0,0,0,.35)}
-.watch-episode-section{border-radius:16px!important;padding:13px!important}
-.watch-episode-btn,.watch-episode-more{border:1px solid rgba(102,166,255,.16)!important;background:linear-gradient(145deg,#101f37,#07101f)!important;color:#dcecff!important;border-radius:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
-.watch-episode-btn.active{background:linear-gradient(135deg,#2f7dff,#6549d7)!important;border-color:rgba(141,206,255,.6)!important;color:#fff!important;box-shadow:0 0 18px rgba(47,125,255,.2),inset 0 1px 0 rgba(255,255,255,.12)!important}
-.watch-episode-more{width:100%;padding:10px;font:800 .72rem inherit;cursor:pointer;margin-top:4px}
-.watch-ctrl-btn{min-height:42px!important}
-.watch-ctrl-btn.active,.watch-autonext.active{background:linear-gradient(135deg,#2f7dff,#684fd9)!important;border-color:rgba(143,211,255,.62)!important;box-shadow:0 0 18px rgba(47,125,255,.2)!important}
 
-/* Common floating/modal surfaces */
-.modal__box,.quick-panel,.auth-box,.checkin-popup__box,.popup-sheet__box,.simple-modal__box{border-color:rgba(99,160,239,.16)!important;box-shadow:0 28px 80px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.035)!important}
-.icon-btn,.navbar__iconbtn,.modal__header .icon-btn{background:linear-gradient(145deg,#132744,#081426)!important;border-color:rgba(105,169,255,.2)!important}
-
-/* Shop header/overlay polish */
-.shop-overlay{background:radial-gradient(circle at 50% -10%,rgba(55,111,199,.22),transparent 36%),radial-gradient(circle at 100% 40%,rgba(105,74,201,.08),transparent 34%),#030811!important}
-.shop-card__preview:before{content:"";position:absolute;inset:7px;border:1px solid rgba(101,165,255,.08);border-radius:12px;pointer-events:none}
-.shop-card__preview{position:relative!important;overflow:hidden!important}
+<style id="ls-user-requested-layout-2026-09-18">
+/* Restore the original component styling; only the requested geometry is touched here. */
+.ls-avatar-shell{position:relative!important;display:block!important;flex:0 0 auto!important;border-radius:50%!important;overflow:visible!important;line-height:0!important;isolation:isolate!important}
+.ls-avatar-photo-wrap{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border-radius:50%!important;overflow:hidden!important;background:#000!important;z-index:1!important}
+.ls-avatar-photo{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important}
+.ls-avatar-photo--blank{background:#000!important}
+.ls-avatar-border{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:fill!important;border-radius:50%!important;pointer-events:none!important;z-index:20!important}
+.user-panel__avatar-wrap,.acct__avatar-box,.settings-panel,.comment-form__avatar,.comment-item__avatar,.chat-msg__avatar{overflow:visible!important;position:relative!important}
+.user-panel__avatar-wrap .ls-avatar-shell,.acct__avatar-box .ls-avatar-shell,.settings-panel .ls-avatar-shell,.comment-form__avatar .ls-avatar-shell,.comment-item__avatar .ls-avatar-shell,.chat-msg__avatar .ls-avatar-shell{z-index:20!important}
+/* The border follows the exact photo circle size. */
+.user-panel__avatar-wrap .ls-avatar-shell{width:72px!important;height:72px!important}
+.acct__avatar-box .ls-avatar-shell{width:84px!important;height:84px!important}
+.settings-panel .ls-avatar-shell{width:58px!important;height:58px!important}
+.comment-form__avatar{width:48px!important;height:48px!important;background:transparent!important;border:0!important}
+.comment-item__avatar{width:46px!important;height:46px!important;background:transparent!important;border:0!important}
+.chat-msg__avatar{width:50px!important;height:50px!important;background:transparent!important;border:0!important;overflow:visible!important}
+.chat-msg__avatar-fallback,.comment-avatar-fallback{width:100%!important;height:100%!important;border-radius:50%!important;overflow:hidden!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}
+.chat-msg__body{min-width:0!important}
+#chatOverlay .chat-msg--other .chat-msg__body,#dmOverlay .chat-msg--other .chat-msg__body,.ls-global-msg.chat-msg--other .chat-msg__body{max-width:calc(100% - 62px)!important}
+#chatOverlay .chat-msg--me .chat-msg__body,#dmOverlay .chat-msg--me .chat-msg__body,.ls-global-msg.chat-msg--me .chat-msg__body{max-width:calc(100% - 62px)!important}
+.user-panel__status,.user-panel__level-chip,.acct__dot,.acct__lvl{z-index:260!important}
+.user-panel__status{right:-7px!important;bottom:-7px!important}
+.user-panel__level-chip{left:-7px!important;bottom:-7px!important}
+.acct__dot{right:-7px!important;bottom:-7px!important}
+.acct__lvl{left:-7px!important;bottom:-7px!important}
+/* Home: remove the diamond chip; chat now lives in Settings. */
+.ls-home-diamond{display:none!important}
+/* Settings Chat Bareng preview */
+.ls-settings-chat-card{position:relative!important;padding:16px!important;border-radius:18px!important;cursor:pointer!important;overflow:hidden!important}
+.ls-settings-chat-card:active{transform:scale(.995)!important}
+.ls-settings-chat-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.ls-settings-chat-title{font-size:.82rem;font-weight:950;letter-spacing:.15px}
+.ls-settings-chat-sub{font-size:.59rem;color:var(--text-muted);margin-top:3px}
+.ls-settings-chat-arrow{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);color:var(--text-muted);flex:0 0 auto}
+.ls-settings-chat-list{display:flex;flex-direction:column;gap:7px}
+.ls-settings-chat-item{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);min-width:0}
+.ls-settings-chat-avatar{width:34px;height:34px;border-radius:50%;background:#000;flex:0 0 34px;background-size:cover;background-position:center;display:grid;place-items:center;font-size:.7rem;font-weight:900;color:#fff;overflow:hidden}
+.ls-settings-chat-body{min-width:0;flex:1}
+.ls-settings-chat-name{font-size:.65rem;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ls-settings-chat-text{font-size:.61rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.ls-settings-chat-time{font-size:.52rem;color:var(--text-muted);flex:0 0 auto}
+.ls-settings-chat-empty{padding:18px 8px;text-align:center;color:var(--text-muted);font-size:.65rem}
+/* Home episode schedule */
+.anime-schedule{display:flex;flex-direction:column;gap:8px}
+.anime-schedule-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(255,255,255,.025);cursor:pointer}
+.anime-schedule-item:active{transform:scale(.995)}
+.anime-schedule-poster{width:42px;height:58px;object-fit:cover;border-radius:8px;background:#000;flex:0 0 42px}
+.anime-schedule-info{min-width:0;flex:1}
+.anime-schedule-title{font-size:.7rem;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.anime-schedule-day{font-size:.6rem;color:var(--text-muted);margin-top:4px}
+.anime-schedule-ep{font-size:.56rem;color:#7ab0ff;margin-top:3px}
+.anime-schedule-time{text-align:right;font-size:.58rem;font-weight:850;white-space:nowrap}
+.anime-schedule-time small{display:block;color:var(--text-muted);font-weight:700;margin-top:3px}
+.anime-schedule-empty{padding:22px 10px;text-align:center;color:var(--text-muted);font-size:.65rem;border:1px dashed rgba(255,255,255,.08);border-radius:14px}
 </style>
-
-<style id="ls-final-avatar-border-and-neon-theme-2026-09-18">
-/* ===== LStream unified avatar/border system ===== */
-.ls-avatar-shell{position:relative!important;display:inline-block!important;vertical-align:middle!important;flex:0 0 auto!important;width:var(--ls-avatar-size,72px)!important;height:var(--ls-avatar-size,72px)!important;overflow:visible!important;border-radius:50%!important;isolation:isolate!important;line-height:0!important}
-.ls-avatar-photo-wrap{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border-radius:50%!important;overflow:hidden!important;background:#070d18!important;z-index:1!important}
-.ls-avatar-photo{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important;border-radius:50%!important}
-.ls-avatar-border{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;object-fit:fill!important;object-position:center!important;border-radius:50%!important;pointer-events:none!important;z-index:20!important}
-.ls-avatar-shell:not(.has-border){overflow:hidden!important}
-.user-panel__avatar-wrap,.acct__avatar-box,.comment-form__avatar,.comment-item__avatar,.chat-msg__avatar{overflow:visible!important;position:relative!important}
-.user-panel__avatar-wrap .ls-avatar-shell,.acct__avatar-box .ls-avatar-shell,.comment-form__avatar .ls-avatar-shell,.comment-item__avatar .ls-avatar-shell,.chat-msg__avatar .ls-avatar-shell{z-index:80!important}
-.user-panel__status,.user-panel__level-chip,.acct__dot,.acct__lvl{z-index:250!important}
-.user-panel__status{right:-5px!important;bottom:-5px!important}
-.user-panel__level-chip{left:-6px!important;bottom:-6px!important}
-.acct__dot{right:-6px!important;bottom:-6px!important}
-.acct__lvl{left:-6px!important;bottom:-6px!important}
-.comment-form__avatar,.comment-item__avatar,.chat-msg__avatar{width:38px!important;height:38px!important;background:transparent!important;border:0!important}
-.comment-item__avatar{width:36px!important;height:36px!important}
-.chat-msg__avatar{width:38px!important;height:38px!important}
-/* Border stays over the photo, while status/level chips stay readable at the rim. */
-.user-panel__avatar-wrap .ls-avatar-border,.acct__avatar-box .ls-avatar-border,.comment-form__avatar .ls-avatar-border,.comment-item__avatar .ls-avatar-border,.chat-msg__avatar .ls-avatar-border{z-index:220!important}
-
-/* ===== Unified LStream visual language: apply the same generated dark/neon glass theme everywhere ===== */
-:root{
-  --ls-bg0:#040812;--ls-bg1:#071224;--ls-bg2:#0b1830;--ls-panel:rgba(9,20,39,.86);--ls-panel2:rgba(13,28,53,.78);
-  --ls-line:rgba(105,170,255,.20);--ls-line2:rgba(105,170,255,.34);--ls-blue:#4d8dff;--ls-cyan:#6fdcff;--ls-purple:#8d6cff;
-  --ls-text:#eef5ff;--ls-muted:#8495b5;--ls-shadow:0 18px 50px rgba(0,0,0,.42)
-}
-html,body{background:radial-gradient(900px 520px at 50% -140px,rgba(53,108,205,.18),transparent 65%),linear-gradient(180deg,var(--ls-bg1),var(--ls-bg0))!important;color:var(--ls-text)!important}
-body{background-attachment:fixed!important}
-button,input,textarea,select{font-family:inherit!important}
-button{transition:transform .16s ease,filter .16s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease!important}
-button:not(:disabled):active{transform:translateY(1px) scale(.985)!important}
-button:not(:disabled):hover{filter:brightness(1.08)!important}
-
-/* top chrome */
-.navbar{background:linear-gradient(180deg,rgba(7,16,32,.96),rgba(5,12,25,.91))!important;border-bottom:1px solid var(--ls-line)!important;box-shadow:0 12px 34px rgba(0,0,0,.28)!important;backdrop-filter:blur(18px)!important}
-.navbar__iconbtn,.icon-btn,.quick-panel__item{background:linear-gradient(145deg,rgba(22,43,76,.72),rgba(8,19,38,.9))!important;border:1px solid var(--ls-line)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 22px rgba(0,0,0,.18)!important}
-.navbar__iconbtn:hover,.icon-btn:hover{border-color:var(--ls-line2)!important;box-shadow:0 0 18px rgba(77,141,255,.16),inset 0 1px 0 rgba(255,255,255,.08)!important}
-.quick-panel{background:linear-gradient(160deg,rgba(13,29,55,.98),rgba(5,13,27,.98))!important;border-color:var(--ls-line)!important;box-shadow:var(--ls-shadow)!important}
-
-/* shared cards / containers */
-.user-panel,.card,.anime-card,.shop-card,.settings-box,.comments-section,.friends-card,.notif-card,.sheet,.modal,.popup-sheet,.simple-modal,.user-fullscreen,.acct__hero,.acct__stats,.acct__tabs,.tab-list-item,.ls-clan-card,.ls-clan-detail-head,.ls-clan-member-count,.ls-clan-level,.ls-clan-resource,.ls-clan-subtabs,.ls-clan-chat-wrap,.watch-panel,.watch-episodes,.watch-video-wrap{background:linear-gradient(145deg,rgba(12,27,52,.92),rgba(5,14,29,.94))!important;border-color:var(--ls-line)!important;box-shadow:var(--ls-shadow),inset 0 1px 0 rgba(255,255,255,.035)!important}
-.anime-card,.shop-card,.settings-box,.tab-list-item,.ls-clan-card{border-radius:18px!important}
-.anime-card:hover,.shop-card:hover,.ls-clan-card:hover{border-color:rgba(111,190,255,.38)!important;box-shadow:0 18px 44px rgba(0,0,0,.42),0 0 26px rgba(77,141,255,.09)!important;transform:translateY(-2px)!important}
-
-/* all primary/secondary/action buttons */
-.btn,.shop-card__buy,.watch-ctrl-btn,.quality-btn,.checkin-btn,.checkin-popup__confirm,.settings-profile-action-btn,.settings-logout,.dev-mini-btn,.ls-clan-action,.ls-clan-request,.ls-clan-request-big,.ls-clan-setting-btn,.ls-clan-create-btn,.ls-clan-claim,.ls-clan-leave,.ls-clan-icon-btn,.ls-clan-back,.ls-broadcast-btn,.ls-mod-btn,.send-comment-btn,.send,.chat-msg__react-btn,.chat-msg__del,.comment-action,.bottom-nav__item,.acct__tab,.ls-clan-subtab,.popup-sheet__opts button,.simple-modal__actions button,.user-fullscreen__back{background:linear-gradient(145deg,rgba(18,39,72,.96),rgba(7,18,37,.98))!important;border:1px solid var(--ls-line)!important;color:#dfeaff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 7px 20px rgba(0,0,0,.18)!important}
-.btn--primary,.shop-card__buy:not(.owned):not(.equipped),.send-comment-btn:not(:disabled),.checkin-btn:not(:disabled),.ls-clan-create-btn,.ls-clan-request-big:not(.sent),.ls-clan-claim{background:linear-gradient(135deg,#367cff,#5d9cff 52%,#6fdcff)!important;border-color:rgba(136,207,255,.5)!important;color:#fff!important;box-shadow:0 10px 28px rgba(50,120,255,.25),inset 0 1px 0 rgba(255,255,255,.22)!important}
-.btn--ghost,.settings-logout{background:linear-gradient(145deg,rgba(12,27,52,.9),rgba(5,14,29,.98))!important}
-.btn:disabled,.shop-card__buy:disabled,.send-comment-btn:disabled{opacity:.45!important;filter:none!important}
-.shop-card__buy.equipped{background:linear-gradient(135deg,rgba(44,145,255,.22),rgba(78,93,190,.22))!important;border-color:rgba(104,191,255,.48)!important;color:#9fdcff!important}
-.shop-card__buy.owned{color:#8ee5ff!important;border-color:rgba(111,220,255,.26)!important}
-
-/* forms / search / textareas */
-input,textarea,select,.settings-input,.chat-input-row textarea,.comment-form textarea{background:linear-gradient(145deg,rgba(5,16,32,.96),rgba(10,25,48,.92))!important;border:1px solid var(--ls-line)!important;color:#eef5ff!important;box-shadow:inset 0 1px 8px rgba(0,0,0,.16)!important}
-input:focus,textarea:focus,select:focus{border-color:rgba(111,190,255,.52)!important;box-shadow:0 0 0 3px rgba(77,141,255,.10),0 0 20px rgba(77,141,255,.08)!important}
-::placeholder{color:#627594!important}
-
-/* tabs/nav */
-.bottom-nav{background:linear-gradient(180deg,rgba(8,18,36,.94),rgba(4,10,22,.98))!important;border-top:1px solid var(--ls-line)!important;box-shadow:0 -12px 35px rgba(0,0,0,.3)!important;backdrop-filter:blur(18px)!important}
-.bottom-nav__item.active,.acct__tab.active,.ls-clan-subtab.active{color:#8bdfff!important;background:linear-gradient(145deg,rgba(64,131,255,.20),rgba(34,73,140,.12))!important;border-color:rgba(95,178,255,.32)!important;box-shadow:0 0 20px rgba(77,141,255,.10),inset 0 1px 0 rgba(255,255,255,.06)!important}
-
-/* overlays / dialogs */
-.overlay-backdrop{background:rgba(1,5,13,.76)!important;backdrop-filter:blur(13px)!important}
-.sheet,.simple-modal,.popup-sheet,.user-fullscreen{background:linear-gradient(160deg,rgba(10,24,47,.98),rgba(4,10,22,.99))!important;border-color:var(--ls-line)!important}
-.sheet__header{background:linear-gradient(180deg,rgba(17,35,64,.9),rgba(8,19,38,.72))!important;border-bottom-color:var(--ls-line)!important}
-
-/* chat/comment */
-.chat-msg__bubble{background:linear-gradient(145deg,rgba(20,40,70,.94),rgba(9,21,42,.96))!important;border:1px solid rgba(109,173,255,.13)!important;box-shadow:0 8px 24px rgba(0,0,0,.18)!important}
-.chat-msg--me .chat-msg__bubble{background:linear-gradient(135deg,#2869e9,#3e87ff 55%,#4dbce8)!important;border-color:rgba(142,215,255,.3)!important}
-.chat-input-bar{background:linear-gradient(180deg,rgba(8,18,36,.92),rgba(4,10,22,.98))!important;border-top:1px solid var(--ls-line)!important}
-.comments-section{background:linear-gradient(145deg,rgba(12,27,52,.72),rgba(5,14,29,.82))!important}
-
-/* watch page */
-.watch-topbar,.watch-controls,.watch-episode-section{background:transparent!important}
-.watch-video-wrap{background:#02050a!important;border-color:rgba(105,170,255,.24)!important;box-shadow:0 20px 55px rgba(0,0,0,.48),0 0 30px rgba(40,102,255,.08)!important}
-.watch-episode-item,.episode-item,.watch-episode-more{background:linear-gradient(145deg,rgba(13,30,57,.9),rgba(6,16,33,.96))!important;border-color:var(--ls-line)!important}
-.watch-episode-item.active,.episode-item.active{border-color:rgba(111,205,255,.48)!important;background:linear-gradient(145deg,rgba(38,87,160,.34),rgba(14,33,63,.96))!important}
-
-/* shop / settings */
-.shop-card__preview{background:radial-gradient(circle,rgba(66,126,255,.12),transparent 68%)!important;border-radius:16px!important}
-.shop-card__price{color:#75dfff!important;text-shadow:0 0 14px rgba(111,220,255,.18)!important}
-.settings-box__title,.section-title,.watch-episode-head h3{color:#f3f7ff!important}
-.settings-row{border-bottom-color:rgba(105,170,255,.11)!important}
-.settings-profile-actions{gap:9px!important}
-
-/* badges/chips */
-.user-panel__tier-tag,.acct__tier,.ls-profile-clan-tag,.comments-section__count,.acct__chip-prem,.user-panel__premium-chip{box-shadow:0 0 18px rgba(77,141,255,.10)!important}
-
-/* clan */
-.ls-clan-detail-head,.ls-clan-create__hero,.ls-clan-full-inner{box-shadow:var(--ls-shadow),inset 0 1px 0 rgba(255,255,255,.04)!important;border-color:var(--ls-line)!important}
-.ls-clan-chat-head{background:linear-gradient(145deg,rgba(14,31,59,.94),rgba(6,15,31,.98))!important;border:1px solid var(--ls-line)!important}
-
-/* links and highlights */
-a{color:#75cfff!important}
-</style>
-<script id="ls-final-avatar-border-and-neon-theme-2026-09-18-js">
+<script id="ls-user-requested-layout-2026-09-18-js">
 (function(){
   'use strict';
   try{
-    var escA=window.esc||function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})};
-    function ownUser(u){return !!(u&&window.userState&&((u.userId&&u.userId===window.userState.userId)||u===window.userState||u.username===window.userState.username));}
-    function avatarBorderUnified(u,size){
-      size=Math.max(24,Number(size)||72);
-      var own=ownUser(u),eq=0,frame='';
-      try{eq=own&&typeof getShopStore==='function'?Number(getShopStore().equipped)||0:0;frame=eq&&window.LS_BORDER_ART?String(window.LS_BORDER_ART[eq]||''):''}catch(e){}
-      var src=u&&u.avatarUrl?String(u.avatarUrl):'';
-      var photo=src?'<img class="ls-avatar-photo" alt="" src="'+escA(src)+'">':'<div class="ls-avatar-photo" aria-hidden="true"></div>';
-      return '<div class="ls-avatar-shell '+(frame?'has-border':'')+'" style="--ls-avatar-size:'+size+'px;width:'+size+'px;height:'+size+'px">'+
-        '<div class="ls-avatar-photo-wrap">'+photo+'</div>'+
-        (frame?'<img class="ls-avatar-border" alt="" src="'+escA(frame)+'">':'')+
-        '</div>';
-    }
-    window.avatarWithBorder=avatarBorderUnified;
-    if(typeof avatarWithBorder!=='undefined') avatarWithBorder=avatarBorderUnified;
-    window.profileAvatarForUser=avatarBorderUnified;
+    /* No streaming API controls in Settings. The app keeps its existing /api behavior. */
+    var apiBox=document.getElementById('lsStreamApiSettings'); if(apiBox)apiBox.remove();
 
-    /* Clan messages were the one chat surface that rendered a plain fallback for the owner. */
-    function decorateClanOwnAvatars(){
+    /* Prevent the old Home diamond decorator from recreating the chip. */
+    window.patchHomeDiamond=function(){document.querySelectorAll('.ls-home-diamond').forEach(function(x){x.remove()})};
+    document.querySelectorAll('.ls-home-diamond').forEach(function(x){x.remove()});
+
+    function openGlobalChatFromSettings(){
       try{
-        var box=document.getElementById('lsClanChatBox'); if(!box||!window.userState)return;
-        box.querySelectorAll('.chat-msg--me .chat-msg__avatar').forEach(function(w){
-          if(w.querySelector('.ls-avatar-shell'))return;
-          w.innerHTML=avatarBorderUnified(window.userState,32);
-        });
-      }catch(e){}
+        if(typeof window.renderClanShell==='function') window.renderClanShell('global');
+        else if(typeof renderClanShell==='function') renderClanShell('global');
+        else if(typeof chatOverlay!=='undefined'&&chatOverlay){chatOverlay.classList.add('open');if(typeof loadChatHistory==='function')loadChatHistory();}
+      }catch(e){try{if(typeof chatOverlay!=='undefined'&&chatOverlay)chatOverlay.classList.add('open')}catch(x){}}
     }
-    var oldClan=window.renderClanChatMessages;
-    if(typeof oldClan==='function'&&!oldClan.__lsUnifiedBorder){
-      var wrapClan=function(){var r=oldClan.apply(this,arguments);setTimeout(decorateClanOwnAvatars,0);return r};wrapClan.__lsUnifiedBorder=true;window.renderClanChatMessages=wrapClan;
-    }
-    setTimeout(decorateClanOwnAvatars,100);
-    new MutationObserver(function(){decorateClanOwnAvatars()}).observe(document.body,{subtree:true,childList:true});
-
-    /* Make the streaming API endpoint editable from Settings and keep it dynamic. */
-    var API_KEY='lstream_stream_api_base';
-    function cleanBase(v){v=String(v||'').trim();if(!v)return'/api';return v.replace(/\/$/,'').replace(/\s+/g,'')}
-    function getApiBase(){try{return cleanBase(SafeStorage.getItem(API_KEY)||window.STREAM_API_BASE||'/api')}catch(e){return'/api'}}
-    function saveApiBase(v){v=cleanBase(v);try{SafeStorage.setItem(API_KEY,v)}catch(e){}window.STREAM_API_BASE=v;streamApiCache={};return v}
-    window.getLStreamApiBase=getApiBase;
-    window.setLStreamApiBase=saveApiBase;
-    window.STREAM_API_BASE=getApiBase();
-    try{STREAM_API_BASE=getApiBase()}catch(e){}
-
-    if(typeof streamApiFetch==='function'&&!streamApiFetch.__lsDynamicApi){
-      var oldFetch=streamApiFetch;
-      var dynamicFetch=function(path){
-        var base=getApiBase();
-        return fetch(base+path,{headers:{'Accept':'application/json'}}).then(function(r){
-          if(!r.ok){var e=new Error('HTTP '+r.status);e.status=r.status;throw e}
-          return r.json();
-        });
-      };
-      dynamicFetch.__lsDynamicApi=true;streamApiFetch=dynamicFetch;window.streamApiFetch=dynamicFetch;
+    function renderSettingsChatPreview(){
+      var root=document.getElementById('settingsContent'); if(!root||!userState||!userState.loggedIn)return;
+      if(document.getElementById('lsSettingsChatCard'))return;
+      var card=document.createElement('div');card.className='settings-box ls-settings-chat-card';card.id='lsSettingsChatCard';
+      var msgs=[];try{msgs=getGlobalChat()||[]}catch(e){msgs=[]}
+      msgs=msgs.slice(-4).reverse();
+      var list=msgs.length?msgs.map(function(m){
+        var name=m.fromName||'User';var text=m.type==='photo'?'📷 Foto':(m.text||'');
+        var av=m.fromAvatar?String(m.fromAvatar):'';var safe=av.replace(/'/g,'%27');
+        var style=av?' style="background-image:url(\''+safe+'\')"':'';
+        return '<div class="ls-settings-chat-item"><div class="ls-settings-chat-avatar"'+style+'>'+(!av?esc(String(name).charAt(0).toUpperCase()):'')+'</div><div class="ls-settings-chat-body"><div class="ls-settings-chat-name">'+esc(name)+'</div><div class="ls-settings-chat-text">'+esc(text)+'</div></div><div class="ls-settings-chat-time">'+(typeof formatRelativeTime==='function'?formatRelativeTime(m.time):'')+'</div></div>';
+      }).join(''):'<div class="ls-settings-chat-empty">Belum ada percakapan.</div>';
+      card.innerHTML='<div class="ls-settings-chat-head"><div><div class="ls-settings-chat-title">Chat Bareng</div><div class="ls-settings-chat-sub">Lihat percakapan terbaru dengan pengguna LStream</div></div><div class="ls-settings-chat-arrow">›</div></div><div class="ls-settings-chat-list">'+list+'</div>';
+      card.addEventListener('click',openGlobalChatFromSettings);
+      var general=Array.from(root.querySelectorAll('.settings-box')).find(function(x){var t=x.querySelector('.settings-box__title');return t&&/umum/i.test(t.textContent||'')});
+      if(general)root.insertBefore(card,general);else root.insertBefore(card,root.firstChild);
     }
 
-    function injectApiSettings(){
-      var root=document.getElementById('settingsContent');if(!root||!userState||!userState.loggedIn)return;
-      if(document.getElementById('lsStreamApiSettings'))return;
-      var box=document.createElement('div');box.className='settings-box';box.id='lsStreamApiSettings';
-      box.innerHTML='<div class="settings-box__title">Streaming API</div>'+
-        '<div style="font-size:.72rem;color:var(--text-muted);line-height:1.55;margin-bottom:10px">Atur alamat API yang menyediakan data episode dan <b>stream_url</b>. Default: <code>/api</code>.</div>'+
-        '<div class="settings-row" style="border:0;padding:0;display:block"><div class="settings-row__label" style="margin-bottom:7px"><div class="settings-row__title">API Base URL</div><div class="settings-row__desc">Contoh: https://domain-kamu.com/api</div></div><div style="display:flex;gap:8px;align-items:center"><input id="lsStreamApiInput" class="settings-input" style="flex:1;min-width:0" value="'+escA(getApiBase())+'" placeholder="/api atau https://.../api"><button class="btn btn--primary btn--sm" id="lsStreamApiSave">Simpan</button></div><div id="lsStreamApiStatus" style="font-size:.66rem;min-height:18px;margin-top:8px;color:#7f9cc8"></div></div>';
-      var general=root.querySelector('.settings-box');
-      root.insertBefore(box,general||root.firstChild);
-      var save=document.getElementById('lsStreamApiSave'),input=document.getElementById('lsStreamApiInput'),st=document.getElementById('lsStreamApiStatus');
-      if(save)save.onclick=function(){var v=saveApiBase(input?input.value:'/api');if(input)input.value=v;if(st)st.textContent='✓ API disimpan: '+v;setTimeout(function(){if(st)st.textContent=''},2200)};
-      if(input)input.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();if(save)save.click()}});
+    /* Larger chat avatars for Global / Clan / Private. Re-rendered messages keep the 50px shell. */
+    function normalizeChatAvatars(){
+      document.querySelectorAll('.chat-msg__avatar').forEach(function(box){
+        box.style.width='50px';box.style.height='50px';
+        var shell=box.querySelector('.ls-avatar-shell');
+        if(shell){shell.style.width='50px';shell.style.height='50px';shell.style.setProperty('--ls-avatar-size','50px')}
+      });
     }
+
+    /* Make the user's border available to every own-avatar surface, including settings/comments/chat. */
+    function ensureOwnCommentAvatar(){
+      try{if(typeof commentMyAvatar!=='undefined'&&commentMyAvatar&&userState&&userState.loggedIn)commentMyAvatar.innerHTML=avatarWithBorder(userState,48)}catch(e){}
+    }
+
+    /* Episode schedule based on the same current-season Jikan objects already loaded by Home. */
+    var dayNames=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    function scheduleKey(a){
+      var b=a&&a.broadcast||{};var day=b.day||'';var map={Sunday:0,Monday:1,Tuesday:2,Wednesday:3,Thursday:4,Friday:5,Saturday:6};return map[day]===undefined?99:map[day];
+    }
+    function renderAnimeSchedule(items){
+      var list=document.getElementById('animeScheduleList'),st=document.getElementById('animeScheduleStatus');if(!list)return;
+      items=Array.isArray(items)?items:[];
+      var rows=items.filter(function(a){return a&&a.broadcast&&(a.broadcast.day||a.broadcast.time)}).slice(0,12);
+      rows.sort(function(a,b){return scheduleKey(a)-scheduleKey(b)});
+      if(!rows.length){list.innerHTML='<div class="anime-schedule-empty">Jadwal tayang belum tersedia dari data anime saat ini.</div>';if(st)st.textContent='Data belum tersedia';return}
+      if(st)st.textContent=rows.length+' jadwal';
+      list.innerHTML=rows.map(function(a){
+        var b=a.broadcast||{};var day=b.day||'Hari belum diketahui';var time=b.time||'Waktu belum diketahui';
+        var ep=a.episodes?('Total '+a.episodes+' episode'):'';var img=a.images&&a.images.jpg&&a.images.jpg.image_url||a.image_url||'';
+        return '<div class="anime-schedule-item" data-schedule-id="'+esc(String(a.mal_id||''))+'"><img class="anime-schedule-poster" src="'+esc(img||PLACEHOLDER_IMG)+'" alt=""><div class="anime-schedule-info"><div class="anime-schedule-title">'+esc(a.title||'Anime')+'</div><div class="anime-schedule-day">'+esc(day)+'</div><div class="anime-schedule-ep">'+esc(ep)+'</div></div><div class="anime-schedule-time">'+esc(time)+'<small>Jadwal tayang</small></div></div>';
+      }).join('');
+      list.querySelectorAll('[data-schedule-id]').forEach(function(row){row.addEventListener('click',function(){var id=Number(row.dataset.scheduleId);var a=items.find(function(x){return Number(x.mal_id)===id});if(a&&typeof openAnimeModal==='function')openAnimeModal(a)});});
+    }
+    window.renderAnimeSchedule=renderAnimeSchedule;
+
+    function bindSettingsEnhancements(){
+      try{renderSettingsChatPreview()}catch(e){}
+      try{ensureOwnCommentAvatar()}catch(e){}
+      try{normalizeChatAvatars()}catch(e){}
+    }
+
     var oldRS=window.renderSettingsPage;
-    if(typeof oldRS==='function'&&!oldRS.__lsApiSettings){
-      var rs=function(){var r=oldRS.apply(this,arguments);setTimeout(injectApiSettings,0);return r};rs.__lsApiSettings=true;window.renderSettingsPage=rs;
-      setTimeout(injectApiSettings,80);
-    }else setTimeout(injectApiSettings,80);
-
-    /* Broaden response parsing so the frontend can consume common API shapes. */
-    if(typeof resolveStreamSource==='function'&&!resolveStreamSource.__lsFlexible){
-      var oldResolve=resolveStreamSource;
-      var flex=function(anime,episode){
-        return oldResolve(anime,episode).catch(function(firstErr){
-          var title=anime&&anime.title||'',ep=episode&&episode.mal_id||1;
-          return streamApiFetch('/stream?title='+encodeURIComponent(title)+'&episode='+encodeURIComponent(ep)).then(function(j){
-            var roots=[];if(j)roots.push(j,j.data,j.result,j.stream,j.video,j.episode,j.episode_detail);
-            var url=null,format=null,subs=[],headers={};
-            roots.forEach(function(r){
-              if(!r||url)return;
-              var candidates=[r.stream_url,r.stream_link,r.video_url,r.videoUrl,r.url,r.file,r.src,r.source];
-              for(var i=0;i<candidates.length;i++)if(typeof candidates[i]==='string'&&/^https?:/i.test(candidates[i])){url=candidates[i];break}
-              if(!url&&Array.isArray(r.sources)){
-                for(var k=0;k<r.sources.length;k++){var q=r.sources[k];if(q&&(q.url||q.file)){url=q.url||q.file;format=q.type||q.format;break}}
-              }
-              if(r.format||r.type)format=r.format||r.type;if(Array.isArray(r.subtitles))subs=r.subtitles;if(r.headers)headers=r.headers;
-            });
-            if(!url)throw firstErr||new Error('Sumber video tidak tersedia');
-            return {url:url,format:String(format||(/\.m3u8(?:$|\?)/i.test(url)?'hls':'mp4')).toLowerCase(),subtitles:subs,headers:headers};
-          });
-        });
-      };
-      flex.__lsFlexible=true;resolveStreamSource=flex;window.resolveStreamSource=flex;
+    if(typeof oldRS==='function'&&!oldRS.__lsChatMove){
+      var wrappedRS=function(){var r=oldRS.apply(this,arguments);setTimeout(bindSettingsEnhancements,0);return r};wrappedRS.__lsChatMove=true;window.renderSettingsPage=wrappedRS;
     }
-  }catch(e){console.warn('LStream unified final patch',e)}
+    setTimeout(bindSettingsEnhancements,100);
+    setTimeout(function(){if(window.__lsSeasonAnime)renderAnimeSchedule(window.__lsSeasonAnime)},250);
+    new MutationObserver(function(){normalizeChatAvatars()}).observe(document.body,{subtree:true,childList:true});
+
+    /* Move online dot/level slightly outward so the border remains in front of the photo. */
+    var st=document.createElement('style');st.textContent='.user-panel__avatar-wrap .user-panel__status,.user-panel__avatar-wrap .user-panel__level-chip,.acct__avatar-box .acct__dot,.acct__avatar-box .acct__lvl{position:absolute!important;z-index:300!important}';document.head.appendChild(st);
+  }catch(e){console.warn('LStream requested layout patch',e)}
 })();
 </script>
+
+
+<style id="ls-user-customization-2026-09-18">
+/* Requested customization layer: keep the original LStream visual language, only add the requested cosmetics. */
+.ls-avatar-shell{position:relative!important;display:block!important;flex:0 0 auto!important;width:var(--ls-avatar-size)!important;height:var(--ls-avatar-size)!important;border-radius:50%!important;overflow:visible!important;line-height:0!important}
+.ls-avatar-photo-wrap{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border-radius:50%!important;overflow:hidden!important;z-index:1!important}
+.ls-avatar-photo{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important;display:block!important}
+.ls-avatar-border{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:fill!important;border-radius:50%!important;pointer-events:none!important;z-index:50!important}
+.user-panel__avatar-wrap,.acct__avatar-box,.settings-panel,.comment-form__avatar,.comment-item__avatar,.chat-msg__avatar{position:relative!important;overflow:visible!important}
+.user-panel__avatar-wrap .ls-avatar-shell,.acct__avatar-box .ls-avatar-shell,.settings-panel .ls-avatar-shell,.comment-form__avatar .ls-avatar-shell,.comment-item__avatar .ls-avatar-shell,.chat-msg__avatar .ls-avatar-shell{z-index:20!important}
+.user-panel__status,.user-panel__level-chip,.acct__dot,.acct__lvl{z-index:80!important}
+.user-panel__status{right:-9px!important;bottom:-9px!important}
+.user-panel__level-chip{left:-9px!important;bottom:-9px!important}
+.acct__dot{right:-9px!important;bottom:-9px!important}
+.acct__lvl{left:-9px!important;bottom:-9px!important}
+/* Chat avatars are intentionally larger than the old 50px shell. */
+.chat-msg__avatar{width:62px!important;height:62px!important;flex:0 0 62px!important}
+.chat-msg__avatar .ls-avatar-shell{--ls-avatar-size:62px!important;width:62px!important;height:62px!important}
+.chat-msg__avatar-fallback{width:62px!important;height:62px!important;border-radius:50%!important}
+#chatOverlay .chat-msg__avatar,#dmOverlay .chat-msg__avatar,.ls-clan-chat-box .chat-msg__avatar,.ls-global-box .chat-msg__avatar{margin-right:4px!important}
+#chatOverlay .chat-msg__body,#dmOverlay .chat-msg__body,.ls-clan-chat-box .chat-msg__body,.ls-global-box .chat-msg__body{max-width:calc(100% - 72px)!important}
+/* Name tag: animated flag-like plate behind the username. */
+.ls-name-tag{position:relative!important;display:inline-flex!important;align-items:center!important;min-width:2.2em!important;max-width:100%!important;padding:3px 10px 3px 12px!important;border-radius:5px 10px 10px 5px!important;color:#fff!important;font-weight:850!important;line-height:1.1!important;background:var(--tag-bg,#4d7cff)!important;background-size:220% 100%!important;animation:lsNameTagWave 2.3s ease-in-out infinite!important;box-shadow:0 2px 7px rgba(0,0,0,.22)!important;isolation:isolate!important;overflow:hidden!important}
+.ls-name-tag:after{content:""!important;position:absolute!important;left:0!important;top:0!important;bottom:0!important;width:18px!important;background:linear-gradient(90deg,rgba(255,255,255,.25),transparent)!important;transform:translateX(-120%) skewX(-18deg)!important;animation:lsNameTagSweep 2.3s linear infinite!important;pointer-events:none!important}
+@keyframes lsNameTagWave{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes lsNameTagSweep{0%{transform:translateX(-120%) skewX(-18deg)}55%,100%{transform:translateX(520%) skewX(-18deg)}}
+.ls-name-tag--1{--tag-bg:linear-gradient(110deg,#d7263d,#fff,#d7263d,#fff)!important}
+.ls-name-tag--2{--tag-bg:linear-gradient(110deg,#7c3aed,#090014,#7c3aed,#000)!important}
+.ls-name-tag--3{--tag-bg:linear-gradient(110deg,#8be9ff,#174ea6,#4db8ff,#123b86)!important}
+.ls-name-tag--4{--tag-bg:linear-gradient(110deg,#ffb6d9,#d81b75,#ff80bc,#a30f58)!important}
+.ls-name-tag--5{--tag-bg:linear-gradient(110deg,#0c143b,#6b5cff,#d946ef,#111827,#4fd1c5)!important}
+.ls-custom-msg{position:relative!important;display:inline-flex!important;align-items:flex-start!important;gap:8px!important;padding:9px 11px!important;border-radius:13px!important;max-width:min(82%,360px)!important;color:#18202b!important;font-weight:650!important;box-shadow:0 5px 15px rgba(0,0,0,.12)!important;border:1px solid rgba(0,0,0,.07)!important}
+.ls-custom-msg__art{width:25px!important;height:25px!important;flex:0 0 25px!important;border-radius:8px!important;display:grid!important;place-items:center!important;background:rgba(255,255,255,.5)!important;font-size:15px!important}
+.ls-custom-msg__text{min-width:0!important;line-height:1.35!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important}
+.ls-custom-msg--1{background:#f3e5c8!important}.ls-custom-msg--2{background:#bfe8bd!important}.ls-custom-msg--3{background:#f5c2c7!important}.ls-custom-msg--4{background:#f3a75d!important}.ls-custom-msg--5{background:#ef9fca!important}
+/* Reply marker requested by user: orange instead of blue. */
+.chat-msg__reply-quote,.chat-reply-preview{border-left-color:#ff8c3a!important}
+/* Settings customization control stays one box with Border Profile. */
+.ls-customize-divider{height:1px;background:rgba(255,255,255,.06);margin:12px 0}
+.ls-customize-row{display:flex;align-items:center;gap:10px;padding:9px 0}
+.ls-customize-row__info{flex:1;min-width:0}.ls-customize-row__title{font-size:.78rem;font-weight:800}.ls-customize-row__desc{font-size:.62rem;color:var(--text-muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ls-customize-pick{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.035);color:var(--text-main);font:800 .68rem inherit;cursor:pointer;flex:0 0 auto}
+.ls-customize-modal{position:fixed;inset:0;z-index:100000;display:none;align-items:flex-end;justify-content:center;padding:14px;background:rgba(0,0,0,.62)}
+.ls-customize-modal.open{display:flex}.ls-customize-box{width:min(100%,460px);max-height:82vh;overflow:auto;background:var(--bg-card,#101827);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:16px;box-shadow:0 25px 70px rgba(0,0,0,.6)}
+.ls-customize-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.ls-customize-head h3{margin:0;font-size:.92rem}.ls-customize-close{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:transparent;color:var(--text-main);cursor:pointer}
+.ls-customize-list{display:flex;flex-direction:column;gap:8px}.ls-customize-option{width:100%;text-align:left;padding:10px;border-radius:13px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);color:var(--text-main);cursor:pointer}.ls-customize-option.active{border-color:rgba(74,141,255,.55);background:rgba(74,141,255,.09)}
+.ls-customize-option small{display:block;color:var(--text-muted);margin-top:3px;font-size:.6rem}.ls-name-tag-preview{display:flex;align-items:center;justify-content:center;min-height:58px;margin-bottom:8px}.ls-custom-msg-preview{display:flex;justify-content:center;margin-bottom:8px}
+/* Shop cosmetic cards */
+.ls-shop-cosmetic-section{margin-top:22px}.ls-shop-cosmetic-section .shop-section-title{margin-bottom:14px}.ls-cosmetic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ls-cosmetic-card{min-width:0;padding:12px;border:1px solid rgba(255,255,255,.07);border-radius:16px;background:rgba(255,255,255,.025);text-align:center}.ls-cosmetic-preview{min-height:72px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;overflow:hidden}.ls-cosmetic-name{font-size:.7rem;font-weight:850}.ls-cosmetic-price{font-size:.64rem;color:#ffd54a;margin:5px 0 8px}.ls-cosmetic-buy{width:100%;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--text-main);font:800 .65rem inherit;cursor:pointer}.ls-cosmetic-buy.equipped{color:#71ddb0;border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.08)}
+</style>
+<script id="ls-user-customization-2026-09-18-js">
+(function(){'use strict';
+try{
+  /* Exact same-size avatar frame on every requested surface. */
+  window.avatarWithBorder=function(u,size){
+    size=Number(size)||58;
+    var own=!!(u&&window.userState&&((u.userId&&u.userId===userState.userId)||u===userState));
+    var sh=own&&typeof getShopStore==='function'?getShopStore():{equipped:0};
+    var eq=Number(sh.equipped)||0, frame=(window.LS_BORDER_ART&&LS_BORDER_ART[eq])||'';
+    var av=u&&u.avatarUrl?String(u.avatarUrl).replace(/'/g,'%27'):'';
+    var inner=av?'<div class="ls-avatar-photo-wrap"><div class="ls-avatar-photo" style="background-image:url(\''+av+'\');background-size:cover;background-position:center"></div></div>':'<div class="ls-avatar-photo-wrap"><div class="ls-avatar-photo ls-avatar-photo--blank"></div></div>';
+    if(!frame)return '<div class="ls-avatar-shell" style="--ls-avatar-size:'+size+'px;width:'+size+'px;height:'+size+'px"><div class="ls-avatar-photo-wrap">'+(av?'<div class="ls-avatar-photo" style="background-image:url(\''+av+'\');background-size:cover;background-position:center"></div>':'<div class="ls-avatar-photo ls-avatar-photo--blank"></div>')+'</div></div>';
+    return '<div class="ls-avatar-shell" style="--ls-avatar-size:'+size+'px;width:'+size+'px;height:'+size+'px"><div class="ls-avatar-photo-wrap">'+(av?'<div class="ls-avatar-photo" style="background-image:url(\''+av+'\');background-size:cover;background-position:center"></div>':'<div class="ls-avatar-photo ls-avatar-photo--blank"></div>')+'</div><img class="ls-avatar-border" src="'+frame+'" alt=""></div>';
+  };
+  avatarWithBorder=window.avatarWithBorder;
+
+  var NAME_TAGS={
+    1:{name:'Crimson Flag',price:150,cls:'ls-name-tag--1'},
+    2:{name:'Void Purple',price:250,cls:'ls-name-tag--2'},
+    3:{name:'Ocean Sky',price:350,cls:'ls-name-tag--3'},
+    4:{name:'Pink Bloom',price:450,cls:'ls-name-tag--4'},
+    5:{name:'Galaxy',price:600,cls:'ls-name-tag--5'}
+  };
+  var CUSTOM_MSGS={
+    1:{name:'Cream Note',price:180,cls:'ls-custom-msg--1',icon:'🌼'},
+    2:{name:'Mint Note',price:280,cls:'ls-custom-msg--2',icon:'🍀'},
+    3:{name:'Rose Note',price:380,cls:'ls-custom-msg--3',icon:'🌸'},
+    4:{name:'Orange Note',price:480,cls:'ls-custom-msg--4',icon:'🍊'},
+    5:{name:'Pink Note',price:580,cls:'ls-custom-msg--5',icon:'💗'}
+  };
+  window.LS_NAME_TAGS=NAME_TAGS;window.LS_CUSTOM_MSGS=CUSTOM_MSGS;
+  function shopState(){var s=typeof getShopStore==='function'?getShopStore():{owned:[],equipped:0};if(!Array.isArray(s.owned))s.owned=[];if(!Array.isArray(s.nameTagOwned))s.nameTagOwned=[];if(!Array.isArray(s.customMsgOwned))s.customMsgOwned=[];s.nameTagEquipped=Number(s.nameTagEquipped)||0;s.customMsgEquipped=Number(s.customMsgEquipped)||0;return s}
+  function saveCosmeticState(s){saveShopStore(s)}
+  function buyCosmetic(kind,id){var data=kind==='tag'?NAME_TAGS[id]:CUSTOM_MSGS[id],s=shopState();var arr=kind==='tag'?s.nameTagOwned:s.customMsgOwned;if(arr.indexOf(id)!==-1){if(kind==='tag')s.nameTagEquipped=s.nameTagEquipped===id?0:id;else s.customMsgEquipped=s.customMsgEquipped===id?0:id;saveCosmeticState(s);refreshAll();return}if(!userState.devUnlimitedCoins&&Number(userState.coins||0)<data.price){if(typeof showCoinLow==='function')showCoinLow(data.price,userState.coins);return}if(!confirm('Beli '+data.name+' seharga '+data.price+' coin?'))return;if(!userState.devUnlimitedCoins)userState.coins-=data.price;saveUser(userState);arr.push(id);if(kind==='tag')s.nameTagEquipped=id;else s.customMsgEquipped=id;saveCosmeticState(s);refreshAll()}
+  function refreshAll(){try{if(typeof renderShopGrid==='function')renderShopGrid()}catch(e){}try{if(typeof renderUserPanel==='function')renderUserPanel()}catch(e){}try{if(typeof renderAccountPage==='function')renderAccountPage()}catch(e){}try{if(typeof renderSettingsPage==='function')renderSettingsPage()}catch(e){}try{if(typeof updateShopCoinDisplay==='function')updateShopCoinDisplay()}catch(e){}}
+  function nameTagHtml(id,name){var d=NAME_TAGS[id];return d?'<span class="ls-name-tag '+d.cls+'">'+esc(name||'User')+'</span>':esc(name||'User')}
+  function customMsgHtml(id,text){var d=CUSTOM_MSGS[id];return d?'<div class="ls-custom-msg '+d.cls+'"><span class="ls-custom-msg__art">'+d.icon+'</span><span class="ls-custom-msg__text">'+esc(text||'')+'</span></div>':'<div class="chat-msg__text">'+esc(text||'')+'</div>'}
+  window.lsNameTagHtml=nameTagHtml;window.lsCustomMsgHtml=customMsgHtml;
+
+  /* Re-render shop with Border + Name tag + Pesan chat custom sections. */
+  var baseRender=window.renderShopGrid;
+  function renderShop(){
+    if(typeof baseRender==='function')baseRender();
+    var scroll=document.querySelector('#shopOverlay .shop-scroll');if(!scroll)return;
+    var old=document.getElementById('lsShopCosmetics');if(old)old.remove();
+    var s=shopState();
+    function cards(kind,obj,owned,equipped){return Object.keys(obj).map(function(k){var id=Number(k),d=obj[id],isOwn=owned.indexOf(id)!==-1,isEq=equipped===id;var btn=isEq?'Sedang Dipakai':(isOwn?'Pakai':'Beli');var cls=isEq?'equipped':'';var preview=kind==='tag'?'<div class="ls-name-tag-preview"><span class="ls-name-tag '+d.cls+'">Username</span></div>':'<div class="ls-custom-msg-preview"><div class="ls-custom-msg '+d.cls+'"><span class="ls-custom-msg__art">'+d.icon+'</span><span class="ls-custom-msg__text">Contoh pesan</span></div></div>';return '<div class="ls-cosmetic-card">'+preview+'<div class="ls-cosmetic-name">'+esc(d.name)+'</div><div class="ls-cosmetic-price">'+ICON.coin+d.price+'</div><button class="ls-cosmetic-buy '+cls+'" data-cosmetic-kind="'+kind+'" data-cosmetic-id="'+id+'" '+(isEq?'disabled':'')+'>'+btn+'</button></div>'}).join('')}
+    var wrap=document.createElement('div');wrap.id='lsShopCosmetics';wrap.innerHTML='<div class="ls-shop-cosmetic-section"><div class="shop-section-title">Name tag</div><div class="ls-cosmetic-grid">'+cards('tag',NAME_TAGS,s.nameTagOwned,s.nameTagEquipped)+'</div></div><div class="ls-shop-cosmetic-section"><div class="shop-section-title">Pesan chat custom</div><div class="ls-cosmetic-grid">'+cards('msg',CUSTOM_MSGS,s.customMsgOwned,s.customMsgEquipped)+'</div></div>';
+    scroll.appendChild(wrap);
+    wrap.querySelectorAll('[data-cosmetic-kind]').forEach(function(b){b.onclick=function(){buyCosmetic(b.dataset.cosmeticKind==='tag'?'tag':'msg',Number(b.dataset.cosmeticId))}});
+  }
+  window.renderShopGrid=renderShop;
+
+  /* Unified Settings customization box. */
+  function makeCustomizeModal(){var m=document.getElementById('lsCustomizeModal');if(m)return m;m=document.createElement('div');m.id='lsCustomizeModal';m.className='ls-customize-modal';m.innerHTML='<div class="ls-customize-box"><div class="ls-customize-head"><h3 id="lsCustomizeTitle">Pilih</h3><button class="ls-customize-close" id="lsCustomizeClose">×</button></div><div id="lsCustomizeList" class="ls-customize-list"></div></div>';document.body.appendChild(m);m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open')});m.querySelector('#lsCustomizeClose').onclick=function(){m.classList.remove('open')};return m}
+  function openPicker(kind){var m=makeCustomizeModal(),list=m.querySelector('#lsCustomizeList'),title=m.querySelector('#lsCustomizeTitle'),s=shopState();var arr=kind==='border'?[{id:0,name:'Default'}]:Object.keys(kind==='tag'?NAME_TAGS:CUSTOM_MSGS).map(function(k){var d=(kind==='tag'?NAME_TAGS:CUSTOM_MSGS)[k];return {id:Number(k),name:d.name}});var eq=kind==='border'?s.equipped:(kind==='tag'?s.nameTagEquipped:s.customMsgEquipped);title.textContent=kind==='border'?'Pilih Border':(kind==='tag'?'Pilih Name Tag':'Pilih Pesan Chat Custom');list.innerHTML=arr.map(function(x){var own=kind==='border'?x.id===0:s[(kind==='tag'?'nameTagOwned':'customMsgOwned')].indexOf(x.id)!==-1;var active=eq===x.id;return '<button class="ls-customize-option '+(active?'active':'')+'" data-pick="'+x.id+'" '+(!own?'disabled':'')+'>'+esc(x.name)+(active?' ✓':'')+'<small>'+(!own?'Belum dibeli':'Tekan untuk memasang')+'</small></button>'}).join('');list.querySelectorAll('[data-pick]').forEach(function(b){b.onclick=function(){var id=Number(b.dataset.pick),ss=shopState();if(kind==='border')ss.equipped=id;else if(kind==='tag')ss.nameTagEquipped=id;else ss.customMsgEquipped=id;saveCosmeticState(ss);m.classList.remove('open');refreshAll()}});m.classList.add('open')}
+  window.lsOpenPicker=openPicker;
+
+  function patchSettings(){var root=document.getElementById('settingsContent');if(!root)return;var boxes=root.querySelectorAll('.settings-box');var target=null;boxes.forEach(function(x){var t=x.querySelector('.settings-box__title');if(t&&/Border Profile/i.test(t.textContent||''))target=x});if(!target||target.querySelector('#lsSettingsCustomize'))return;var s=shopState(),tag=s.nameTagEquipped?NAME_TAGS[s.nameTagEquipped]:null,msg=s.customMsgEquipped?CUSTOM_MSGS[s.customMsgEquipped]:null;var div=document.createElement('div');div.id='lsSettingsCustomize';div.innerHTML='<div class="ls-customize-divider"></div><div class="ls-customize-row"><div class="ls-customize-row__info"><div class="ls-customize-row__title">Name tag</div><div class="ls-customize-row__desc">'+esc(tag?tag.name:'Default')+'</div></div><button class="ls-customize-pick" data-open-cos="tag">Pilih</button></div><div class="ls-customize-row"><div class="ls-customize-row__info"><div class="ls-customize-row__title">Pesan chat custom</div><div class="ls-customize-row__desc">'+esc(msg?msg.name:'Default')+'</div></div><button class="ls-customize-pick" data-open-cos="msg">Pilih</button></div>';target.appendChild(div);target.querySelectorAll('[data-open-cos]').forEach(function(b){b.onclick=function(){openPicker(b.dataset.openCos==='tag'?'tag':'msg')}})}
+  var oldRS=window.renderSettingsPage;if(typeof oldRS==='function'&&!oldRS.__lsCosmetics){var f=function(){var r=oldRS.apply(this,arguments);setTimeout(patchSettings,0);return r};f.__lsCosmetics=true;window.renderSettingsPage=f}
+  setTimeout(patchSettings,120);
+
+  /* Cosmetic data is attached to messages when they are sent. */
+  function ownCosmetics(){var s=shopState();return {nameTagId:s.nameTagEquipped||0,customMessageId:s.customMsgEquipped||0}}
+  function decorateGlobalStore(){try{var a=getGlobalChat(),changed=false;a.forEach(function(m){if(m&&m.from===userState.userId){var c=ownCosmetics();if(!m.nameTagId)m.nameTagId=c.nameTagId;if(!m.customMessageId)m.customMessageId=c.customMessageId;changed=true}});if(changed)saveGlobalChat(a)}catch(e){}}
+  function decorateLastDM(){try{if(!state.dmTarget)return;var h=getDMMessages(state.dmTarget.name);var m=h[h.length-1];if(m&&m.from==='Kamu'){var c=ownCosmetics();if(!m.nameTagId)m.nameTagId=c.nameTagId;if(!m.customMessageId)m.customMessageId=c.customMessageId;pushDMMessage(state.dmTarget.name,m)}}catch(e){}}
+  function decorateClanLast(){try{var c=typeof currentClan==='function'?currentClan():null;if(!c)return;var a=clanMsgs(c),m=a[a.length-1];if(m&&m.name===userState.username){var co=ownCosmetics();if(!m.nameTagId)m.nameTagId=co.nameTagId;if(!m.customMessageId)m.customMessageId=co.customMessageId;clanSaveMsgs(c,a)}}catch(e){}}
+  function addNameTagToName(root,name,id){if(!root||!id||!NAME_TAGS[id])return;var nameBox=root.querySelector('.chat-msg__name');if(!nameBox)return;var old=nameBox.querySelector('.ls-name-tag');if(old)return;var plain=nameBox.querySelector('span');if(plain)plain.outerHTML=nameTagHtml(id,name);else nameBox.insertAdjacentHTML('afterbegin',nameTagHtml(id,name))}
+  function addCustomToBubble(root,id){if(!root||!id||!CUSTOM_MSGS[id])return;var bubble=root.querySelector('.chat-msg__bubble');if(!bubble)return;var text=bubble.querySelector('.chat-msg__text');if(!text)return;var val=text.textContent||'';if(bubble.querySelector('.ls-custom-msg'))return;text.outerHTML=customMsgHtml(id,val)}
+  function decorateRenderedChats(){document.querySelectorAll('.chat-msg').forEach(function(row){var id=row.dataset.msgId;var msg=null;try{var g=getGlobalChat();msg=g.find(function(x){return String(x.id||x.time)===String(id)})}catch(e){}if(!msg){try{if(state.dmTarget){var h=getDMMessages(state.dmTarget.name);msg=h.find(function(x){return String(x.time)===String(id)})}}catch(e){}}if(msg){addNameTagToName(row,msg.from===userState.userId?msg.fromName:msg.name||msg.fromName,msg.nameTagId);addCustomToBubble(row,msg.customMessageId)}})}
+  window.lsDecorateRenderedChats=decorateRenderedChats;
+  var oldAppend=window.appendChatBubble;if(typeof oldAppend==='function'&&!oldAppend.__lsCos){var a=function(m,noAnim){var c=ownCosmetics();if(m&&m.from===userState.userId){m.nameTagId=m.nameTagId||c.nameTagId;m.customMessageId=m.customMessageId||c.customMessageId}var r=oldAppend.apply(this,arguments);setTimeout(decorateRenderedChats,0);return r};a.__lsCos=true;window.appendChatBubble=a}
+  var oldDM=window.appendDMBubble;if(typeof oldDM==='function'&&!oldDM.__lsCos){var d=function(m,u){if(m&&m.from==='Kamu'){var c=ownCosmetics();m.nameTagId=m.nameTagId||c.nameTagId;m.customMessageId=m.customMessageId||c.customMessageId}var r=oldDM.apply(this,arguments);setTimeout(decorateRenderedChats,0);return r};d.__lsCos=true;window.appendDMBubble=d}
+  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#lsGlobalSend,#lsClanChatSend');if(b)setTimeout(function(){decorateGlobalStore();decorateClanLast();try{if(typeof loadChatHistory==='function'&&chatBox)loadChatHistory();}catch(x){}try{if(typeof renderClanChatMessages==='function'&&b.id==='lsClanChatSend')renderClanChatMessages();}catch(x){}setTimeout(decorateRenderedChats,20)},35)},true);
+  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#dmSendBtn');if(b)setTimeout(function(){decorateLastDM();setTimeout(decorateRenderedChats,20)},35)},true);
+  setInterval(function(){try{decorateRenderedChats()}catch(e){}},900);
+
+  /* Home already contains the episode schedule section; keep it as the replacement for the old chat/coin shortcut. */
+  document.querySelectorAll('.ls-home-diamond').forEach(function(x){x.remove()});
+  /* Remove any old streaming API Settings control without touching the actual API logic. */
+  var api=document.getElementById('lsStreamApiSettings');if(api)api.remove();
+  /* Ensure reply marker remains orange after old dynamic styles. */
+  var rs=document.createElement('style');rs.textContent='.chat-msg__reply-quote,.chat-reply-preview{border-left-color:#ff8c3a!important}';document.head.appendChild(rs);
+}catch(e){console.warn('LStream cosmetics patch',e)}
+})();
+</script>
+
+<style id="ls-final-user-cosmetic-geometry-2026-09-18">
+/* Final requested geometry: border always exactly follows the profile-photo circle. */
+.user-panel__avatar-wrap,.acct__avatar-box,.settings-panel,.comment-form__avatar,.comment-item__avatar,.chat-msg__avatar{overflow:visible!important;position:relative!important}
+.ls-avatar-shell{width:var(--ls-avatar-size)!important;height:var(--ls-avatar-size)!important;min-width:var(--ls-avatar-size)!important;min-height:var(--ls-avatar-size)!important}
+.ls-avatar-photo-wrap,.ls-avatar-photo,.ls-avatar-border{width:100%!important;height:100%!important;inset:0!important}
+.ls-avatar-border{object-fit:fill!important;z-index:100!important}
+/* Profile surfaces keep their existing photo dimensions; the frame uses the exact same box. */
+.user-panel__avatar-wrap .ls-avatar-shell{--ls-avatar-size:72px!important}
+.acct__avatar-box .ls-avatar-shell{--ls-avatar-size:84px!important}
+.settings-panel .ls-avatar-shell{--ls-avatar-size:58px!important}
+.comment-form__avatar .ls-avatar-shell{--ls-avatar-size:38px!important}
+.comment-item__avatar .ls-avatar-shell{--ls-avatar-size:40px!important}
+/* Chat avatars are larger and consistent in Global / Clan / Private. */
+.chat-msg__avatar{width:68px!important;height:68px!important;min-width:68px!important;flex:0 0 68px!important}
+.chat-msg__avatar .ls-avatar-shell{--ls-avatar-size:68px!important;width:68px!important;height:68px!important}
+.chat-msg__avatar-fallback{width:68px!important;height:68px!important;min-width:68px!important;border-radius:50%!important}
+#chatOverlay .chat-msg__avatar,#dmOverlay .chat-msg__avatar,.ls-clan-chat-box .chat-msg__avatar,.ls-global-box .chat-msg__avatar{margin-right:7px!important}
+#chatOverlay .chat-msg__body,#dmOverlay .chat-msg__body,.ls-clan-chat-box .chat-msg__body,.ls-global-box .chat-msg__body{max-width:calc(100% - 82px)!important}
+/* Online dot and level sit outside the avatar so the frame never covers them. */
+.user-panel__avatar-wrap .user-panel__status,.acct__avatar-box .acct__dot{z-index:300!important}
+.user-panel__avatar-wrap .user-panel__status{right:-12px!important;bottom:-12px!important}
+.user-panel__avatar-wrap .user-panel__level-chip{z-index:300!important;left:-12px!important;bottom:-12px!important}
+.acct__avatar-box .acct__dot{right:-12px!important;bottom:-12px!important}
+.acct__avatar-box .acct__lvl{z-index:300!important;left:-12px!important;bottom:-12px!important}
+/* Flag-like name tag behind the username, sized by the username itself. */
+.chat-msg__name .ls-name-tag{position:relative!important;z-index:0!important;margin-right:2px!important;padding:4px 12px 4px 14px!important;border-radius:4px 11px 11px 4px!important;line-height:1.15!important;white-space:nowrap!important;max-width:100%!important}
+.chat-msg__name .ls-name-tag:before{content:""!important;position:absolute!important;left:0!important;top:0!important;bottom:0!important;width:7px!important;background:rgba(255,255,255,.2)!important;clip-path:polygon(0 0,100% 10%,65% 50%,100% 90%,0 100%)!important;pointer-events:none!important}
+/* Keep the original LStream visual language; only cosmetic components use these rules. */
+.ls-settings-chat-card{border-radius:18px!important;cursor:pointer!important;overflow:hidden!important}
+.ls-settings-chat-list{min-height:58px!important}
+.ls-settings-chat-item{cursor:pointer!important}
+/* Shop cosmetic previews */
+.ls-name-tag-preview{min-height:62px!important;overflow:hidden!important}
+.ls-name-tag-preview .ls-name-tag{font-size:.8rem!important}
+.ls-custom-msg-preview .ls-custom-msg{max-width:220px!important}
+/* Orange reply rail. */
+.chat-msg__reply-quote,.chat-reply-preview{border-left-color:#ff8c3a!important}
+</style>
+<script id="ls-final-user-cosmetic-geometry-2026-09-18-js">
+(function(){'use strict';try{
+  /* The earlier helper intentionally kept a 50px chat size. Override that normalizer. */
+  window.__lsChatAvatarSize=68;
+  function fixChatSizes(){document.querySelectorAll('.chat-msg__avatar').forEach(function(box){box.style.width='68px';box.style.height='68px';box.style.minWidth='68px';box.style.flex='0 0 68px';var sh=box.querySelector('.ls-avatar-shell');if(sh){sh.style.width='68px';sh.style.height='68px';sh.style.minWidth='68px';sh.style.minHeight='68px';sh.style.setProperty('--ls-avatar-size','68px','important')}});document.querySelectorAll('.chat-msg__avatar-fallback').forEach(function(x){x.style.width='68px';x.style.height='68px';x.style.minWidth='68px'})}
+  window.__lsFixChatAvatarSize=fixChatSizes;
+  setTimeout(fixChatSizes,0);setTimeout(fixChatSizes,250);
+  if(!document.__lsFinalChatAvatarObserver){document.__lsFinalChatAvatarObserver=true;new MutationObserver(function(){fixChatSizes()}).observe(document.body,{subtree:true,childList:true})}
+
+  /* Settings Chat Bareng: show exactly one conversation and rotate it. */
+  function renderOneChatPreview(){var card=document.getElementById('lsSettingsChatCard');if(!card)return;var list=card.querySelector('.ls-settings-chat-list');if(!list)return;var msgs=[];try{msgs=getGlobalChat()||[]}catch(e){};if(!msgs.length){list.innerHTML='<div class="ls-settings-chat-empty">Belum ada percakapan.</div>';return}var idx=Number(card.dataset.chatPreviewIndex||0)%msgs.length,m=msgs[msgs.length-1-idx]||msgs[msgs.length-1],name=m.fromName||'User',text=m.type==='photo'?'📷 Foto':(m.text||''),av=m.fromAvatar?String(m.fromAvatar):'',safe=av.replace(/'/g,'%27');list.innerHTML='<div class="ls-settings-chat-item"><div class="ls-settings-chat-avatar"'+(av?' style="background-image:url(\''+safe+'\')"':'')+'>'+(!av?esc(String(name).charAt(0).toUpperCase()):'')+'</div><div class="ls-settings-chat-body"><div class="ls-settings-chat-name">'+esc(name)+'</div><div class="ls-settings-chat-text">'+esc(text)+'</div></div><div class="ls-settings-chat-time">'+(typeof formatRelativeTime==='function'?formatRelativeTime(m.time):'')+'</div></div>'}
+  function setupOneChat(){var card=document.getElementById('lsSettingsChatCard');if(!card)return;card.dataset.chatPreviewIndex=card.dataset.chatPreviewIndex||'0';renderOneChatPreview();if(!card.__lsRotate){card.__lsRotate=true;setInterval(function(){var msgs=[];try{msgs=getGlobalChat()||[]}catch(e){};if(msgs.length>1){card.dataset.chatPreviewIndex=String((Number(card.dataset.chatPreviewIndex||0)+1)%msgs.length);renderOneChatPreview()}},4200)}}
+  setTimeout(setupOneChat,150);setTimeout(setupOneChat,700);
+
+  /* Add equipped cosmetics to all rendered clan/global/DM messages, including existing history. */
+  function decorateAll(){try{if(typeof window.lsDecorateRenderedChats==='function')window.lsDecorateRenderedChats()}catch(e){};document.querySelectorAll('.chat-msg').forEach(function(row){var id=row.dataset.msgId,msg=null;try{var g=getGlobalChat()||[];msg=g.find(function(x){return String(x.id||x.time)===String(id)})}catch(e){};if(!msg&&typeof currentClan==='function'){try{var c=currentClan();if(c){var a=clanMsgs(c)||[];msg=a.find(function(x){return String(x.id||x.time)===String(id)})}}catch(e){}};if(!msg&&state&&state.dmTarget){try{var h=getDMMessages(state.dmTarget.name)||[];msg=h.find(function(x){return String(x.time)===String(id)})}catch(e){}};if(!msg)return;var name=msg.fromName||msg.name||'';if(msg.nameTagId&&typeof window.lsNameTagHtml==='function'){var nb=row.querySelector('.chat-msg__name');if(nb&&!nb.querySelector('.ls-name-tag')){var sp=nb.querySelector('span');if(sp)sp.outerHTML=window.lsNameTagHtml(msg.nameTagId,name)}}if(msg.customMessageId&&typeof window.lsCustomMsgHtml==='function'){var bub=row.querySelector('.chat-msg__bubble'),tx=bub&&bub.querySelector('.chat-msg__text');if(tx&&!bub.querySelector('.ls-custom-msg'))tx.outerHTML=window.lsCustomMsgHtml(msg.customMessageId,tx.textContent||'')}})}
+  window.__lsDecorateAll=decorateAll;setTimeout(decorateAll,200);setInterval(decorateAll,1100);
+
+  /* Make the Settings customization controls stay together in one box and refresh labels. */
+  function patchCustomize(){try{if(typeof window.lsOpenPicker!=='function')return;var root=document.getElementById('settingsContent');if(!root)return;var target=[].find.call(root.querySelectorAll('.settings-box'),function(x){var t=x.querySelector('.settings-box__title');return t&&/Border Profile/i.test(t.textContent||'')});if(!target)return;var s=typeof getShopStore==='function'?getShopStore():{};var tag=(window.LS_NAME_TAGS&&window.LS_NAME_TAGS[s.nameTagEquipped])||null,msg=(window.LS_CUSTOM_MSGS&&window.LS_CUSTOM_MSGS[s.customMsgEquipped])||null;var box=document.getElementById('lsSettingsCustomize');if(box){var ds=box.querySelectorAll('.ls-customize-row__desc');if(ds[0])ds[0].textContent=tag?tag.name:'Default';if(ds[1])ds[1].textContent=msg?msg.name:'Default'}}catch(e){}}
+  setInterval(patchCustomize,1000);
+}catch(e){console.warn('LStream final cosmetic geometry',e)}})();
+</script>
+
 </body>
 </html>
