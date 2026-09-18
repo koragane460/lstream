@@ -5174,5 +5174,144 @@ try{
 })();
 </script>
 
+
+<style id="ls-prof-xch-final-repair-2026-09-18">
+/* ===== REQUESTED-ONLY REPAIR: chat, clan tabs, home chat, border shop ===== */
+/* Chat avatars: compact, perfectly circular photo, with border outside the circle. */
+#chatOverlay .chat-msg__avatar,#dmOverlay .chat-msg__avatar,.ls-global-box .chat-msg__avatar,.ls-clan-chat-box .chat-msg__avatar{
+  width:44px!important;height:44px!important;min-width:44px!important;flex:0 0 44px!important;
+  border-radius:50%!important;background:transparent!important;overflow:visible!important;position:relative!important;
+}
+#chatOverlay .chat-msg__avatar-fallback,#dmOverlay .chat-msg__avatar-fallback,.ls-global-box .chat-msg__avatar-fallback,.ls-clan-chat-box .chat-msg__avatar-fallback{
+  width:44px!important;height:44px!important;border-radius:50%!important;overflow:hidden!important;display:block!important;
+  background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;
+}
+#chatOverlay .chat-msg__avatar .ls-avatar-shell,#dmOverlay .chat-msg__avatar .ls-avatar-shell,.ls-global-box .chat-msg__avatar .ls-avatar-shell,.ls-clan-chat-box .chat-msg__avatar .ls-avatar-shell{
+  width:44px!important;height:44px!important;min-width:44px!important;border-radius:50%!important;overflow:visible!important;
+}
+#chatOverlay .chat-msg__avatar .ls-avatar-photo-wrap,#dmOverlay .chat-msg__avatar .ls-avatar-photo-wrap,.ls-global-box .chat-msg__avatar .ls-avatar-photo-wrap,.ls-clan-chat-box .chat-msg__avatar .ls-avatar-photo-wrap{
+  width:44px!important;height:44px!important;border-radius:50%!important;overflow:hidden!important;
+}
+#chatOverlay .chat-msg__avatar .ls-avatar-photo,#dmOverlay .chat-msg__avatar .ls-avatar-photo,.ls-global-box .chat-msg__avatar .ls-avatar-photo,.ls-clan-chat-box .chat-msg__avatar .ls-avatar-photo{
+  width:44px!important;height:44px!important;border-radius:50%!important;object-fit:cover!important;display:block!important;
+}
+#chatOverlay .chat-msg__avatar .ls-avatar-border,#dmOverlay .chat-msg__avatar .ls-avatar-border,.ls-global-box .chat-msg__avatar .ls-avatar-border,.ls-clan-chat-box .chat-msg__avatar .ls-avatar-border{
+  position:absolute!important;inset:-11%!important;width:122%!important;height:122%!important;border-radius:0!important;object-fit:contain!important;z-index:30!important;pointer-events:none!important;
+}
+/* Others: avatar left, username right, message below. */
+#chatOverlay .chat-msg:not(.chat-msg--me),#dmOverlay .chat-msg:not(.chat-msg--me),.ls-global-box .chat-msg:not(.chat-msg--me),.ls-clan-chat-box .chat-msg:not(.chat-msg--me){
+  display:grid!important;grid-template-columns:44px minmax(0,1fr)!important;grid-template-areas:"avatar name" "bubble bubble" "meta meta"!important;
+  column-gap:9px!important;row-gap:3px!important;align-items:start!important;
+}
+/* Own messages: bubble/name to the right, avatar at the far right. */
+#chatOverlay .chat-msg.chat-msg--me,#dmOverlay .chat-msg.chat-msg--me,.ls-global-box .chat-msg.chat-msg--me,.ls-clan-chat-box .chat-msg.chat-msg--me{
+  display:grid!important;grid-template-columns:minmax(0,1fr) 44px!important;grid-template-areas:"name avatar" "bubble bubble" "meta meta"!important;
+  column-gap:9px!important;row-gap:3px!important;align-items:start!important;
+}
+#chatOverlay .chat-msg__avatar,#dmOverlay .chat-msg__avatar,.ls-global-box .chat-msg__avatar,.ls-clan-chat-box .chat-msg__avatar{grid-area:avatar!important;margin:0!important;}
+#chatOverlay .chat-msg__name,#dmOverlay .chat-msg__name,.ls-global-box .chat-msg__name,.ls-clan-chat-box .chat-msg__name{grid-area:name!important;align-self:center!important;margin:0!important;min-height:24px!important;color:#fff!important;}
+#chatOverlay .chat-msg__bubble,#dmOverlay .chat-msg__bubble,.ls-global-box .chat-msg__bubble,.ls-clan-chat-box .chat-msg__bubble{grid-area:bubble!important;width:fit-content!important;max-width:min(82%,420px)!important;margin:0!important;}
+#chatOverlay .chat-msg__meta,#dmOverlay .chat-msg__meta,.ls-global-box .chat-msg__meta,.ls-clan-chat-box .chat-msg__meta{grid-area:meta!important;}
+#chatOverlay .chat-msg--me .chat-msg__body,#dmOverlay .chat-msg--me .chat-msg__body,.ls-global-box .chat-msg--me .chat-msg__body,.ls-clan-chat-box .chat-msg--me .chat-msg__body{display:contents!important;}
+/* Soft black own-message bubble. */
+#chatOverlay .chat-msg--me .chat-msg__bubble,#dmOverlay .chat-msg--me .chat-msg__bubble,.ls-global-box .chat-msg--me .chat-msg__bubble,.ls-clan-chat-box .chat-msg--me .chat-msg__bubble{
+  background:#0b0d12!important;color:#e8ebf2!important;border:1px solid rgba(255,255,255,.08)!important;
+}
+/* Global chat header tabs are always visible and use explicit Global / Clan labels. */
+#chatOverlay .ls-forced-chat-tabs{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;padding:8px 12px!important;border-bottom:1px solid rgba(255,255,255,.07)!important;background:#070d18!important;z-index:20!important;position:relative!important;}
+#chatOverlay .ls-forced-chat-tabs .ls-clan-tab{display:block!important;color:#8794ad!important;font-weight:900!important;border:1px solid transparent!important;border-radius:11px!important;padding:9px 8px!important;background:transparent!important;}
+#chatOverlay .ls-forced-chat-tabs .ls-clan-tab.active{color:#fff!important;background:#18243a!important;border-color:rgba(90,145,255,.28)!important;}
+/* Home Chat Bareng stays after leaderboard, never inside the account card. */
+#lsHomeChatBareng{position:relative!important;order:2!important;clear:both!important;margin:22px 0 26px!important;}
+#lsHomeTools #lsHomeChatBareng{margin-top:22px!important;}
+/* Never render the old balance card on Home. */
+#lsHomeTools .ls-balance-card,#lsHomeTools .ls-home-diamond{display:none!important;}
+/* Settings Chat Bareng is permanently absent. */
+#settingsContent #lsSettingsChatCard,#settingsContent .ls-settings-chat-card{display:none!important;}
+/* Border art in profiles is outside the photo circle. */
+.user-panel__avatar-wrap .ls-avatar-shell,.acct__avatar-box .ls-avatar-shell,.settings-panel .ls-avatar-shell,.comment-form__avatar .ls-avatar-shell,.comment-item__avatar .ls-avatar-shell{overflow:visible!important;border-radius:50%!important;}
+.user-panel__avatar-wrap .ls-avatar-photo-wrap,.acct__avatar-box .ls-avatar-photo-wrap,.settings-panel .ls-avatar-photo-wrap,.comment-form__avatar .ls-avatar-photo-wrap,.comment-item__avatar .ls-avatar-photo-wrap{overflow:hidden!important;border-radius:50%!important;}
+.user-panel__avatar-wrap .ls-avatar-photo,.acct__avatar-box .ls-avatar-photo,.settings-panel .ls-avatar-photo,.comment-form__avatar .ls-avatar-photo,.comment-item__avatar .ls-avatar-photo{border-radius:50%!important;object-fit:cover!important;}
+.user-panel__avatar-wrap .ls-avatar-border,.acct__avatar-box .ls-avatar-border,.settings-panel .ls-avatar-border,.comment-form__avatar .ls-avatar-border,.comment-item__avatar .ls-avatar-border{inset:-12%!important;width:124%!important;height:124%!important;object-fit:contain!important;border-radius:0!important;z-index:40!important;}
+/* Shop: only the 3 new artwork borders; no legacy Ocean/Fire/etc. cards. */
+#shopGrid .ls-final-border-card{min-width:0!important;}
+#shopGrid .ls-final-shop-frame{width:104px!important;height:104px!important;position:relative!important;display:grid!important;place-items:center!important;background:transparent!important;overflow:visible!important;}
+#shopGrid .ls-final-shop-frame .ls-border-art-image{position:absolute!important;inset:-8%!important;width:116%!important;height:116%!important;object-fit:contain!important;z-index:3!important;pointer-events:none!important;}
+#shopGrid .ls-final-shop-avatar{position:relative!important;width:66px!important;height:66px!important;border-radius:50%!important;overflow:hidden!important;z-index:1!important;background:#000!important;}
+#shopGrid .ls-final-shop-avatar .ls-shop-avatar-photo{width:100%!important;height:100%!important;border-radius:50%!important;object-fit:cover!important;display:block!important;}
+</style>
+<script id="ls-prof-xch-final-repair-2026-09-18-js">
+(function(){'use strict';
+try{
+  /* Remove legacy border entries from the active shop list without touching the stored cosmetics. */
+  var NEW_BORDERS={1:{name:'Sakura Moon',price:650},2:{name:'Crimson Bloom',price:950},3:{name:'Cosmic Radiance',price:1400}};
+  try{
+    if(typeof SHOP_BORDERS!=='undefined'){
+      SHOP_BORDERS.length=0;
+      [1,2,3].forEach(function(id){SHOP_BORDERS.push({id:id,name:NEW_BORDERS[id].name,price:NEW_BORDERS[id].price,cls:'border-frame--'+id});});
+    }
+  }catch(e){}
+
+  /* Rebuild only the requested Shop section and keep Name Tag / Pesan Chat Custom. */
+  function shopStore(){try{return typeof getShopStore==='function'?getShopStore():{owned:[],equipped:0,nameTagOwned:[],nameTagEquipped:0,customMsgOwned:[],customMsgEquipped:0}}catch(e){return{owned:[],equipped:0,nameTagOwned:[],nameTagEquipped:0,customMsgOwned:[],customMsgEquipped:0}}}
+  function renderOnlyNewBorders(){
+    var grid=document.getElementById('shopGrid');if(!grid)return;
+    var s=shopStore(),owned=s.owned||[],html='';
+    [1,2,3].forEach(function(id){
+      var eq=Number(s.equipped)===id,own=owned.indexOf(id)!==-1,frame=(window.LS_BORDER_ART&&window.LS_BORDER_ART[id])||'';
+      var avatar=userState&&userState.avatarUrl?'<img class="ls-shop-avatar-photo" src="'+String(userState.avatarUrl).replace(/"/g,'%22')+'" alt="">':'<div class="ls-shop-avatar-photo" style="background:#000"></div>';
+      html+='<div class="shop-card ls-final-border-card"><div class="shop-card__preview"><div class="ls-border-art-frame ls-final-shop-frame"><div class="ls-final-shop-avatar">'+avatar+'</div><img class="ls-border-art-image" src="'+frame+'" alt=""></div></div><div class="shop-card__name">'+NEW_BORDERS[id].name+'</div><div class="shop-card__price">'+((typeof ICON!=='undefined'&&ICON.coin)||'')+NEW_BORDERS[id].price+'</div><button class="shop-card__buy '+(eq?'equipped':(own?'owned':''))+'" data-new-border="'+id+'" '+(eq?'disabled':'')+'>'+(eq?'Sedang Dipakai':(own?'Pakai':'Beli'))+'</button></div>';
+    });
+    grid.innerHTML=html;
+    grid.querySelectorAll('[data-new-border]').forEach(function(btn){btn.onclick=function(){
+      var id=Number(btn.dataset.newBorder),s=shopStore(),owned=s.owned||[];
+      if(owned.indexOf(id)!==-1){s.equipped=Number(s.equipped)===id?0:id;saveShopStore(s);renderOnlyNewBorders();if(typeof renderUserPanel==='function')renderUserPanel();if(typeof renderAccountPage==='function')renderAccountPage();if(typeof renderSettingsPage==='function')renderSettingsPage();return;}
+      var price=NEW_BORDERS[id].price;
+      if(!userState.devUnlimitedCoins&&Number(userState.coins||0)<price){if(typeof showCoinLow==='function')showCoinLow(price,userState.coins);return;}
+      if(!confirm('Beli '+NEW_BORDERS[id].name+' seharga '+price+' coin?'))return;
+      if(!userState.devUnlimitedCoins)userState.coins-=price;
+      if(owned.indexOf(id)===-1)owned.push(id);s.owned=owned;s.equipped=id;saveUser(userState);saveShopStore(s);renderOnlyNewBorders();if(typeof renderUserPanel==='function')renderUserPanel();if(typeof renderAccountPage==='function')renderAccountPage();if(typeof renderSettingsPage==='function')renderSettingsPage();if(typeof updateShopCoinDisplay==='function')updateShopCoinDisplay();
+    }});
+  }
+  window.__lsRenderOnlyNewBorders=renderOnlyNewBorders;
+  window.renderShopGrid=function(){
+    renderOnlyNewBorders();
+    var old=document.getElementById('lsShopCosmetics');
+    if(!old && typeof window.LS_NAME_TAGS!=='undefined'){
+      var scroll=document.querySelector('#shopOverlay .shop-scroll');
+      if(scroll){
+        old=document.createElement('div');
+        old.id='lsShopCosmetics';
+        old.innerHTML='<div class="ls-shop-cosmetic-section"><div class="shop-section-title">Name tag</div><div class="ls-cosmetic-grid">'+Object.keys(window.LS_NAME_TAGS||{}).map(function(k){var d=LS_NAME_TAGS[k],s=shopStore(),own=(s.nameTagOwned||[]).indexOf(Number(k))!==-1,eq=Number(s.nameTagEquipped)===Number(k);return '<div class="ls-cosmetic-card"><div class="ls-name-tag-preview"><span class="ls-name-tag '+d.cls+'">Username</span></div><div class="ls-cosmetic-name">'+d.name+'</div><div class="ls-cosmetic-price">'+((typeof ICON!=='undefined'&&ICON.coin)||'')+d.price+'</div><button class="ls-cosmetic-buy '+(eq?'equipped':'')+'" data-final-cosmetic="tag" data-final-cosmetic-id="'+k+'">'+(eq?'Sedang Dipakai':(own?'Pakai':'Beli'))+'</button></div>'}).join('')+'</div></div><div class="ls-shop-cosmetic-section"><div class="shop-section-title">Pesan chat custom</div><div class="ls-cosmetic-grid">'+Object.keys(window.LS_CUSTOM_MSGS||{}).map(function(k){var d=LS_CUSTOM_MSGS[k],s=shopStore(),own=(s.customMsgOwned||[]).indexOf(Number(k))!==-1,eq=Number(s.customMsgEquipped)===Number(k);return '<div class="ls-cosmetic-card"><div class="ls-custom-msg-preview"><div class="ls-custom-msg '+d.cls+'"><span class="ls-custom-msg__art">'+d.icon+'</span><span class="ls-custom-msg__text">Contoh pesan</span></div></div><div class="ls-cosmetic-name">'+d.name+'</div><div class="ls-cosmetic-price">'+((typeof ICON!=='undefined'&&ICON.coin)||'')+d.price+'</div><button class="ls-cosmetic-buy '+(eq?'equipped':'')+'" data-final-cosmetic="msg" data-final-cosmetic-id="'+k+'">'+(eq?'Sedang Dipakai':(own?'Pakai':'Beli'))+'</button></div>'}).join('')+'</div></div>';
+        scroll.appendChild(old);
+      }
+    }
+  };
+  renderOnlyNewBorders();
+
+  /* Chat shell: force the Global/Clan tabs and open the overlay immediately. */
+  var oldShell=window.renderClanShell;
+  if(typeof oldShell==='function'&&!oldShell.__lsRepairShell){
+    var shell=function(mode){oldShell.call(this,mode||'global');var ov=document.getElementById('chatOverlay');if(ov)ov.classList.add('open');var sheet=ov&&ov.querySelector('.sheet');if(!sheet)return;var head=sheet.querySelector('.sheet__header');if(head){var title=head.querySelector('.sheet__title');if(title)title.textContent=(mode||'global')==='clan'?'Chat Clan':'Chat Global';}
+      var tabs=sheet.querySelector('.ls-clan-tabs');if(!tabs){tabs=document.createElement('div');tabs.className='ls-clan-tabs ls-forced-chat-tabs';tabs.innerHTML='<button class="ls-clan-tab active" data-repair-chat="global">Global</button><button class="ls-clan-tab" data-repair-chat="clan">Clan</button>';if(head)head.insertAdjacentElement('afterend',tabs);}else{tabs.classList.add('ls-forced-chat-tabs');tabs.innerHTML='<button class="ls-clan-tab '+((mode||'global')==='global'?'active':'')+'" data-repair-chat="global">Global</button><button class="ls-clan-tab '+((mode||'global')==='clan'?'active':'')+'" data-repair-chat="clan">Clan</button>';}
+      tabs.querySelectorAll('[data-repair-chat]').forEach(function(b){b.onclick=function(ev){ev.preventDefault();ev.stopPropagation();tabs.querySelectorAll('.ls-clan-tab').forEach(function(x){x.classList.remove('active')});b.classList.add('active');var m=b.dataset.repairChat;if(m==='clan'){if(typeof renderClanChatPage==='function')renderClanChatPage();if(title)title.textContent='Chat Clan';}else{if(typeof restoreGlobalChatUI==='function')restoreGlobalChatUI();if(title)title.textContent='Chat Global';}}});
+    };
+    shell.__lsRepairShell=true;window.renderClanShell=shell;
+  }
+
+  /* Ensure Home Chat Bareng click opens the repaired shell. */
+  document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('#lsHomeChatBareng'):null;if(!b)return;e.preventDefault();e.stopImmediatePropagation();if(typeof window.renderClanShell==='function')window.renderClanShell('global');},true);
+
+  /* Settings card is removed on every render, without touching other Settings components. */
+  function removeSettingsChat(){document.querySelectorAll('#lsSettingsChatCard,.ls-settings-chat-card').forEach(function(x){x.remove()});}
+  removeSettingsChat();
+  if(!document.__lsRepairSettingsObserver){document.__lsRepairSettingsObserver=true;var root=document.getElementById('settingsContent');if(root)new MutationObserver(removeSettingsChat).observe(root,{childList:true,subtree:true});}
+
+  /* Re-render Home chat only after actual Home/account render, no fast polling. */
+  setTimeout(function(){try{if(typeof renderHomeChatFinalX==='function')renderHomeChatFinalX()}catch(e){}},120);
+}catch(e){console.warn('LStream requested-only repair',e)}
+})();
+</script>
+
 </body>
 </html>
