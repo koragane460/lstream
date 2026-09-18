@@ -5006,14 +5006,6 @@ try{
   function shopX(){return typeof getShopStore==='function'?getShopStore():{owned:[],equipped:0}}
   function saveShopX(s){if(typeof saveShopStore==='function')saveShopStore(s)}
 
-  /* Never render an old border id again. */
-  try{
-    var sx=shopX();
-    sx.owned=Array.isArray(sx.owned)?sx.owned.filter(function(id){return BORDER_IDS.indexOf(Number(id))!==-1}):[];
-    if(BORDER_IDS.indexOf(Number(sx.equipped))===-1)sx.equipped=0;
-    saveShopX(sx);
-  }catch(e){}
-
   function borderCard(id,s){
     var own=(s.owned||[]).indexOf(id)!==-1,eq=Number(s.equipped)===id;
     var frame=window.LS_BORDER_ART&&window.LS_BORDER_ART[id]||'';
@@ -5434,6 +5426,264 @@ try{
   syncFrames();setTimeout(syncFrames,200);
   if(!document.__lsUserRepairObserver){document.__lsUserRepairObserver=true;new MutationObserver(function(){syncFrames();decorateColorOnly()}).observe(document.body,{childList:true,subtree:true})}
 }catch(e){console.warn('LStream requested repair',e)}
+})();
+</script>
+
+
+<style id="ls-final-stable-repair-2026-09-19">
+/* ===== FINAL STABLE UI REPAIR =====
+   Only fixes the requested Home / Shop / Global / Clan / Private chat surfaces. */
+/* Home: remove the accidental Chat Bareng card from the account/profile panel. */
+.user-panel .ls-home-chat-card{display:none!important}
+/* Home Chat Bareng sits close to, but not touching, the XP leaderboard. */
+#lsHomeChatBareng{display:block!important;width:100%!important;margin:12px 0 24px!important;cursor:pointer!important;position:relative!important;z-index:4!important}
+#lsHomeTools #lsHomeChatBareng{margin-top:12px!important}
+#lsHomeChatBareng .ls-home-chat-head{padding:0 0 9px!important;margin:0 0 9px!important}
+#lsHomeChatBareng .ls-home-chat-feed{display:block!important}
+#lsHomeChatBareng .ls-home-chat-item{cursor:pointer!important;min-height:52px!important}
+/* Shop and cosmetic cards use one visual language. */
+#shopGrid{align-items:stretch!important}
+#shopGrid .ls-final-border-card,#shopGrid .ls-full-border-card{padding:12px!important;border-radius:18px!important;gap:10px!important}
+#shopGrid .ls-final-border-card .shop-card__preview,#shopGrid .ls-full-border-card .shop-card__preview{min-height:150px!important;aspect-ratio:auto!important;border-radius:15px!important}
+#shopGrid .ls-final-border-card .shop-card__buy,#shopGrid .ls-full-border-card .shop-card__buy,
+#lsShopCosmetics .ls-cosmetic-buy{min-height:40px!important;border-radius:12px!important;background:linear-gradient(135deg,#ffd700,#ff8c00)!important;color:#060a14!important;border:0!important;font-weight:900!important}
+#shopGrid .shop-card__price,#lsShopCosmetics .ls-cosmetic-price{border-radius:12px!important;padding:7px 10px!important}
+#lsShopCosmetics{margin-top:18px!important}
+#lsShopCosmetics .ls-shop-cosmetic-section{margin-top:18px!important}
+#lsShopCosmetics .shop-section-title{font-size:.8rem!important;font-weight:950!important;letter-spacing:.12em!important;text-transform:uppercase!important}
+#lsShopCosmetics .ls-cosmetic-card{padding:12px!important;border-radius:18px!important;background:linear-gradient(160deg,#131a2e,#0b1120)!important;border:1px solid rgba(255,255,255,.07)!important}
+#lsShopCosmetics .ls-name-tag-preview,#lsShopCosmetics .ls-custom-msg-preview{min-height:72px!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:visible!important}
+#lsShopCosmetics .ls-custom-msg-preview .ls-custom-msg{max-width:100%!important}
+/* Five border previews: photo and frame share the same center/diameter. */
+#shopGrid .ls-final-shop-frame,#shopGrid .ls-full-border-frame{width:108px!important;height:108px!important;position:relative!important;display:grid!important;place-items:center!important;background:transparent!important;overflow:visible!important}
+#shopGrid .ls-final-shop-avatar{width:68px!important;height:68px!important;border-radius:50%!important;overflow:hidden!important;position:relative!important;z-index:2!important;background:#05070d!important}
+#shopGrid .ls-final-shop-avatar .ls-shop-avatar-photo{width:100%!important;height:100%!important;display:block!important;border-radius:50%!important;object-fit:cover!important}
+#shopGrid .ls-final-shop-frame .ls-border-art-image{inset:0!important;width:100%!important;height:100%!important;object-fit:contain!important;z-index:4!important}
+#shopGrid .ls-full-border-avatar{inset:20px!important;width:68px!important;height:68px!important;border-radius:50%!important;object-fit:cover!important;z-index:2!important}
+#shopGrid .ls-full-border-art{inset:0!important;width:100%!important;height:100%!important;object-fit:contain!important;z-index:4!important}
+/* CSS-only restored borders IV/V remain visible even without artwork assets. */
+#shopGrid .ls-full-border-frame.border-frame--4:before,#shopGrid .ls-full-border-frame.border-frame--5:before{content:""!important;position:absolute!important;inset:2px!important;border-radius:50%!important;z-index:1!important;pointer-events:none!important}
+#shopGrid .ls-full-border-frame.border-frame--4:before{background:conic-gradient(#2f7dff,#38bdf8,#60a5fa,#2f7dff)!important;box-shadow:0 0 14px rgba(56,189,248,.25)!important}
+#shopGrid .ls-full-border-frame.border-frame--5:before{background:conic-gradient(#ffd700,#ff8c00,#ffed4e,#ff8c00,#ffd700)!important;box-shadow:0 0 14px rgba(255,193,7,.28)!important}
+/* Name tags: same card/button system as the shop, with a visible moving glint. */
+.ls-name-tag{position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;overflow:hidden!important;white-space:nowrap!important;min-width:2.2em!important;padding:4px 12px 4px 14px!important;border-radius:5px 11px 11px 5px!important;color:#fff!important;font-weight:900!important;line-height:1.1!important;background-size:300% 100%!important;animation:lsStableTagShift 2.35s linear infinite!important;box-shadow:0 2px 9px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.32)!important}
+.ls-name-tag:before{content:""!important;position:absolute!important;left:0!important;top:0!important;bottom:0!important;width:8px!important;background:rgba(255,255,255,.22)!important;clip-path:polygon(0 0,100% 10%,65% 50%,100% 90%,0 100%)!important;pointer-events:none!important}
+.ls-name-tag:after{content:""!important;position:absolute!important;top:-35%!important;bottom:-35%!important;left:-40%!important;width:28%!important;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),rgba(255,255,255,.98),rgba(255,255,255,.18),transparent)!important;transform:skewX(-18deg)!important;animation:lsStableTagGlint 1.75s linear infinite!important;pointer-events:none!important}
+@keyframes lsStableTagShift{0%{background-position:0 50%}100%{background-position:300% 50%}}
+@keyframes lsStableTagGlint{0%{left:-40%;opacity:0}12%{opacity:1}52%{opacity:1}65%{left:125%;opacity:0}100%{left:125%;opacity:0}}
+/* Custom chat messages: color only, absolutely no emoji/cartoon. */
+.ls-custom-msg,.ls-custom-msg-preview .ls-custom-msg{position:relative!important;display:block!important;box-sizing:border-box!important;padding:10px 12px!important;border-radius:14px!important;max-width:min(82%,360px)!important;min-height:40px!important;font-weight:700!important;line-height:1.35!important;box-shadow:0 5px 15px rgba(0,0,0,.12)!important;border:1px solid rgba(0,0,0,.07)!important}
+.ls-custom-msg__art{display:none!important}
+.ls-custom-msg--1{background:#fff4dc!important;color:#3f3324!important}.ls-custom-msg--2{background:#dcf7df!important;color:#27452c!important}.ls-custom-msg--3{background:#ffdfe5!important;color:#5b2630!important}.ls-custom-msg--4{background:#ffe1bd!important;color:#5a3214!important}.ls-custom-msg--5{background:#ffd8ec!important;color:#5b2945!important}
+#lsShopCosmetics .ls-custom-msg-preview{overflow:visible!important}
+/* Chat geometry: smaller, perfectly circular avatars; message goes below the avatar/name row. */
+#chatOverlay .chat-msg,#dmOverlay .chat-msg,.ls-global-box .chat-msg,.ls-clan-chat-box .chat-msg{display:grid!important;grid-template-columns:46px minmax(0,1fr)!important;grid-template-areas:"avatar name" "bubble bubble" "meta meta"!important;column-gap:9px!important;row-gap:4px!important;width:100%!important;max-width:100%!important;align-items:start!important;margin-bottom:10px!important}
+#chatOverlay .chat-msg--me,#dmOverlay .chat-msg--me,.ls-global-box .chat-msg--me,.ls-clan-chat-box .chat-msg--me{grid-template-columns:minmax(0,1fr) 46px!important;grid-template-areas:"name avatar" "bubble bubble" "meta meta"!important}
+#chatOverlay .chat-msg__body,#dmOverlay .chat-msg__body,.ls-global-box .chat-msg__body,.ls-clan-chat-box .chat-msg__body{display:contents!important;max-width:none!important;min-width:0!important}
+#chatOverlay .chat-msg__avatar,#dmOverlay .chat-msg__avatar,.ls-global-box .chat-msg__avatar,.ls-clan-chat-box .chat-msg__avatar{grid-area:avatar!important;width:46px!important;height:46px!important;min-width:46px!important;max-width:46px!important;min-height:46px!important;max-height:46px!important;flex:0 0 46px!important;border-radius:50%!important;overflow:visible!important;margin:0!important;background:transparent!important}
+#chatOverlay .chat-msg__avatar-fallback,#dmOverlay .chat-msg__avatar-fallback,.ls-global-box .chat-msg__avatar-fallback,.ls-clan-chat-box .chat-msg__avatar-fallback{width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;border-radius:50%!important;overflow:hidden!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;display:block!important}
+#chatOverlay .chat-msg__avatar .ls-avatar-shell,#dmOverlay .chat-msg__avatar .ls-avatar-shell,.ls-global-box .chat-msg__avatar .ls-avatar-shell,.ls-clan-chat-box .chat-msg__avatar .ls-avatar-shell{width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;border-radius:50%!important;overflow:visible!important}
+#chatOverlay .chat-msg__avatar .ls-avatar-photo-wrap,#dmOverlay .chat-msg__avatar .ls-avatar-photo-wrap,.ls-global-box .chat-msg__avatar .ls-avatar-photo-wrap,.ls-clan-chat-box .chat-msg__avatar .ls-avatar-photo-wrap{width:46px!important;height:46px!important;border-radius:50%!important;overflow:hidden!important}
+#chatOverlay .chat-msg__avatar .ls-avatar-photo,#dmOverlay .chat-msg__avatar .ls-avatar-photo,.ls-global-box .chat-msg__avatar .ls-avatar-photo,.ls-clan-chat-box .chat-msg__avatar .ls-avatar-photo{width:46px!important;height:46px!important;border-radius:50%!important;object-fit:cover!important;background-position:center!important}
+#chatOverlay .chat-msg__avatar .ls-avatar-border,#dmOverlay .chat-msg__avatar .ls-avatar-border,.ls-global-box .chat-msg__avatar .ls-avatar-border,.ls-clan-chat-box .chat-msg__avatar .ls-avatar-border{inset:-8%!important;width:116%!important;height:116%!important;object-fit:contain!important;z-index:4!important}
+#chatOverlay .chat-msg__name,#dmOverlay .chat-msg__name,.ls-global-box .chat-msg__name,.ls-clan-chat-box .chat-msg__name{grid-area:name!important;align-self:center!important;min-width:0!important;margin:0!important;display:flex!important;align-items:center!important;gap:5px!important;flex-wrap:wrap!important;line-height:1.2!important}
+#chatOverlay .chat-msg--me .chat-msg__name,#dmOverlay .chat-msg--me .chat-msg__name,.ls-global-box .chat-msg--me .chat-msg__name,.ls-clan-chat-box .chat-msg--me .chat-msg__name{justify-self:end!important;text-align:right!important;justify-content:flex-end!important}
+#chatOverlay .chat-msg__bubble,#dmOverlay .chat-msg__bubble,.ls-global-box .chat-msg__bubble,.ls-clan-chat-box .chat-msg__bubble{grid-area:bubble!important;width:fit-content!important;max-width:min(86%,390px)!important;margin:0!important;border-radius:16px!important;overflow:hidden!important;white-space:normal!important;overflow-wrap:anywhere!important}
+#chatOverlay .chat-msg--me .chat-msg__bubble,#dmOverlay .chat-msg--me .chat-msg__bubble,.ls-global-box .chat-msg--me .chat-msg__bubble,.ls-clan-chat-box .chat-msg--me .chat-msg__bubble{justify-self:end!important}
+#chatOverlay .chat-msg__meta,#dmOverlay .chat-msg__meta,.ls-global-box .chat-msg__meta,.ls-clan-chat-box .chat-msg__meta{grid-area:meta!important;min-width:0!important}
+#chatOverlay .chat-msg__reply-quote,#dmOverlay .chat-msg__reply-quote,.ls-global-box .chat-msg__reply-quote,.ls-clan-chat-box .chat-msg__reply-quote{border-left-color:#ff8c3a!important}
+/* Selected custom-message colors in every chat type. */
+.chat-msg .chat-msg__bubble.ls-custom-color-1{background:#fff4dc!important;color:#3f3324!important;border-color:rgba(180,130,60,.22)!important}
+.chat-msg .chat-msg__bubble.ls-custom-color-2{background:#dcf7df!important;color:#27452c!important;border-color:rgba(55,130,65,.2)!important}
+.chat-msg .chat-msg__bubble.ls-custom-color-3{background:#ffdfe5!important;color:#5b2630!important;border-color:rgba(180,60,80,.18)!important}
+.chat-msg .chat-msg__bubble.ls-custom-color-4{background:#ffe1bd!important;color:#5a3214!important;border-color:rgba(200,110,30,.2)!important}
+.chat-msg .chat-msg__bubble.ls-custom-color-5{background:#ffd8ec!important;color:#5b2945!important;border-color:rgba(190,70,125,.18)!important}
+.chat-msg .chat-msg__bubble.ls-custom-color-1 .chat-msg__reply-quote,.chat-msg .chat-msg__bubble.ls-custom-color-2 .chat-msg__reply-quote,.chat-msg .chat-msg__bubble.ls-custom-color-3 .chat-msg__reply-quote,.chat-msg .chat-msg__bubble.ls-custom-color-4 .chat-msg__reply-quote,.chat-msg .chat-msg__bubble.ls-custom-color-5 .chat-msg__reply-quote{border-left-color:#ff8c3a!important}
+/* Do not show the accidental account-panel version. */
+.user-panel .ls-home-chat-card{display:none!important}
+</style>
+
+<script id="ls-final-stable-repair-2026-09-19-js">
+(function(){'use strict';
+try{
+  var TAGS=window.LS_NAME_TAGS||{};
+  var MSGS=window.LS_CUSTOM_MSGS||{};
+  var BORDER_DATA={
+    1:{name:'Border Premium I',price:100,cls:'border-frame--1'},
+    2:{name:'Border Premium II',price:200,cls:'border-frame--2'},
+    3:{name:'Border Premium III',price:400,cls:'border-frame--3'},
+    4:{name:'Border Premium IV',price:430,cls:'border-frame--4'},
+    5:{name:'Border Premium V',price:500,cls:'border-frame--5'}
+  };
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function shop(){try{var s=getShopStore();if(!s||typeof s!=='object')s={};s.owned=Array.isArray(s.owned)?s.owned:[];s.nameTagOwned=Array.isArray(s.nameTagOwned)?s.nameTagOwned:[];s.customMsgOwned=Array.isArray(s.customMsgOwned)?s.customMsgOwned:[];s.equipped=Number(s.equipped)||0;s.nameTagEquipped=Number(s.nameTagEquipped)||0;s.customMsgEquipped=Number(s.customMsgEquipped)||0;return s}catch(e){return {owned:[],nameTagOwned:[],customMsgOwned:[],equipped:0,nameTagEquipped:0,customMsgEquipped:0}}}
+  function save(s){try{if(typeof saveShopStore==='function')saveShopStore(s)}catch(e){}}
+  function currentCos(){var s=shop();return {tag:Number(s.nameTagEquipped)||0,msg:Number(s.customMsgEquipped)||0}}
+  function tagHtml(id,name){var d=TAGS[id];return d?'<span class="ls-name-tag '+d.cls+'">'+esc(name||'User')+'</span>':'<span>'+esc(name||'User')+'</span>'}
+  function bubbleClass(id){return id&&MSGS[id]?'ls-custom-color-'+id:''}
+  function decorateRow(row,forced){
+    if(!row)return;
+    var me=row.classList.contains('chat-msg--me');
+    var name=row.querySelector('.chat-msg__name');
+    if(name&&me){
+      var c=currentCos(),existing=name.querySelector('.ls-name-tag'),nm=existing?(existing.textContent||userState.username):userState.username;
+      if(!existing){
+        var plain=name.querySelector('[data-ls-plain-name]');
+        if(plain)nm=plain.textContent||nm;
+        else{
+          var spans=name.querySelectorAll('span');
+          for(var si=0;si<spans.length;si++){var sx=spans[si];if(!sx.classList.contains('ls-blue-check')&&!sx.querySelector('.ls-blue-check')&&!sx.classList.contains('badge')){nm=(sx.textContent||'').trim()||nm;break}}
+        }
+      }
+      name.querySelectorAll('.ls-name-tag').forEach(function(x){x.remove()});
+      if(c.tag&&TAGS[c.tag]){
+        var oldPlain=name.querySelector('[data-ls-plain-name]');
+        if(!oldPlain){
+          var walker=document.createTreeWalker(name,NodeFilter.SHOW_TEXT,null);
+          var texts=[];while(walker.nextNode())texts.push(walker.currentNode);
+          texts.forEach(function(t){if((t.nodeValue||'').trim())t.nodeValue='' });
+          name.insertAdjacentHTML('afterbegin','<span data-ls-plain-name="1" style="display:none">'+esc(nm)+'</span>');
+        }
+        name.insertAdjacentHTML('afterbegin',tagHtml(c.tag,nm));
+      }
+    }
+    var b=row.querySelector('.chat-msg__bubble');
+    if(b&&me){
+      var c2=currentCos(),id=Number(row.getAttribute('data-ls-custom')||0)||c2.msg;
+      b.classList.remove('ls-custom-color-1','ls-custom-color-2','ls-custom-color-3','ls-custom-color-4','ls-custom-color-5');
+      if(id&&MSGS[id])b.classList.add(bubbleClass(id));
+      b.querySelectorAll('.ls-custom-msg__art').forEach(function(x){x.remove()});
+    }
+  }
+  function decorateAll(){document.querySelectorAll('.chat-msg').forEach(function(r){decorateRow(r)})}
+
+  /* ---------- LS SHOP ---------- */
+  function renderShopStable(){
+    var grid=document.getElementById('shopGrid');
+    if(!grid)return;
+    var s=shop(),owned=s.owned||[],html='';
+    [1,2,3,4,5].forEach(function(id){
+      var d=BORDER_DATA[id],eq=Number(s.equipped)===id,own=owned.indexOf(id)!==-1;
+      var frame=(window.LS_BORDER_ART&&window.LS_BORDER_ART[id])||'';
+      var avatar=userState&&userState.avatarUrl?'<img class="ls-shop-avatar-photo" src="'+esc(userState.avatarUrl)+'" alt="">':'<div class="ls-shop-avatar-photo"></div>';
+      var art=frame?'<img class="ls-border-art-image" src="'+frame+'" alt="">':'';
+      html+='<div class="shop-card ls-full-border-card"><div class="shop-card__preview"><div class="ls-full-border-frame '+d.cls+'"><div class="ls-full-border-avatar">'+avatar+'</div>'+art+'</div></div><div class="shop-card__name">'+d.name+'</div><div class="shop-card__price">'+((typeof ICON!=='undefined'&&ICON.coin)||'')+d.price+'</div><button class="shop-card__buy '+(eq?'equipped':(own?'owned':''))+'" data-stable-border="'+id+'" '+(eq?'disabled':'')+'>'+(eq?'Sedang Dipakai':(own?'Pakai':'Beli'))+'</button></div>';
+    });
+    grid.innerHTML=html;
+    var scroll=document.querySelector('#shopOverlay .shop-scroll');
+    if(!scroll)return;
+    var old=document.getElementById('lsShopCosmetics');if(old)old.remove();
+    var wrap=document.createElement('div');wrap.id='lsShopCosmetics';
+    var tags='';Object.keys(TAGS).forEach(function(k){var id=Number(k),d=TAGS[id],own=(s.nameTagOwned||[]).indexOf(id)!==-1,eq=Number(s.nameTagEquipped)===id;tags+='<div class="ls-cosmetic-card"><div class="ls-name-tag-preview"><span class="ls-name-tag '+d.cls+'">Username</span></div><div class="ls-cosmetic-name">'+esc(d.name)+'</div><div class="ls-cosmetic-price">'+((typeof ICON!=='undefined'&&ICON.coin)||'')+d.price+'</div><button class="ls-cosmetic-buy '+(eq?'equipped':'')+'" data-stable-cos="tag" data-stable-id="'+id+'">'+(eq?'Sedang Dipakai':(own?'Pakai':'Beli'))+'</button></div>'});
+    var msgs='';Object.keys(MSGS).forEach(function(k){var id=Number(k),d=MSGS[id],own=(s.customMsgOwned||[]).indexOf(id)!==-1,eq=Number(s.customMsgEquipped)===id;msgs+='<div class="ls-cosmetic-card"><div class="ls-custom-msg-preview"><div class="ls-custom-msg '+d.cls+'"><span class="ls-custom-msg__text">Contoh pesan</span></div></div><div class="ls-cosmetic-name">'+esc(d.name)+'</div><div class="ls-cosmetic-price">'+((typeof ICON!=='undefined'&&ICON.coin)||'')+d.price+'</div><button class="ls-cosmetic-buy '+(eq?'equipped':'')+'" data-stable-cos="msg" data-stable-id="'+id+'">'+(eq?'Sedang Dipakai':(own?'Pakai':'Beli'))+'</button></div>'});
+    wrap.innerHTML='<div class="ls-shop-cosmetic-section"><div class="shop-section-title">Name tag</div><div class="ls-cosmetic-grid">'+tags+'</div></div><div class="ls-shop-cosmetic-section"><div class="shop-section-title">Pesan chat custom</div><div class="ls-cosmetic-grid">'+msgs+'</div></div>';
+    scroll.appendChild(wrap);
+    grid.querySelectorAll('[data-stable-border]').forEach(function(btn){btn.onclick=function(){var id=Number(btn.dataset.stableBorder),ss=shop(),own=ss.owned.indexOf(id)!==-1,d=BORDER_DATA[id];if(own){ss.equipped=Number(ss.equipped)===id?0:id;save(ss);renderShopStable();refreshCosmetics();return}if(!userState.devUnlimitedCoins&&Number(userState.coins||0)<d.price){if(typeof showCoinLow==='function')showCoinLow(d.price,userState.coins);return}if(!confirm('Beli '+d.name+' seharga '+d.price+' coin?'))return;if(!userState.devUnlimitedCoins)userState.coins-=d.price;ss.owned.push(id);ss.equipped=id;saveUser(userState);save(ss);renderShopStable();refreshCosmetics()}});
+    wrap.querySelectorAll('[data-stable-cos]').forEach(function(btn){btn.onclick=function(){var kind=btn.dataset.stableCos,id=Number(btn.dataset.stableId),ss=shop(),owned=kind==='tag'?ss.nameTagOwned:ss.customMsgOwned;if(owned.indexOf(id)!==-1){if(kind==='tag')ss.nameTagEquipped=Number(ss.nameTagEquipped)===id?0:id;else ss.customMsgEquipped=Number(ss.customMsgEquipped)===id?0:id;save(ss);renderShopStable();refreshCosmetics();return}var data=kind==='tag'?TAGS[id]:MSGS[id];if(!data)return;if(!userState.devUnlimitedCoins&&Number(userState.coins||0)<data.price){if(typeof showCoinLow==='function')showCoinLow(data.price,userState.coins);return}if(!confirm('Beli '+data.name+' seharga '+data.price+' coin?'))return;if(!userState.devUnlimitedCoins)userState.coins-=data.price;owned.push(id);if(kind==='tag')ss.nameTagEquipped=id;else ss.customMsgEquipped=id;saveUser(userState);save(ss);renderShopStable();refreshCosmetics()}});
+  }
+  function refreshCosmetics(){try{if(typeof renderUserPanel==='function')renderUserPanel()}catch(e){}try{if(typeof renderAccountPage==='function')renderAccountPage()}catch(e){}try{if(typeof renderSettingsPage==='function')renderSettingsPage()}catch(e){}try{if(typeof updateShopCoinDisplay==='function')updateShopCoinDisplay()}catch(e){}decorateAll()}
+  window.renderShopGrid=renderShopStable;
+
+  /* ---------- CHAT ---------- */
+  function avatarHtml(name,url,isMe){if(isMe&&typeof avatarWithBorder==='function')return avatarWithBorder(userState,46);if(url)return '<div class="chat-msg__avatar-fallback" style="background-image:url(\''+esc(url).replace(/'/g,'%27')+'\')"></div>';return '<div class="chat-msg__avatar-fallback" style="background:#000"></div>'}
+  function msgName(name,isMe,m){var c=currentCos(),id=Number(m&&m.nameTagId)||0;if(isMe&&(!id||!TAGS[id]))id=c.tag;return isMe&&id&&TAGS[id]?tagHtml(id,name):'<span>'+esc(name||'User')+'</span>'}
+  function customId(m,isMe){var c=currentCos(),id=Number(m&&m.customMessageId)||0;return isMe&&(!id||!MSGS[id])?c.msg:0}
+  function makeGlobalRow(m){
+    var isMe=m.from===userState.userId,id=m.id||m.time,cid=customId(m,isMe),row=document.createElement('div');row.className='chat-msg chat-msg--'+(isMe?'me':'other')+' ls-global-msg';row.dataset.msgId=id;row.setAttribute('data-ls-custom',cid||0);
+    var av=document.createElement('div');av.className='chat-msg__avatar '+(isMe?'has-profile-border':'');av.innerHTML=avatarHtml(isMe?userState.username:(m.fromName||'User'),isMe?userState.avatarUrl:m.fromAvatar,isMe);
+    var body=document.createElement('div');body.className='chat-msg__body';var name=document.createElement('div');name.className='chat-msg__name';name.innerHTML=msgName(isMe?userState.username:(m.fromName||'User'),isMe,m)+(typeof blueCheck==='function'?blueCheck(isMe?userState.username:(m.fromName||'User')):'');
+    var bubble=document.createElement('div');bubble.className='chat-msg__bubble'+(cid?' ls-custom-color-'+cid:'');if(m.replyTo)bubble.innerHTML='<div class="chat-msg__reply-quote"><b>'+esc(m.replyTo.name)+'</b> · '+esc(m.replyTo.text)+'</div>';var tx=document.createElement('div');tx.className='chat-msg__text';tx.textContent=m.type==='photo'?'Foto':(m.text||'');bubble.appendChild(tx);var reply=document.createElement('button');reply.type='button';reply.className='chat-msg__inline-reply';reply.innerHTML=ICON.reply+'<span>Balas</span>';reply.onclick=function(e){e.stopPropagation();state.replyingTo={name:isMe?userState.username:(m.fromName||'User'),text:(m.text||'Foto').slice(0,80)};var rp=document.getElementById('lsStableGlobalReply');if(rp){rp.classList.add('show');var rt=document.getElementById('lsStableGlobalReplyText');if(rt)rt.innerHTML='Membalas <b>'+esc(state.replyingTo.name)+'</b>'}};bubble.appendChild(reply);
+    body.appendChild(name);body.appendChild(bubble);var react=typeof renderReactionsHtml==='function'?renderReactionsHtml('global',id):'';body.insertAdjacentHTML('beforeend',react);var meta=document.createElement('div');meta.className='chat-msg__meta';meta.innerHTML='<div class="chat-msg__meta-row"><span class="chat-msg__time">'+(typeof formatRelativeTime==='function'?formatRelativeTime(m.time):'baru saja')+'</span>'+(typeof renderReactionsHtml==='function'?'<button type="button" class="chat-msg__react-btn" data-stable-react="'+esc(id)+'">React</button>':'')+(isMe?'<button type="button" class="chat-msg__del" data-stable-del="'+esc(id)+'">'+ICON.trash+'Hapus</button>':'')+'</div>';body.appendChild(meta);row.appendChild(av);row.appendChild(body);
+    var rr=row.querySelector('[data-stable-react]');if(rr)rr.onclick=function(e){e.stopPropagation();showReactPicker(rr,'global',id)};var db=row.querySelector('[data-stable-del]');if(db)db.onclick=function(e){e.stopPropagation();if(!confirm('Hapus pesan ini?'))return;deleteGlobalChatMsg(id);row.remove()};av.onclick=function(){openUserFullscreen({name:isMe?userState.username:(m.fromName||'User'),avatarUrl:isMe?userState.avatarUrl:(m.fromAvatar||''),isSelf:isMe})};return row;
+  }
+  function buildGlobal(){
+    var v=document.getElementById('lsClanView');if(!v)return;v.innerHTML='<div class="ls-global-fixed"><div class="chat-box ls-global-box" id="lsStableGlobalBox"></div><div class="chat-input-bar ls-global-inputbar"><div class="chat-reply-preview" id="lsStableGlobalReply"><span class="chat-reply-preview__text" id="lsStableGlobalReplyText"></span><button class="chat-reply-preview__close" id="lsStableGlobalReplyClose">×</button></div><div class="chat-input-row"><textarea id="lsStableGlobalInput" placeholder="Tulis pesan..." rows="1"></textarea><button class="send" id="lsStableGlobalSend">'+icon('<polygon points="3 11 22 2 13 21 11 13 3 11"/>')+'</button></div></div></div>';
+    var box=document.getElementById('lsStableGlobalBox'),arr=getGlobalChat()||[];if(!arr.length)box.innerHTML='<div class="comments-empty" style="padding:55px 18px">Belum ada chat.</div>';else arr.forEach(function(m){box.appendChild(makeGlobalRow(m))});box.scrollTop=box.scrollHeight;
+    var inp=document.getElementById('lsStableGlobalInput'),send=document.getElementById('lsStableGlobalSend'),close=document.getElementById('lsStableGlobalReplyClose');
+    function sendMsg(){if(!userState.loggedIn)return;var t=inp.value.trim();if(!t)return;var c=currentCos(),m={id:'gm_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),from:userState.userId,fromName:userState.username,fromAvatar:userState.avatarUrl,text:t,time:Date.now(),replyTo:state.replyingTo||null,type:'text',nameTagId:c.tag||0,customMessageId:c.msg||0};pushGlobalChat(m);var empty=box.querySelector('.comments-empty');if(empty)empty.remove();box.appendChild(makeGlobalRow(m));box.scrollTop=box.scrollHeight;inp.value='';state.replyingTo=null;var rp=document.getElementById('lsStableGlobalReply');if(rp)rp.classList.remove('show');inp.focus({preventScroll:true})}
+    send.onclick=sendMsg;inp.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}};close.onclick=function(){state.replyingTo=null;document.getElementById('lsStableGlobalReply').classList.remove('show')};
+  }
+  function clanForChat(){try{return typeof currentClan==='function'?currentClan():null}catch(e){return null}}
+  function makeClanRow(m,c){
+    var isMe=m.name===userState.username;
+    var id=m.id||m.time;
+    var cid=customId(m,isMe);
+    var row=document.createElement('div');
+    row.className='chat-msg '+(isMe?'chat-msg--me':'chat-msg--other')+' ls-global-msg';
+    row.dataset.msgId=id;
+    row.setAttribute('data-ls-custom',cid||0);
+    var av=document.createElement('div');
+    av.className='chat-msg__avatar '+(isMe?'has-profile-border':'');
+    av.innerHTML=avatarHtml(isMe?userState.username:m.name,isMe?userState.avatarUrl:m.avatar,isMe);
+    var body=document.createElement('div');
+    body.className='chat-msg__body';
+    var nm=document.createElement('div');
+    nm.className='chat-msg__name';
+    var shownName=isMe?userState.username:m.name;
+    nm.innerHTML=msgName(shownName,isMe,m)+(typeof blueCheck==='function'?blueCheck(shownName):'')+' '+clanTag(c);
+    var bubble=document.createElement('div');
+    bubble.className='chat-msg__bubble';
+    if(cid)bubble.classList.add('ls-custom-color-'+cid);
+    if(m.replyTo)bubble.innerHTML='<div class="chat-msg__reply-quote"><b>'+esc(m.replyTo.name)+'</b> · '+esc(m.replyTo.text)+'</div>';
+    var tx=document.createElement('div');
+    tx.className='chat-msg__text';
+    tx.textContent=m.text||'';
+    bubble.appendChild(tx);
+    var rb=document.createElement('button');
+    rb.className='chat-msg__inline-reply';
+    rb.innerHTML=ICON.reply+'<span>Balas</span>';
+    rb.onclick=function(e){
+      e.stopPropagation();
+      var i=document.getElementById('lsStableClanInput');
+      if(i){i.value='@'+m.name+' ';i.focus({preventScroll:true})}
+    };
+    bubble.appendChild(rb);
+    body.appendChild(nm);
+    body.appendChild(bubble);
+    if(typeof renderReactionsHtml==='function')body.insertAdjacentHTML('beforeend',renderReactionsHtml('clan_'+c.id,id));
+    var meta=document.createElement('div');
+    meta.className='chat-msg__meta';
+    meta.innerHTML='<div class="chat-msg__meta-row"><span class="chat-msg__time">'+(typeof formatRelativeTime==='function'?formatRelativeTime(m.time):'baru saja')+'</span><button type="button" class="chat-msg__react-btn" data-stable-clan-react="'+esc(id)+'">React</button>'+(isMe?'<button type="button" class="chat-msg__del" data-stable-clan-del="'+esc(id)+'">'+ICON.trash+'Hapus</button>':'')+'</div>';
+    body.appendChild(meta);
+    row.appendChild(av);
+    row.appendChild(body);
+    var rr=row.querySelector('[data-stable-clan-react]');
+    if(rr)rr.onclick=function(e){e.stopPropagation();showReactPicker(rr,'clan_'+c.id,id)};
+    var db=row.querySelector('[data-stable-clan-del]');
+    if(db)db.onclick=function(e){e.stopPropagation();if(!confirm('Hapus pesan ini?'))return;var a=clanMsgs(c)||[];a=a.filter(function(x){return String(x.id||x.time)!==String(id)});clanSaveMsgs(c,a);row.remove()};
+    av.onclick=function(){openUserFullscreen({name:shownName,avatarUrl:isMe?userState.avatarUrl:(m.avatar||''),isSelf:isMe})};
+    return row;
+  }
+  function buildClan(){var v=document.getElementById('lsClanView'),c=clanForChat();if(!v)return;if(!c){v.innerHTML='<div class="ls-clan-empty"><div class="ls-clan-empty__icon">'+ICON.users+'</div><h3>Clan belum dipilih</h3><p>Gabung atau buat clan untuk menggunakan Chat Clan.</p><div class="ls-clan-actions"><button class="ls-clan-action" id="lsStableJoinClan">'+ICON.users+'<span><b>Gabung Clan</b><span>Cari clan yang tersedia</span></span></button><button class="ls-clan-action" id="lsStableCreateClan">'+ICON.plus+'<span><b>Bikin Clan</b><span>Biaya pembuatan 1.000 berlian</span></span></button></div></div>';var j=document.getElementById('lsStableJoinClan'),cr=document.getElementById('lsStableCreateClan');if(j)j.onclick=function(){if(typeof renderClanJoin==='function')renderClanJoin()};if(cr)cr.onclick=function(){if(typeof openCreateClan==='function')openCreateClan()};return}v.innerHTML='<div class="ls-clan-chat-wrap"><button class="ls-clan-chat-head" id="lsStableClanInfo"><span class="ls-clan-chat-head__left">'+clanTag(c)+'<span>Clan</span></span>'+ICON.chev+'</button><div id="lsStableClanBox" class="chat-box ls-clan-chat-box"></div><div class="chat-input-bar ls-clan-chat-inputbar"><div class="chat-input-row"><textarea id="lsStableClanInput" placeholder="Tulis pesan di clan..." rows="1"></textarea><button class="send" id="lsStableClanSend">'+icon('<polygon points="3 11 22 2 13 21 11 13 3 11"/>')+'</button></div></div></div>';var box=document.getElementById('lsStableClanBox'),arr=clanMsgs(c)||[];if(!arr.length)box.innerHTML='<div class="comments-empty" style="padding:55px 18px">Belum ada pesan di clan.</div>';else arr.forEach(function(m){box.appendChild(makeClanRow(m,c))});box.scrollTop=box.scrollHeight;var inp=document.getElementById('lsStableClanInput'),send=document.getElementById('lsStableClanSend');function sendClan(){if(!userState.loggedIn)return;var t=inp.value.trim();if(!t)return;var cs=currentCos(),m={id:'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name:userState.username,avatar:userState.avatarUrl||'',text:t,time:Date.now(),nameTagId:cs.tag||0,customMessageId:cs.msg||0};var a=clanMsgs(c)||[];a.push(m);clanSaveMsgs(c,a);var empty=box.querySelector('.comments-empty');if(empty)empty.remove();box.appendChild(makeClanRow(m,c));box.scrollTop=box.scrollHeight;inp.value='';inp.focus({preventScroll:true})}send.onclick=sendClan;inp.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendClan()}};var info=document.getElementById('lsStableClanInfo');if(info)info.onclick=function(){if(typeof openClanInfo==='function')openClanInfo(c)}}
+  function renderShellStable(mode){var ov=document.getElementById('chatOverlay');if(!ov)return;ov.classList.add('open');var sheet=ov.querySelector('.sheet');if(!sheet)return;sheet.innerHTML='<div class="sheet__header"><button class="icon-btn" id="lsStableChatClose">'+ICON.back+'</button><span class="sheet__title">'+(mode==='clan'?'Chat Clan':'Chat Global')+'</span></div><div class="ls-clan-shell ls-stable-shell"><div class="ls-clan-tabs ls-forced-chat-tabs"><button class="ls-clan-tab '+(mode!=='clan'?'active':'')+'" data-stable-chat="global">Global</button><button class="ls-clan-tab '+(mode==='clan'?'active':'')+'" data-stable-chat="clan">Clan</button></div><div class="ls-clan-view" id="lsClanView"></div></div>';document.getElementById('lsStableChatClose').onclick=function(){ov.classList.remove('open')};sheet.querySelectorAll('[data-stable-chat]').forEach(function(b){b.onclick=function(e){e.preventDefault();e.stopPropagation();sheet.querySelectorAll('.ls-clan-tab').forEach(function(x){x.classList.remove('active')});b.classList.add('active');if(b.dataset.stableChat==='clan'){sheet.querySelector('.sheet__title').textContent='Chat Clan';buildClan()}else{sheet.querySelector('.sheet__title').textContent='Chat Global';buildGlobal()}}});if(mode==='clan')buildClan();else buildGlobal()}
+  renderShellStable.__lsStable=true;window.renderClanShell=renderShellStable;
+  /* Any existing Home Chat Bareng click is intercepted and opened synchronously. */
+  document.addEventListener('click',function(e){var card=e.target&&e.target.closest?e.target.closest('#lsHomeChatBareng'):null;if(card){e.preventDefault();e.stopImmediatePropagation();renderShellStable('global');return}},true);
+  /* If any old code creates the account-panel Chat Bareng, remove only that card. */
+  function cleanHome(){
+    document.querySelectorAll('.user-panel .ls-home-chat-card').forEach(function(x){x.remove()});
+    var board=document.getElementById('lsBoardCard'),tools=document.getElementById('lsHomeTools');
+    if(!board||!tools)return;
+    var c=document.getElementById('lsHomeChatBareng');
+    if(!c){c=document.createElement('div');c.id='lsHomeChatBareng';board.insertAdjacentElement('afterend',c)}
+    if(!c.__lsStableClick){c.__lsStableClick=true;c.onclick=function(e){e.preventDefault();renderShellStable('global')}}
+    var arr=[];try{arr=(getGlobalChat()||[]).slice(-8).reverse()}catch(e){arr=[]}
+    var shown=arr.length?arr[0]:null,feedHtml='';
+    if(shown){
+      var n=shown.fromName||shown.name||'User',t=shown.type==='photo'?'Foto':(shown.text||''),a=shown.fromAvatar||'';
+      var av=a?'background-image:url(\''+esc(a).replace(/'/g,'%27')+'\');background-size:cover;background-position:center':'display:grid;place-items:center';
+      feedHtml='<div class="ls-home-chat-item"><div class="ls-home-chat-avatar" style="'+av+'">'+(a?'':'<span>'+esc(n.charAt(0).toUpperCase())+'</span>')+'</div><div><div class="ls-home-chat-name">'+esc(n)+'</div><div class="ls-home-chat-text">'+esc(t)+'</div><div class="ls-home-chat-time">'+(typeof formatRelativeTime==='function'?formatRelativeTime(shown.time):'')+'</div></div></div>';
+    }else{
+      feedHtml='<div class="ls-home-chat-item"><div><div class="ls-home-chat-name">LStream</div><div class="ls-home-chat-text">Belum ada percakapan</div></div></div>';
+    }
+    c.innerHTML='<div class="ls-home-chat-head"><div class="ls-home-chat-title">Chat Bareng</div><div style="font-size:.58rem;color:#8ea0bf">Global dan Clan</div></div><div class="ls-home-chat-feed">'+feedHtml+'</div>';
+  }
+  function patchDMRows(){document.querySelectorAll('#dmBox .chat-msg').forEach(function(r){decorateRow(r)})}
+  function syncGeometry(){document.querySelectorAll('.user-panel .ls-home-chat-card').forEach(function(x){x.remove()});document.querySelectorAll('#chatOverlay .chat-msg__avatar,#dmOverlay .chat-msg__avatar,.ls-global-box .chat-msg__avatar,.ls-clan-chat-box .chat-msg__avatar').forEach(function(x){x.style.width='46px';x.style.height='46px';x.style.minWidth='46px';x.style.maxWidth='46px';x.style.flex='0 0 46px';var sh=x.querySelector('.ls-avatar-shell');if(sh){sh.style.width='46px';sh.style.height='46px';sh.style.setProperty('--ls-avatar-size','46px','important')}});decorateAll();patchDMRows()}
+  cleanHome();renderShopStable();syncGeometry();
+  document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('#shopBtn,#lsShopBtn'):null;if(b){renderShopStable();cleanHome();}},true);
+  document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('#dmSendBtn'):null;if(b){setTimeout(patchDMRows,0)}},true);
+}catch(e){console.warn('LStream stable repair',e)}
 })();
 </script>
 
