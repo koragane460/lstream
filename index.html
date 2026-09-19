@@ -1051,7 +1051,9 @@ var dmBox = null, dmInput = null, dmSendBtn = null, dmAttachBtn = null, dmReplyP
 var reactPicker = null, userFullscreenOverlay = null;
 var APP_VERSION = "6.7";
 var JIKAN_URL = "https://api.jikan.moe/v4";
-var STREAM_API_BASE = "/api";
+var STREAM_API_BASE = "https://api-otakudesu.dockhosting.dev/api/v2";
+var OTAKU_API_BASE = "https://api-otakudesu.dockhosting.dev/api/v2";
+var OTAKU_CACHE = {};
 var streamApiCache = {};
 var streamAnimeIdCache = {};
 var streamHlsInstance = null;
@@ -1252,6 +1254,84 @@ function fetchJikan(ep, attempt) {
     });
 }
 
+
+function fetchOtaku(path) {
+  return fetch(OTAKU_API_BASE + path, { headers: { "Accept": "application/json" } })
+    .then(function(r){ if(!r.ok){ var e=new Error("HTTP "+r.status); e.status=r.status; throw e; } return r.json(); });
+}
+function otakuPayload(j) {
+  if (!j) return null;
+  if (j.data != null) return j.data;
+  if (j.result != null) return j.result;
+  return j;
+}
+function otakuArray(j, keys) {
+  var d=otakuPayload(j);
+  if(Array.isArray(d)) return d;
+  keys=keys||[];
+  for(var i=0;i<keys.length;i++) if(d && Array.isArray(d[keys[i]])) return d[keys[i]];
+  if(d && d.data && Array.isArray(d.data)) return d.data;
+  return [];
+}
+function otakuField(o, keys, def) {
+  if(!o) return def;
+  for(var i=0;i<keys.length;i++) if(o[keys[i]]!=null && o[keys[i]]!=="") return o[keys[i]];
+  return def;
+}
+function otakuImage(o) {
+  var x=otakuField(o,["poster","image","thumbnail","cover","cover_image","img","image_url","poster_url"],"");
+  if(x && typeof x==="object") x=otakuField(x,["url","image_url","src"],"");
+  return x || PLACEHOLDER_IMG;
+}
+function otakuEndpoint(o) { return String(otakuField(o,["endpoint","slug","url","id","anime_endpoint","animeId"],"")); }
+function otakuId(o, fallback) {
+  var n=otakuField(o,["mal_id","malId","id"],0);
+  if(n && /^\d+$/.test(String(n))) return Number(n);
+  var ep=otakuEndpoint(o)||String(otakuField(o,["title","name"],""));
+  var h=0; for(var i=0;i<ep.length;i++) h=((h<<5)-h+ep.charCodeAt(i))|0;
+  h=Math.abs(h||fallback||1); return h;
+}
+function normalizeOtakuAnime(o, idx) {
+  o=o||{};
+  var title=otakuField(o,["title","name","judul","anime_title"],"Tanpa Judul");
+  var id=otakuId(o,idx+1), endpoint=otakuEndpoint(o);
+  var genres=otakuField(o,["genres","genre"],[]); if(!Array.isArray(genres)) genres=[];
+  genres=genres.map(function(g){return typeof g==="string"?{name:g}: {mal_id:g.mal_id||g.id||0,name:g.name||g.title||String(g)};});
+  var a={mal_id:id,title:title,title_english:otakuField(o,["title_english","english_title"],""),title_japanese:otakuField(o,["title_japanese","japanese_title"],""),images:{jpg:{image_url:otakuImage(o),large_image_url:otakuImage(o)}},score:Number(otakuField(o,["score","rating","rating_score"],0))||null,episodes:otakuField(o,["episodes","episode_count","total_episode"],null),type:otakuField(o,["type","format"],"TV"),status:otakuField(o,["status"],""),synopsis:otakuField(o,["synopsis","description","desc"],""),year:otakuField(o,["year","release_year"],null),genres:genres,aired:otakuField(o,["aired","date","release_date"],null),duration:otakuField(o,["duration"],""),rating:otakuField(o,["rating"],""),rank:null,popularity:null,endpoint:endpoint,raw:o};
+  OTAKU_CACHE[id]=a; if(endpoint) OTAKU_CACHE["ep:"+endpoint]=a; return a;
+}
+function normalizeOtakuList(j) { return otakuArray(j,["anime_list","animeList","items","results","anime"]).map(normalizeOtakuAnime).filter(function(a){return a.title;}); }
+function normalizeOtakuDetail(j) {
+  var d=otakuPayload(j); if(Array.isArray(d)) d=d[0];
+  if(d && d.anime_detail) d=d.anime_detail;
+  if(d && d.anime) d=d.anime;
+  return d ? normalizeOtakuAnime(d,0) : null;
+}
+function otakuEpisodeArray(j) { return otakuArray(j,["episode_list","episodeList","episodes","data","items","results"]); }
+function normalizeOtakuEpisodes(j) {
+  return otakuEpisodeArray(j).map(function(ep,i){
+    var num=otakuField(ep,["episode","number","no","episode_number","ep"],i+1);
+    var endpoint=String(otakuField(ep,["endpoint","slug","id","url","episode_endpoint"],""));
+    return {mal_id:Number(String(num).replace(/[^0-9.]/g,""))||i+1,title:otakuField(ep,["title","name"],"Episode "+num),aired:otakuField(ep,["aired","date","release_date"],null),slug:endpoint,raw:ep};
+  }).filter(function(e){return e.mal_id>0;});
+}
+function otakuStreamFromObject(x) {
+  if(!x) return null;
+  var preferred=["stream_url","streamUrl","stream_link","video_url","videoUrl","m3u8","mp4","play_url","playUrl","file","src","source_url","sourceUrl"];
+  for(var i=0;i<preferred.length;i++){var v=x[preferred[i]]; if(typeof v==="string" && /^https?:\/\//i.test(v)) return {url:v,format:/\.m3u8(?:$|\?)/i.test(v)?"hls":"mp4"};}
+  if(typeof x==="string" && /^https?:\/\//i.test(x) && /\.(m3u8|mp4)(?:$|\?)/i.test(x)) return {url:x,format:/\.m3u8/i.test(x)?"hls":"mp4"};
+  return null;
+}
+function findOtakuStream(x, depth) {
+  depth=depth||0; if(depth>5 || x==null) return null;
+  var direct=otakuStreamFromObject(x); if(direct) return direct;
+  if(Array.isArray(x)){for(var i=0;i<x.length;i++){var r=findOtakuStream(x[i],depth+1);if(r)return r;}return null;}
+  if(typeof x!=="object") return null;
+  var keys=["data","result","streaming","streams","sources","source","links","videos","qualities","downloads","download","episode","episode_detail"];
+  for(var j=0;j<keys.length;j++) if(x[keys[j]]!=null){var rr=findOtakuStream(x[keys[j]],depth+1);if(rr)return rr;}
+  return null;
+}
+
 /*
  * LStream anime data layer.
  * Jikan returns large nested objects; Home only needs a stable set of fields.
@@ -1286,6 +1366,7 @@ function normalizeAnime(a) {
     rating: a.rating || "",
     rank: a.rank || null,
     popularity: a.popularity || null,
+    endpoint: a.endpoint || a.slug || a.url || "",
     raw: a
   };
 }
@@ -1838,60 +1919,22 @@ function renderAnimeGrid(list, container, opts) {
   items.forEach(function (a) { container.appendChild(createAnimeCard(a)); });
 }
 function renderSkeletons(c, n) { if (!c) return; n = n || 6; c.innerHTML = ""; for (var i = 0; i < n; i++) { var sk = document.createElement("div"); sk.className = "skeleton skeleton-card"; c.appendChild(sk); } }
-function loadGenreList() { return fetchJikan("/genres/anime").then(function (r) { if (!r || !r.data) { addFallbackGenres(); return; } var sorted = r.data.slice().sort(function (a, b) { return (b.count || 0) - (a.count || 0); }); sorted.forEach(function (g) { var ch = document.createElement("button"); ch.className = "genre-chip"; ch.dataset.genre = g.mal_id; ch.dataset.name = g.name; ch.textContent = g.name; if (genreBar) genreBar.appendChild(ch); }); if (statusGenreList) statusGenreList.textContent = sorted.length + " genre"; }).catch(addFallbackGenres); }
+function loadGenreList() { return fetchOtaku("/genres").then(function(r){ var list=otakuArray(r,["genres","items","results"]); if(!list.length){addFallbackGenres();return;} list.forEach(function(g){var name=typeof g==="string"?g:(g.name||g.title||"");var id=typeof g==="string"?name.toLowerCase().replace(/\s+/g,"-"):(g.slug||g.endpoint||g.id||name);if(!name)return;var ch=document.createElement("button");ch.className="genre-chip";ch.dataset.genre=id;ch.dataset.name=name;ch.textContent=name;if(genreBar)genreBar.appendChild(ch);});if(statusGenreList)statusGenreList.textContent=list.length+" genre";}).catch(addFallbackGenres); }
 function addFallbackGenres() { if (!genreBar) return; [{ id: 1, name: "Action" },{ id: 2, name: "Adventure" },{ id: 4, name: "Comedy" }].forEach(function (g) { var ch = document.createElement("button"); ch.className = "genre-chip"; ch.dataset.genre = g.id; ch.dataset.name = g.name; ch.textContent = g.name; genreBar.appendChild(ch); }); }
 if (genreExpandBtn) genreExpandBtn.addEventListener("click", function () { state.genreExpanded = !state.genreExpanded; if (genreBar) genreBar.classList.toggle("expanded", state.genreExpanded); });
 function loadMainListPage() {
-  if (state.isLoading || !state.hasNextPage) return;
-  state.isLoading = true;
-  if (infiniteLoader) infiniteLoader.classList.add("active");
-  var ep = state.currentGenreId
-    ? "/anime?genres=" + state.currentGenreId + "&order_by=popularity&sort=asc&page=" + state.page + "&limit=12"
-    : "/top/anime?page=" + state.page + "&limit=12";
-  if (mainListTitle) mainListTitle.textContent = state.currentGenreId ? "Genre: " + state.currentGenreName : "Top Anime";
-  fetchJikan(ep).then(function (r) {
-    if (infiniteLoader) infiniteLoader.classList.remove("active");
-    state.isLoading = false;
-    var items = normalizeAnimeList(r && r.data);
-    if (items.length === 0) {
-      if (state.page === 1) {
-        renderAnimeGrid(FALLBACK_ANIME, mainGrid);
-        if (statusMain) statusMain.textContent = "Data sementara";
-      }
-      state.hasNextPage = false;
-      return;
-    }
-    renderAnimeGrid(items, mainGrid, { append: state.page > 1 });
-    if (statusMain) statusMain.textContent = "Halaman " + state.page;
-    if (state.page === 1 && !state.heroAnimeData && items[0]) renderHero(items[0]);
-    var hn = !!(r.pagination && r.pagination.has_next_page);
-    state.hasNextPage = hn;
-    if (hn) state.page += 1;
-  });
-}
+  if (state.isLoading || !state.hasNextPage) return; state.isLoading=true; if(infiniteLoader)infiniteLoader.classList.add("active");
+  var path=state.currentGenreId ? "/genres/"+encodeURIComponent(state.currentGenreId)+"/"+state.page : "/ongoing/"+state.page;
+  if(mainListTitle)mainListTitle.textContent=state.currentGenreId?"Genre: "+state.currentGenreName:"Anime Ongoing";
+  fetchOtaku(path).then(function(r){if(infiniteLoader)infiniteLoader.classList.remove("active");state.isLoading=false;var items=normalizeOtakuList(r);if(!items.length){if(state.page===1){renderAnimeGrid(FALLBACK_ANIME,mainGrid);if(statusMain)statusMain.textContent="Data sementara";}state.hasNextPage=false;return;}renderAnimeGrid(items,mainGrid,{append:state.page>1});if(statusMain)statusMain.textContent="Halaman "+state.page;if(state.page===1&&!state.heroAnimeData&&items[0])renderHero(items[0]);state.hasNextPage=items.length>0&&items.length>=8;state.page+=1;}).catch(function(){if(infiniteLoader)infiniteLoader.classList.remove("active");state.isLoading=false;if(state.page===1){renderAnimeGrid(FALLBACK_ANIME,mainGrid);if(statusMain)statusMain.textContent="API gagal dimuat";}state.hasNextPage=false;}); }
 function resetMainListAndLoad() { state.page = 1; state.hasNextPage = true; renderSkeletons(mainGrid, 6); loadMainListPage(); }
 function renderHero(a) { state.heroAnimeData = a; if (heroTitle) heroTitle.textContent = a.title; if (heroDesc) heroDesc.textContent = a.synopsis ? a.synopsis.slice(0, 180) + "..." : "—"; var url = a.images && a.images.jpg && a.images.jpg.large_image_url; if (url) $("hero").style.backgroundImage = "linear-gradient(to right, #0f0f1acc, #0f0f1a55), url('" + url + "')"; }
 function openAnimeModal(id) {
-  try {
-    if (modalBodyContent) modalBodyContent.innerHTML = '<p style="padding:20px 0;color:var(--text-muted);">Memuat...</p>';
-    if (episodeSection) episodeSection.style.display = "none";
-    if (anilistSection) anilistSection.style.display = "none";
-    if (modal) modal.classList.add("open");
-    if (modalBody) modalBody.scrollTop = 0;
-    fetchJikan("/anime/" + id).then(function (r) {
-      if (!r || !r.data || !modalBodyContent) return;
-      var a = normalizeAnimeSingle(r.data);
-      if (!a || !a.mal_id) { modalBodyContent.innerHTML = '<p style="padding:20px 0;color:var(--text-muted);">Data anime tidak tersedia.</p>'; return; }
-      state.currentAnimeData = a;
-      var gT = (a.genres || []).map(function (g) { return '<span class="genre-tag">' + esc(g.name) + '</span>'; }).join("");
-      modalBodyContent.innerHTML = '<img class="modal__poster" src="' + esc(_lg(a.images)) + '" onerror="this.src=\'' + PLACEHOLDER_IMG + '\'">' +
-        '<div class="modal__info"><h2>' + esc(a.title) + '</h2><p style="color:var(--text-muted);font-size:.8rem;">' + esc(a.title_japanese || "") + '</p><p style="margin-top:6px;"><strong>Skor:</strong> ' + (a.score != null ? a.score : "N/A") + '</p><p><strong>Episode:</strong> ' + (a.episodes != null ? a.episodes : "?") + '</p><div class="modal__genres">' + gT + '</div></div>' +
-        '<div class="modal__synopsis-full"><h3>Sinopsis</h3><p class="modal__synopsis" id="modalSynopsisText">' + esc(a.synopsis || "Tidak ada sinopsis.") + '</p><button class="btn btn--ghost btn--sm" id="modalSynopsisBtn" style="margin-top:10px;">Baca Selengkapnya</button></div>';
-      var sb = $("modalSynopsisBtn");
-      if (sb) sb.addEventListener("click", function () { var sy = $("modalSynopsisText"); if (!sy) return; sy.classList.toggle("expanded"); sb.textContent = sy.classList.contains("expanded") ? "Sembunyikan" : "Baca Selengkapnya"; });
-      updateFavBtn(); loadEpisodes(id); loadAniListInfo(a.title);
-    });
-  } catch (e) {}
+  try { if(modalBodyContent)modalBodyContent.innerHTML='<p style="padding:20px 0;color:var(--text-muted);">Memuat...</p>'; if(episodeSection)episodeSection.style.display="none";if(anilistSection)anilistSection.style.display="none";if(modal)modal.classList.add("open");if(modalBody)modalBody.scrollTop=0;
+    var cached=OTAKU_CACHE[id]; var endpoint=cached&&cached.endpoint;
+    var req=endpoint?fetchOtaku("/detail/"+encodeURIComponent(endpoint)):Promise.resolve(cached);
+    req.then(function(r){var a=normalizeOtakuDetail(r)||cached;if(!a&&cached)a=cached;if(!a||!a.title){throw new Error("Detail tidak tersedia");}if(!a.endpoint&&endpoint)a.endpoint=endpoint;state.currentAnimeData=a;var gT=(a.genres||[]).map(function(g){return '<span class="genre-tag">'+esc(g.name)+'</span>';}).join("");modalBodyContent.innerHTML='<img class="modal__poster" src="'+esc(_lg(a.images))+'" onerror="this.src=\''+PLACEHOLDER_IMG+'\'"><div class="modal__info"><h2>'+esc(a.title)+'</h2><p style="color:var(--text-muted);font-size:.8rem;">'+esc(a.title_japanese||"")+'</p><p style="margin-top:6px;"><strong>Skor:</strong> '+(a.score!=null?a.score:"N/A")+'</p><p><strong>Episode:</strong> '+(a.episodes!=null?a.episodes:"?")+'</p><div class="modal__genres">'+gT+'</div></div><div class="modal__synopsis-full"><h3>Sinopsis</h3><p class="modal__synopsis" id="modalSynopsisText">'+esc(a.synopsis||"Tidak ada sinopsis.")+'</p><button class="btn btn--ghost btn--sm" id="modalSynopsisBtn" style="margin-top:10px;">Baca Selengkapnya</button></div>';var sb=$("modalSynopsisBtn");if(sb)sb.addEventListener("click",function(){var sy=$("modalSynopsisText");if(!sy)return;sy.classList.toggle("expanded");sb.textContent=sy.classList.contains("expanded")?"Sembunyikan":"Baca Selengkapnya";});updateFavBtn();loadEpisodes(a.mal_id);loadAniListInfo(a.title);});
+  } catch(e) { if(modalBodyContent)modalBodyContent.innerHTML='<p style="padding:20px 0;color:var(--text-muted);">Gagal memuat detail anime.</p>'; }
 }
 function renderContinueWatching() {
   if (!continueWatchSection || !continueWatchGrid) return;
@@ -1929,7 +1972,7 @@ function renderContinueWatching() {
   } catch (e) {}
 }
 function updateFavBtn() { if (!state.currentAnimeData || !modalFavBtn) return; modalFavBtn.classList.toggle("active", isFavorite(state.currentAnimeData.mal_id)); }
-function loadEpisodes(animeId) { if (!episodeSection || !episodeListEl) return; episodeSection.style.display = "block"; episodeListEl.innerHTML = '<p style="color:var(--text-muted);padding:20px 0;">Memuat episode...</p>'; fetchJikan("/anime/" + animeId + "/episodes?page=1").then(function (r) { var eps = (r && r.data) ? r.data : []; var totalEps = (state.currentAnimeData && state.currentAnimeData.episodes) || 12; if (eps.length === 0) { eps = []; for (var i = 1; i <= Math.min(totalEps, 24); i++) eps.push({ mal_id: i, title: "Episode " + i, aired: null }); } episodeListEl.innerHTML = ""; eps.forEach(function (ep) { var item = document.createElement("div"); item.className = "episode-item"; var prog = getEpisodeProgress(animeId, ep.mal_id); var progHtml = (prog && prog.percent > 0 && prog.percent < 98) ? '<div class="episode-item__progress" style="width:' + Math.min(100, prog.percent) + '%"></div>' : ''; item.innerHTML = progHtml + '<span class="episode-item__title">Eps ' + ep.mal_id + ': ' + esc(ep.title || "Untitled") + '</span><span class="episode-item__meta">' + (ep.aired ? new Date(ep.aired).toLocaleDateString("id-ID") : "-") + '</span><span class="episode-item__play">' + ICON.play + '</span>'; item.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); if (!state.currentAnimeData) return; if (modal) modal.classList.remove("open"); openWatch(state.currentAnimeData, ep, { resumeTime: (prog && prog.percent > 0 && prog.percent < 98) ? prog.currentTime : 0 }); }); episodeListEl.appendChild(item); }); }); }
+function loadEpisodes(animeId) { if(!episodeSection||!episodeListEl)return;episodeSection.style.display="block";episodeListEl.innerHTML='<p style="color:var(--text-muted);padding:20px 0;">Memuat episode...</p>';var a=state.currentAnimeData;var epEndpoint=a&&a.endpoint;if(!epEndpoint){episodeListEl.innerHTML='<p style="color:var(--text-muted);padding:20px 0;">Endpoint episode tidak tersedia.</p>';return;}fetchOtaku("/episode/"+encodeURIComponent(epEndpoint)).then(function(r){var eps=normalizeOtakuEpisodes(r);if(!eps.length){var total=Number(a.episodes)||0;for(var i=1;i<=Math.min(total||12,100);i++)eps.push({mal_id:i,title:"Episode "+i,aired:null,slug:""});}state.watchEpisodes=eps;episodeListEl.innerHTML="";eps.forEach(function(ep){var item=document.createElement("div");item.className="episode-item";var prog=getEpisodeProgress(animeId,ep.mal_id);var progHtml=(prog&&prog.percent>0&&prog.percent<98)?'<div class="episode-item__progress" style="width:'+Math.min(100,prog.percent)+'%"></div>':'';item.innerHTML=progHtml+'<span class="episode-item__title">Eps '+ep.mal_id+': '+esc(ep.title||"Untitled")+'</span><span class="episode-item__meta">'+(ep.aired?new Date(ep.aired).toLocaleDateString("id-ID"):"-")+'</span><span class="episode-item__play">'+ICON.play+'</span>';item.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(!state.currentAnimeData)return;if(modal)modal.classList.remove("open");openWatch(state.currentAnimeData,ep,{resumeTime:(prog&&prog.percent>0&&prog.percent<98)?prog.currentTime:0});});episodeListEl.appendChild(item);});}).catch(function(){episodeListEl.innerHTML='<p style="color:var(--text-muted);padding:20px 0;">Gagal memuat episode.</p>';}); }
 function loadAniListInfo(title) { if (!anilistSection || !anilistBody) return; anilistSection.style.display = "block"; anilistBody.innerHTML = '<p style="color:var(--text-muted);padding:10px 0;">Memuat...</p>'; fetchAniList(title).then(function (m) { if (!m) { anilistBody.innerHTML = ''; return; } var st = (m.studios && m.studios.nodes) ? m.studios.nodes.map(function (s) { return s.name; }).join(", ") : "-"; anilistBody.innerHTML = '<div class="anilist-grid"><div class="anilist-stat"><b>' + (m.averageScore || "-") + '</b>Skor</div><div class="anilist-stat"><b>' + (m.popularity || "-") + '</b>Populer</div><div class="anilist-stat"><b>' + (m.favourites || "-") + '</b>Favorit</div><div class="anilist-stat"><b>' + esc(st) + '</b>Studio</div></div>'; }); }
 function streamApiFetch(path) {
   return fetch(STREAM_API_BASE + path, { headers: { "Accept": "application/json" } }).then(function (r) {
@@ -1937,21 +1980,7 @@ function streamApiFetch(path) {
     return r.json();
   });
 }
-function resolveStreamSource(anime, episode) {
-  if (!anime || !episode) return Promise.reject(new Error("Episode tidak valid"));
-  var title = anime.title || "";
-  var cacheKey = String(anime.mal_id || title).toLowerCase() + "|" + String(episode.mal_id || 1);
-  if (streamApiCache[cacheKey]) return Promise.resolve(streamApiCache[cacheKey]);
-  return streamApiFetch("/stream?title=" + encodeURIComponent(title) + "&episode=" + encodeURIComponent(episode.mal_id || 1)).then(function (j) {
-    var d = j && (j.data || j.result || j);
-    var url = d && (d.stream_url || d.stream_link || d.video_url || d.url);
-    var format = d && (d.format || d.type || (url && /\.m3u8(?:$|\?)/i.test(url) ? "hls" : "mp4"));
-    if (!url) throw new Error("Sumber video tidak tersedia");
-    var result = { url: url, format: String(format || "mp4").toLowerCase(), subtitles: d.subtitles || [], headers: d.headers || {} };
-    streamApiCache[cacheKey] = result;
-    return result;
-  });
-}
+function resolveStreamSource(anime, episode) { if(!anime||!episode)return Promise.reject(new Error("Episode tidak valid"));var key=String(anime.mal_id||anime.title).toLowerCase()+"|"+String(episode.mal_id||1);if(streamApiCache[key])return Promise.resolve(streamApiCache[key]);var epEndpoint=episode.slug||episode.endpoint||episode.raw&&otakuField(episode.raw,["endpoint","slug","id","url"],"");if(!epEndpoint)return Promise.reject(new Error("Endpoint streaming tidak tersedia"));return fetchOtaku("/episode/"+encodeURIComponent(epEndpoint)).then(function(j){var result=findOtakuStream(j);if(!result)throw new Error("Sumber video tidak tersedia");streamApiCache[key]=result;return result;}); }
 function preloadWatchStream(anime, episode) {
   if (!anime || !episode) return;
   resolveStreamSource(anime, episode).catch(function () {});
@@ -2061,34 +2090,7 @@ function bindWatchEpisodeButtons(animeId) {
     });
   });
 }
-function loadWatchEpisodes(animeId, currentEp) {
-  if (!watchEpisodeList) return;
-  watchEpisodeList.classList.remove("expanded");
-  watchEpisodeList.innerHTML = '<span style="grid-column:1/-1;color:var(--text-muted);font-size:.75rem;padding:10px 0;">Memuat episode...</span>';
-  var anime = state.currentWatch && state.currentWatch.anime;
-  var title = anime && anime.title ? anime.title : "";
-  streamApiFetch('/anime?title=' + encodeURIComponent(title)).then(function(r) {
-    var data = r && (r.data || r.result || r);
-    var eps = data && Array.isArray(data.episodes) ? data.episodes : [];
-    if (!eps.length && data && data.anime_detail && Array.isArray(data.anime_detail.episode_list)) eps = data.anime_detail.episode_list;
-    eps = eps.map(function(ep, i) {
-      return { mal_id: Number(ep.mal_id || ep.number || ep.episode || ep.no || (i + 1)), title: ep.title || ep.name || ("Episode " + (ep.mal_id || ep.number || ep.episode || ep.no || (i + 1))), aired: ep.aired || ep.date || null, slug: ep.slug || ep.endpoint || ep.id || "" };
-    }).filter(function(ep){ return ep.mal_id > 0; });
-    if (!eps.length) throw new Error("Episode API kosong");
-    state.watchEpisodes = eps;
-    renderWatchEpisodeList(animeId, currentEp);
-    var next = getWatchEpisodeByNumber(animeId, Number(currentEp) + 1);
-    if (next && state.currentWatch) preloadWatchStream(state.currentWatch.anime, next);
-  }).catch(function(){
-    fetchJikan('/anime/' + animeId + '/episodes?page=1').then(function(r) {
-      var eps = (r && Array.isArray(r.data)) ? r.data : [];
-      var total = (state.currentWatch && state.currentWatch.anime && state.currentWatch.anime.episodes) || 0;
-      if (!eps.length && total) for (var i=1;i<=Math.min(total,100);i++) eps.push({mal_id:i,title:'Episode '+i,aired:null});
-      state.watchEpisodes = eps;
-      renderWatchEpisodeList(animeId,currentEp);
-    }).catch(function(){ state.watchEpisodes=[]; renderWatchEpisodeList(animeId,currentEp); });
-  });
-}
+function loadWatchEpisodes(animeId,currentEp){if(!watchEpisodeList)return;watchEpisodeList.classList.remove("expanded");watchEpisodeList.innerHTML='<span style="grid-column:1/-1;color:var(--text-muted);font-size:.75rem;padding:10px 0;">Memuat episode...</span>';var anime=state.currentWatch&&state.currentWatch.anime;var epEndpoint=anime&&anime.endpoint;if(!epEndpoint){renderWatchEpisodeList(animeId,currentEp);return;}fetchOtaku("/episode/"+encodeURIComponent(epEndpoint)).then(function(r){var eps=normalizeOtakuEpisodes(r);if(!eps.length)throw new Error("Episode API kosong");state.watchEpisodes=eps;renderWatchEpisodeList(animeId,currentEp);var next=getWatchEpisodeByNumber(animeId,Number(currentEp)+1);if(next&&state.currentWatch)preloadWatchStream(state.currentWatch.anime,next);}).catch(function(){state.watchEpisodes=[];renderWatchEpisodeList(animeId,currentEp);});}
 function updateAutoNextButton() {
   if (!watchAutoNextBtn) return;
   watchAutoNextBtn.classList.toggle('active', watchAutoNext);
@@ -2451,23 +2453,7 @@ if (searchInput) searchInput.addEventListener("keydown", function (e) { if (e.ke
 if (accountContent) accountContent.addEventListener("click", function (e) { var tab = e.target.closest(".acct__tab"); if (!tab) return; accountContent.querySelectorAll(".acct__tab").forEach(function (t) { t.classList.remove("active"); }); tab.classList.add("active"); renderTabContent(tab.dataset.tab); });
 if (replyPopupInput) replyPopupInput.addEventListener("input", function () { autoResize(this); });
 if (typeof IntersectionObserver !== "undefined" && scrollSentinel) { new IntersectionObserver(function (entries) { entries.forEach(function (entry) { if (entry.isIntersecting) loadMainListPage(); }); }, { rootMargin: "300px" }).observe(scrollSentinel); }
-function handleSearch() {
-  try {
-    var k = searchInput ? searchInput.value.trim() : "";
-    if (!k || !searchResults) return;
-    renderSkeletons(searchResults, 4);
-    fetchJikan("/anime?q=" + encodeURIComponent(k) + "&limit=12").then(function (r) {
-      if (!searchResults) return;
-      searchResults.innerHTML = "";
-      var items = normalizeAnimeList(r && r.data);
-      if (!items.length) { searchResults.innerHTML = '<p style="color:var(--text-muted);padding:20px;">Anime tidak ditemukan.</p>'; return; }
-      var grid = document.createElement("div"); grid.className = "card-grid";
-      renderAnimeGrid(items, grid); searchResults.appendChild(grid);
-    }).catch(function () { if (searchResults) searchResults.innerHTML = '<p style="color:var(--text-muted);padding:20px;">Pencarian gagal. Coba lagi.</p>'; });
-  } catch (e) { if (searchResults) searchResults.innerHTML = '<p style="color:var(--text-muted);padding:20px;">Pencarian gagal. Coba lagi.</p>'; }
-}
-
-
+function handleSearch(){try{var k=searchInput?searchInput.value.trim():"";if(!k||!searchResults)return;renderSkeletons(searchResults,4);fetchOtaku("/search/"+encodeURIComponent(k)).then(function(r){searchResults.innerHTML="";var items=normalizeOtakuList(r);if(!items.length){searchResults.innerHTML='<p style="color:var(--text-muted);padding:20px;">Anime tidak ditemukan.</p>';return;}var grid=document.createElement("div");grid.className="card-grid";renderAnimeGrid(items,grid);searchResults.appendChild(grid);}).catch(function(){searchResults.innerHTML='<p style="color:var(--text-muted);padding:20px;">Pencarian gagal. Coba lagi.</p>';});}catch(e){if(searchResults)searchResults.innerHTML='<p style="color:var(--text-muted);padding:20px;">Pencarian gagal. Coba lagi.</p>';}}
 /* ===== LStream 6.7 visual/identity patch ===== */
 function showAccountInfo() {
   var m=$('accountInfoModal'); if(!m || !userState || !userState.loggedIn) return;
@@ -2572,7 +2558,7 @@ function initPage() {
   try { startGuestTimer(); } catch (e) {}
   state.playbackSpeed = getSettings().playbackSpeed || 1;
   renderSkeletons(mainGrid, 6);
-  Promise.all([loadGenreList(), fetchJikan("/seasons/now?limit=12")]).then(function (r) { var sr = r[1]; var seasonItems = normalizeAnimeList(sr && sr.data); window.__lsSeasonAnime = seasonItems.slice(); if (seasonItems.length > 0) { if (statusSeason) statusSeason.textContent = seasonItems.length + " anime"; renderAnimeGrid(seasonItems, seasonAnimeGrid); } else { window.__lsSeasonAnime = (FALLBACK_ANIME || []).slice(); renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); } if (typeof window.renderAnimeSchedule === "function") window.renderAnimeSchedule(window.__lsSeasonAnime); }).catch(function () { window.__lsSeasonAnime = (FALLBACK_ANIME || []).slice(); renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); if (typeof window.renderAnimeSchedule === "function") window.renderAnimeSchedule(window.__lsSeasonAnime); });
+  Promise.all([loadGenreList(), fetchOtaku("/ongoing/1")]).then(function (r) { var sr = r[1]; var seasonItems = normalizeOtakuList(sr); window.__lsSeasonAnime = seasonItems.slice(); if (seasonItems.length > 0) { if (statusSeason) statusSeason.textContent = seasonItems.length + " anime"; renderAnimeGrid(seasonItems, seasonAnimeGrid); } else { window.__lsSeasonAnime = (FALLBACK_ANIME || []).slice(); renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); } if (typeof window.renderAnimeSchedule === "function") window.renderAnimeSchedule(window.__lsSeasonAnime); }).catch(function () { window.__lsSeasonAnime = (FALLBACK_ANIME || []).slice(); renderAnimeGrid(FALLBACK_ANIME, seasonAnimeGrid); if (typeof window.renderAnimeSchedule === "function") window.renderAnimeSchedule(window.__lsSeasonAnime); });
   loadMainListPage();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initPage);
@@ -5767,3 +5753,118 @@ try{
 </script>
 </body>
 </html>
+
+
+<!-- LStream final fixes: API + account-isolated comments + compact XP leaderboard -->
+<style id="ls-final-api-account-leaderboard-fix-2026-09-19">
+  /* XP leaderboard: compact on mobile and desktop, with only Top 1–3 on the home preview. */
+  #lsBoardCard{
+    width:100%!important;
+    max-width:360px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+    padding:11px!important;
+    border-radius:16px!important;
+  }
+  #lsBoardCard .ls-board-head{margin-bottom:8px!important}
+  #lsBoardCard .ls-board-title{font-size:.78rem!important}
+  #lsBoardCard .ls-board-open{font-size:.58rem!important}
+  #lsBoardCard .ls-board-preview{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:5px!important;
+  }
+  #lsBoardCard .ls-board-mini{
+    padding:7px 4px!important;
+    border-radius:11px!important;
+  }
+  #lsBoardCard .ls-board-mini__rank{font-size:.52rem!important}
+  #lsBoardCard .ls-board-mini img{
+    width:29px!important;height:29px!important;margin:4px auto 3px!important;
+  }
+  #lsBoardCard .ls-board-mini b{font-size:.59rem!important}
+  #lsBoardCard .ls-board-mini span{font-size:.51rem!important}
+  @media(max-width:380px){
+    #lsBoardCard{max-width:330px!important;padding:10px!important}
+    #lsBoardCard .ls-board-preview{gap:4px!important}
+  }
+</style>
+<script id="ls-final-account-isolation-fix-2026-09-19">
+(function(){
+  'use strict';
+  try{
+    /*
+     * Comments are isolated by the current account. When auth changes,
+     * immediately clear the previous watch/comment UI and reload the new
+     * account's comment store only when a new episode is opened.
+     */
+    var lastUserId = null;
+
+    function currentUserKey(){
+      try{
+        var u = window.userState;
+        return u && u.loggedIn && u.userId ? String(u.userId) : 'logged-out';
+      }catch(e){ return 'logged-out'; }
+    }
+
+    function clearWatchCommentUI(){
+      try{
+        if (typeof state !== 'undefined') {
+          state.currentWatch = null;
+          state.watchEpisodes = [];
+          state.replyCommentId = null;
+        }
+        if (typeof commentList !== 'undefined' && commentList) commentList.innerHTML = '';
+        if (typeof commentCount !== 'undefined' && commentCount) commentCount.textContent = '0';
+        if (typeof commentInput !== 'undefined' && commentInput) {
+          commentInput.value = '';
+          commentInput.style.height = '';
+        }
+        if (typeof replyPopup !== 'undefined' && replyPopup) replyPopup.classList.remove('open');
+        if (typeof watchOverlay !== 'undefined' && watchOverlay) watchOverlay.classList.remove('open');
+      }catch(e){}
+    }
+
+    function authBoundaryCheck(){
+      var k = currentUserKey();
+      if (lastUserId !== null && k !== lastUserId) clearWatchCommentUI();
+      lastUserId = k;
+    }
+
+    /* Patch logout as an extra safety net, without replacing the original logic. */
+    if (typeof window.handleLogout === 'function' && !window.handleLogout.__lsAccountIsolation){
+      var originalLogout = window.handleLogout;
+      var wrappedLogout = function(){
+        clearWatchCommentUI();
+        return originalLogout.apply(this, arguments);
+      };
+      wrappedLogout.__lsAccountIsolation = true;
+      window.handleLogout = wrappedLogout;
+    }
+
+    /* Firebase/user login handlers can replace userState without a page reload. */
+    setInterval(authBoundaryCheck, 500);
+    setTimeout(authBoundaryCheck, 0);
+
+    /*
+     * Ensure comments always use the active account's scoped key. This replaces
+     * only the accessor, not the public comment functions.
+     */
+    if (typeof window.getCommentStorageKey !== 'function'){
+      window.getCommentStorageKey = function(){
+        var u = window.userState;
+        var uid = u && u.userId ? String(u.userId) : 'anonymous';
+        return (window.STORAGE_COMMENTS || 'lstream_comments') + '::' + uid;
+      };
+    }
+
+    /*
+     * The DockHosting API is the primary anime source. Keep the existing
+     * endpoint structure used by the app:
+     * /ongoing/:page, /search/:q, /detail/:endpoint, /episode/:endpoint,
+     * /genres and /genres/:genre/:page.
+     */
+    window.LSTREAM_API_BASE = 'https://api-otakudesu.dockhosting.dev/api/v2';
+  }catch(e){ console.warn('LStream final account/API patch', e); }
+})();
+</script>
+
