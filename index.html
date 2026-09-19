@@ -5735,35 +5735,265 @@ try{
 #lsHomeChatBareng .ls-home-chat-feed{display:block!important}
 #lsHomeChatBareng .ls-home-chat-feed .ls-home-chat-item{display:flex!important}
 </style>
-<script id="ls-chat-final-user-fix-2026-09-19-js">
-(function(){'use strict';
-try{
-  if(typeof window.icon!=='function')window.icon=function(s){return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">'+s+'</svg>'};
-  var icon=window.icon;
-  window.renderClanShell=function(mode){
-    var ov=document.getElementById('chatOverlay');if(!ov)return;
-    ov.classList.add('open');
-    var sheet=ov.querySelector('.sheet');if(!sheet)return;
-    sheet.innerHTML='<div class="sheet__header"><button class="icon-btn" id="lsFinalChatClose">'+ICON.back+'</button><span class="sheet__title">'+(mode==='clan'?'Chat Clan':'Chat Global')+'</span></div><div class="ls-clan-shell ls-stable-shell"><div class="ls-clan-tabs ls-forced-chat-tabs"><button class="ls-clan-tab '+(mode!=='clan'?'active':'')+'" data-final-chat-mode="global">Global</button><button class="ls-clan-tab '+(mode==='clan'?'active':'')+'" data-final-chat-mode="clan">Clan</button></div><div class="ls-clan-view" id="lsClanView"></div></div>';
-    var close=document.getElementById('lsFinalChatClose');if(close)close.onclick=function(){ov.classList.remove('open')};
-    var title=sheet.querySelector('.sheet__title');
-    sheet.querySelectorAll('[data-final-chat-mode]').forEach(function(b){b.onclick=function(e){e.preventDefault();e.stopPropagation();sheet.querySelectorAll('.ls-clan-tab').forEach(function(x){x.classList.remove('active')});b.classList.add('active');if(b.dataset.finalChatMode==='clan'){if(title)title.textContent='Chat Clan';if(typeof renderClanChatPage==='function')renderClanChatPage();else if(typeof renderClanEmpty==='function')renderClanEmpty()}else{if(title)title.textContent='Chat Global';if(typeof restoreGlobalChatUI==='function')restoreGlobalChatUI()}}});
-    if(mode==='clan'){if(typeof renderClanChatPage==='function')renderClanChatPage();else if(typeof renderClanEmpty==='function')renderClanEmpty()}else if(typeof restoreGlobalChatUI==='function')restoreGlobalChatUI();
-  };
-  function renderOneHomeChat(){
-    var board=document.getElementById('lsBoardCard'),tools=document.getElementById('lsHomeTools');if(!board||!tools)return;
-    var c=document.getElementById('lsHomeChatBareng');if(!c){c=document.createElement('div');c.id='lsHomeChatBareng';board.insertAdjacentElement('afterend',c)}
-    var arr=[];try{arr=(getGlobalChat()||[]).slice(-20).reverse()}catch(e){}
-    var idx=Number(c.dataset.finalIdx||0);if(arr.length)idx=((idx%arr.length)+arr.length)%arr.length;var m=arr.length?arr[idx]:null;
-    if(!m){c.innerHTML='<div class="ls-home-chat-head"><div class="ls-home-chat-title">Chat Bareng</div><div style="font-size:.58rem;color:#8ea0bf">Global dan Clan</div></div><div class="ls-home-chat-feed"><div class="ls-home-chat-item"><div><div class="ls-home-chat-name">LStream</div><div class="ls-home-chat-text">Belum ada percakapan</div></div></div></div>';}
-    else{var n=m.fromName||m.name||'User',t=m.type==='photo'?'Foto':(m.text||''),a=m.fromAvatar||'';var av=a?'<img class="ls-home-chat-avatar" src="'+String(a).replace(/"/g,'%22')+'" alt="">':'<div class="ls-home-chat-avatar" style="display:grid;place-items:center;font-weight:900;color:#dfe7f8">'+esc(n.charAt(0).toUpperCase())+'</div>';c.innerHTML='<div class="ls-home-chat-head"><div class="ls-home-chat-title">Chat Bareng</div><div style="font-size:.58rem;color:#8ea0bf">Global dan Clan</div></div><div class="ls-home-chat-feed"><div class="ls-home-chat-item">'+av+'<div><div class="ls-home-chat-name">'+esc(n)+'</div><div class="ls-home-chat-text">'+esc(t)+'</div><div class="ls-home-chat-time">'+(typeof formatRelativeTime==='function'?formatRelativeTime(m.time):'')+'</div></div></div></div>';}
-    c.onclick=function(e){e.preventDefault();if(typeof window.renderClanShell==='function')window.renderClanShell('global')};
+
+
+<script id="ls-chat-immediate-final-2026-09-19">
+(function(){
+  'use strict';
+
+  function q(id){ return document.getElementById(id); }
+  function esc2(v){
+    v=String(v==null?'':v);
+    return v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
-  renderOneHomeChat();
-  if(!window.__lsFinalHomeChatTimer){window.__lsFinalHomeChatTimer=setInterval(function(){var c=document.getElementById('lsHomeChatBareng'),arr=[];try{arr=(getGlobalChat()||[]).slice(-20).reverse()}catch(e){}if(!c){renderOneHomeChat();return}if(arr.length>1){c.dataset.finalIdx=String((Number(c.dataset.finalIdx||0)+1)%arr.length);renderOneHomeChat()}},5000)}
-  document.addEventListener('click',function(e){var home=e.target&&e.target.closest?e.target.closest('#lsHomeChatBareng'):null;if(home){e.preventDefault();e.stopImmediatePropagation();window.renderClanShell('global')}},true);
-}catch(e){console.warn('LStream final chat fix',e)}
+  function nowText(t){
+    if(typeof formatRelativeTime==='function') return formatRelativeTime(t);
+    var d=Date.now()-Number(t||Date.now());
+    if(d<60000)return 'baru saja';
+    if(d<3600000)return Math.floor(d/60000)+' menit lalu';
+    if(d<86400000)return Math.floor(d/3600000)+' jam lalu';
+    return Math.floor(d/86400000)+' hari lalu';
+  }
+  function userName(){
+    try{return (window.userState&&userState.username)||'User'}catch(e){return 'User'}
+  }
+  function userId(){
+    try{return (window.userState&&userState.userId)||'guest'}catch(e){return 'guest'}
+  }
+  function avatarHtml(name, url, cls){
+    if(url) return '<div class="'+cls+'"><img src="'+esc2(url)+'" alt="" onerror="this.style.display=\'none\'"></div>';
+    return '<div class="'+cls+' ls-immediate-avatar-fallback">'+esc2(String(name||'U').charAt(0).toUpperCase())+'</div>';
+  }
+
+  function getGlobal(){
+    try{
+      if(typeof getGlobalChat==='function') return getGlobalChat()||[];
+      var a=JSON.parse(localStorage.getItem('lstream_global_chat')||'[]');
+      return Array.isArray(a)?a:[];
+    }catch(e){return []}
+  }
+  function saveGlobal(a){
+    try{
+      if(typeof saveGlobalChat==='function'){saveGlobalChat(a);return}
+      localStorage.setItem('lstream_global_chat',JSON.stringify(a));
+    }catch(e){}
+  }
+
+  function clanNow(){
+    try{if(typeof currentClan==='function')return currentClan()}catch(e){}
+    try{
+      var id=userState&&userState.clanId;
+      return (window.S&&Array.isArray(S.clans)) ? S.clans.find(function(c){return c.id===id}) : null;
+    }catch(e){return null}
+  }
+  function clanKey(c){return 'lstream_clan_chat_'+c.id}
+  function clanGet(c){
+    try{var a=JSON.parse(localStorage.getItem(clanKey(c))||'[]');return Array.isArray(a)?a:[]}catch(e){return []}
+  }
+  function clanSave(c,a){try{localStorage.setItem(clanKey(c),JSON.stringify(a.slice(-150)))}catch(e){}}
+
+  function shell(mode){
+    var ov=q('chatOverlay');
+    if(!ov)return;
+    ov.classList.add('open');
+    var sheet=ov.querySelector('.sheet');
+    if(!sheet)return;
+
+    sheet.innerHTML =
+      '<div class="sheet__header">'+
+        '<button class="icon-btn" id="lsImmediateChatClose" aria-label="Kembali">'+
+          (window.ICON&&ICON.back?ICON.back:'<svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>')+
+        '</button>'+
+        '<span class="sheet__title">'+(mode==='clan'?'Chat Clan':'Chat Global')+'</span>'+
+      '</div>'+
+      '<div class="ls-immediate-shell">'+
+        '<div class="ls-clan-tabs ls-forced-chat-tabs">'+
+          '<button class="ls-clan-tab '+(mode==='global'?'active':'')+'" data-immediate-mode="global">Global</button>'+
+          '<button class="ls-clan-tab '+(mode==='clan'?'active':'')+'" data-immediate-mode="clan">Clan</button>'+
+        '</div>'+
+        '<div id="lsImmediateView" class="ls-immediate-view"></div>'+
+      '</div>';
+
+    q('lsImmediateChatClose').onclick=function(){ov.classList.remove('open')};
+    sheet.querySelectorAll('[data-immediate-mode]').forEach(function(b){
+      b.onclick=function(e){
+        e.preventDefault(); e.stopPropagation();
+        shell(b.getAttribute('data-immediate-mode'));
+      };
+    });
+    if(mode==='clan') renderClan();
+    else renderGlobal();
+  }
+
+  function renderGlobal(){
+    var v=q('lsImmediateView'); if(!v)return;
+    var msgs=getGlobal();
+    var rows=msgs.map(function(m){
+      var mine=String(m.from||'')===String(userId());
+      var nm=m.fromName||m.name||'User';
+      var av=m.fromAvatar||m.avatar||'';
+      var body=m.type==='photo'
+        ? '<div class="ls-immediate-bubble">Foto</div>'
+        : '<div class="ls-immediate-bubble">'+esc2(m.text||'')+'</div>';
+      return '<div class="ls-immediate-msg '+(mine?'mine':'')+'">'+
+        avatarHtml(nm,av,'ls-immediate-avatar')+
+        '<div class="ls-immediate-content">'+
+          '<div class="ls-immediate-meta"><b>'+esc2(nm)+'</b><span>'+esc2(nowText(m.time))+'</span></div>'+
+          body+
+          '<div class="ls-immediate-actions"><button type="button" data-reply-global="'+esc2(m.id||m.time)+'">Reply</button></div>'+
+        '</div></div>';
+    }).join('');
+
+    if(!rows) rows='<div class="ls-immediate-empty">Belum ada chat. Kirim pesan pertama.</div>';
+
+    v.innerHTML =
+      '<div class="ls-immediate-feed" id="lsImmediateGlobalFeed">'+rows+'</div>'+
+      '<div class="ls-immediate-composer">'+
+        '<textarea id="lsImmediateGlobalInput" rows="1" placeholder="Tulis pesan..."></textarea>'+
+        '<button type="button" id="lsImmediateGlobalSend" aria-label="Kirim">'+
+          '<svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>'+
+        '</button>'+
+      '</div>';
+
+    var feed=q('lsImmediateGlobalFeed');
+    if(feed) feed.scrollTop=feed.scrollHeight;
+
+    function send(){
+      var i=q('lsImmediateGlobalInput'); if(!i)return;
+      var text=String(i.value||'').trim(); if(!text)return;
+      try{
+        var msg={
+          id:'gm_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+          from:userId(), fromName:userName(),
+          fromAvatar:(window.userState&&userState.avatarUrl)||'',
+          text:text, type:'text', time:Date.now()
+        };
+        msgs.push(msg); if(msgs.length>300)msgs=msgs.slice(-300); saveGlobal(msgs);
+        renderGlobal();
+        var ni=q('lsImmediateGlobalInput'); if(ni){ni.focus();ni.selectionStart=ni.selectionEnd=ni.value.length}
+      }catch(e){console.warn('Immediate global send',e)}
+    }
+    q('lsImmediateGlobalSend').onclick=send;
+    q('lsImmediateGlobalInput').onkeydown=function(e){
+      if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}
+    };
+    v.querySelectorAll('[data-reply-global]').forEach(function(b){
+      b.onclick=function(){
+        var i=q('lsImmediateGlobalInput'); if(i){i.value='@'+userName()+' ';i.focus()}
+      };
+    });
+  }
+
+  function renderClan(){
+    var v=q('lsImmediateView'); if(!v)return;
+    var c=clanNow();
+    if(!c){
+      v.innerHTML =
+        '<div class="ls-immediate-clan-empty">'+
+          '<div class="ls-immediate-clan-icon">+</div>'+
+          '<h3>Belum punya Clan</h3>'+
+          '<p>Gabung atau buat clan untuk membuka chat clan.</p>'+
+          '<div class="ls-immediate-clan-actions">'+
+            '<button type="button" id="lsImmediateJoinClan">Join Clan</button>'+
+            '<button type="button" id="lsImmediateCreateClan">Create Clan</button>'+
+          '</div>'+
+        '</div>';
+      var j=q('lsImmediateJoinClan'), cr=q('lsImmediateCreateClan');
+      if(j)j.onclick=function(){try{if(typeof renderClanJoin==='function')renderClanJoin()}catch(e){}};
+      if(cr)cr.onclick=function(){try{if(typeof openCreateClan==='function')openCreateClan()}catch(e){}};
+      return;
+    }
+
+    var msgs=clanGet(c);
+    var rows=msgs.map(function(m){
+      var mine=String(m.userId||m.from||'')===String(userId());
+      var nm=m.name||m.fromName||'User';
+      var av=m.avatar||m.fromAvatar||'';
+      return '<div class="ls-immediate-msg '+(mine?'mine':'')+'">'+
+        avatarHtml(nm,av,'ls-immediate-avatar')+
+        '<div class="ls-immediate-content">'+
+          '<div class="ls-immediate-meta"><b>'+esc2(nm)+'</b><span>'+esc2(nowText(m.time))+'</span></div>'+
+          '<div class="ls-immediate-bubble">'+esc2(m.text||'')+'</div>'+
+        '</div></div>';
+    }).join('');
+    if(!rows)rows='<div class="ls-immediate-empty">Belum ada pesan di clan.</div>';
+
+    v.innerHTML=
+      '<div class="ls-immediate-clan-head"><b>'+esc2(c.name||'Clan')+'</b><span>'+esc2(c.tag||'')+'</span></div>'+
+      '<div class="ls-immediate-feed" id="lsImmediateClanFeed">'+rows+'</div>'+
+      '<div class="ls-immediate-composer">'+
+        '<textarea id="lsImmediateClanInput" rows="1" placeholder="Tulis pesan di clan..."></textarea>'+
+        '<button type="button" id="lsImmediateClanSend" aria-label="Kirim"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></button>'+
+      '</div>';
+
+    var feed=q('lsImmediateClanFeed');if(feed)feed.scrollTop=feed.scrollHeight;
+    function send(){
+      var i=q('lsImmediateClanInput');if(!i)return;
+      var text=String(i.value||'').trim();if(!text)return;
+      msgs.push({id:'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+        userId:userId(),name:userName(),avatar:(window.userState&&userState.avatarUrl)||'',
+        text:text,time:Date.now()});
+      clanSave(c,msgs);renderClan();
+      var ni=q('lsImmediateClanInput');if(ni)ni.focus();
+    }
+    q('lsImmediateClanSend').onclick=send;
+    q('lsImmediateClanInput').onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}};
+  }
+
+  var st=document.createElement('style');
+  st.textContent=
+    '#chatOverlay .ls-immediate-shell{display:flex!important;flex-direction:column!important;height:100%!important;min-height:0!important;background:#070b14}'+
+    '#chatOverlay .ls-immediate-view{display:flex!important;flex-direction:column!important;flex:1 1 auto!important;min-height:0!important;overflow:hidden!important}'+
+    '#chatOverlay .ls-immediate-feed{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;padding:12px 14px 18px!important}'+
+    '#chatOverlay .ls-immediate-msg{display:flex!important;gap:10px!important;margin:0 0 14px!important;align-items:flex-start!important}'+
+    '#chatOverlay .ls-immediate-msg.mine{flex-direction:row-reverse!important}'+
+    '#chatOverlay .ls-immediate-avatar{width:42px!important;height:42px!important;min-width:42px!important;border-radius:50%!important;overflow:hidden!important;background:#18243b!important;display:grid!important;place-items:center!important;color:#fff!important;font-weight:900!important}'+
+    '#chatOverlay .ls-immediate-avatar img{width:100%!important;height:100%!important;object-fit:cover!important}'+
+    '#chatOverlay .ls-immediate-content{min-width:0!important;max-width:min(78%,430px)!important}'+
+    '#chatOverlay .ls-immediate-meta{display:flex!important;gap:7px!important;align-items:center!important;margin:1px 0 5px!important;font-size:12px!important;color:#91a0bb!important}'+
+    '#chatOverlay .ls-immediate-meta b{color:#e9effb!important}'+
+    '#chatOverlay .ls-immediate-bubble{display:block!important;width:fit-content!important;max-width:100%!important;padding:9px 12px!important;border-radius:13px!important;background:#13223a!important;color:#eef4ff!important;line-height:1.42!important;overflow-wrap:anywhere!important}'+
+    '#chatOverlay .ls-immediate-msg.mine .ls-immediate-bubble{margin-left:auto!important;background:#1677e8!important}'+
+    '#chatOverlay .ls-immediate-actions{margin-top:4px!important}'+
+    '#chatOverlay .ls-immediate-actions button{border:0!important;background:transparent!important;color:#7185a9!important;font-size:11px!important;padding:2px 0!important}'+
+    '#chatOverlay .ls-immediate-empty,#chatOverlay .ls-immediate-clan-empty{margin:auto!important;text-align:center!important;color:#8392ad!important;padding:30px!important}'+
+    '#chatOverlay .ls-immediate-clan-empty h3{color:#eef4ff!important;margin:10px 0 5px!important}'+
+    '#chatOverlay .ls-immediate-clan-empty p{margin:0 0 18px!important}'+
+    '#chatOverlay .ls-immediate-clan-icon{width:52px!important;height:52px!important;border-radius:16px!important;background:#10294c!important;color:#65a9ff!important;display:grid!important;place-items:center!important;font-size:28px!important;margin:auto!important}'+
+    '#chatOverlay .ls-immediate-clan-actions{display:flex!important;justify-content:center!important;gap:9px!important}'+
+    '#chatOverlay .ls-immediate-clan-actions button{border:1px solid #2d7fe4!important;background:#1267c9!important;color:#fff!important;border-radius:10px!important;padding:10px 14px!important;font-weight:800!important}'+
+    '#chatOverlay .ls-immediate-clan-head{padding:10px 14px!important;border-bottom:1px solid rgba(255,255,255,.07)!important;color:#dce8ff!important;display:flex!important;gap:8px!important;align-items:center!important}'+
+    '#chatOverlay .ls-immediate-clan-head span{color:#6da9f5!important;font-size:12px!important}'+
+    '#chatOverlay .ls-immediate-composer{display:flex!important;gap:8px!important;padding:10px 12px!important;border-top:1px solid rgba(255,255,255,.08)!important;background:#090e18!important;flex:0 0 auto!important}'+
+    '#chatOverlay .ls-immediate-composer textarea{flex:1!important;resize:none!important;min-height:42px!important;max-height:110px!important;border:1px solid #253653!important;border-radius:12px!important;background:#0e1625!important;color:#fff!important;padding:11px 12px!important;outline:none!important}'+
+    '#chatOverlay .ls-immediate-composer button{width:44px!important;min-width:44px!important;border:0!important;border-radius:12px!important;background:#1677e8!important;color:#fff!important;display:grid!important;place-items:center!important}'+
+    '#chatOverlay .ls-immediate-composer button svg{width:19px!important;height:19px!important;fill:currentColor!important}';
+  document.head.appendChild(st);
+
+  // Override the previous delayed/broken shell with the immediate renderer.
+  window.renderClanShell=function(mode){shell(mode==='clan'?'clan':'global')};
+
+  // Keep the existing navigation, but make sure it renders synchronously.
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest?e.target.closest('.bottom-nav__item[data-tab="chat"]'):null;
+    if(!b)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    shell('global');
+  },true);
+
+  // Re-render immediately when the overlay is opened by another existing handler.
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest?e.target.closest('#lsHomeChatBareng'):null;
+    if(!b)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    shell('global');
+  },true);
+
 })();
 </script>
+
 </body>
 </html>
