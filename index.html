@@ -6143,5 +6143,23 @@ try{
 })();
 </script>
 
+
+<style id="ls-create-route-fix-2026-09-19">
+#lsClanView .ls-clan-empty__subtext{font-size:.72rem;color:#7f8daa;line-height:1.55;max-width:300px;margin:-2px auto 20px}
+</style>
+<script id="ls-create-route-fix-2026-09-19-js">
+(function(){
+'use strict';
+function openCreateNow(){if(typeof window.openCreateClan==='function'){window.openCreateClan();return true}return false}
+window.renderClanEmpty=function(){
+var v=document.getElementById('lsClanView');if(!v)return;
+v.innerHTML='<div class="ls-clan-empty"><div class="ls-clan-empty__icon">'+((window.ICON&&ICON.users)||'')+'</div><h3>Kamu Belum Bergabung Ke Clan Manapun</h3><p class="ls-clan-empty__subtext">Bergabung atau buat clan untuk membuka chat clan, mengumpulkan berlian, dan membangun clan bersama member lainnya.</p><div class="ls-clan-actions"><button class="ls-clan-action" id="lsCreateRouteJoin"><span class="icon-wrap">'+((window.ICON&&ICON.users)||'')+'</span><span><b>Gabung Clan</b><span>Cari clan yang tersedia</span></span></button><button class="ls-clan-action" id="lsCreateRouteMake"><span class="icon-wrap">'+((window.ICON&&ICON.plus)||'')+'</span><span><b>Buat Clan</b><span>Donate berlian untuk membuat clan semakin besar</span></span></button></div></div>';
+var j=document.getElementById('lsCreateRouteJoin');if(j)j.onclick=function(e){e.preventDefault();e.stopPropagation();if(typeof window.renderClanJoin==='function')window.renderClanJoin()};
+var c=document.getElementById('lsCreateRouteMake');if(c)c.onclick=function(e){e.preventDefault();e.stopPropagation();openCreateNow()};
+};
+document.addEventListener('click',function(e){var t=e.target&&e.target.closest?e.target.closest('#lsCreateClanBtn,#lsStableCreateClan,#lsImmediateCreateClan'):null;if(!t)return;e.preventDefault();e.stopImmediatePropagation();openCreateNow()},true);
+})();
+</script>
+
 </body>
 </html>
