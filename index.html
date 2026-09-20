@@ -6161,156 +6161,190 @@ document.addEventListener('click',function(e){var t=e.target&&e.target.closest?e
 })();
 </script>
 
-<script id="ls-final-redesign-script">
+<style id="ls-ultimate-ui-2026-09-20">
+:root{--ls-blue:#3185ff;--ls-blue2:#5aa2ff;--ls-bg:#050a14;--ls-panel:#0b1526;--ls-panel2:#0f1c30;--ls-line:rgba(255,255,255,.10);--ls-muted:#8998b3}
+/* Remove profile borders/frames for now, as requested. */
+.ls-avatar-border,.ls-border-art-image,.ls-full-border-card,.ls-final-border-card,.ls-full-border-frame,.ls-final-shop-frame{display:none!important}
+#shopOverlay .shop-section-title:first-of-type,#shopOverlay #shopGrid{display:none!important}
+/* Home: remove Chat Bareng permanently and replace with compact economy card. */
+#lsHomeChatBareng,.ls-home-chat-card{display:none!important}
+#lsHomeEconomy{margin:14px 0 16px;padding:16px;border:1px solid rgba(255,255,255,.075);border-radius:22px;background:linear-gradient(145deg,#0d182b,#08111f);box-shadow:0 16px 42px rgba(0,0,0,.24)}
+#lsHomeEconomy .ls-econ-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+#lsHomeEconomy h3{margin:0;color:#f4f7ff;font-size:1rem;letter-spacing:-.02em}
+#lsHomeEconomy .ls-econ-sub{color:#7f8eaa;font-size:.68rem}
+#lsHomeEconomy .ls-econ-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#lsHomeEconomy .ls-econ-item{min-width:0;padding:13px 14px;border-radius:17px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px}
+#lsHomeEconomy .ls-econ-icon{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:rgba(49,133,255,.12);border:1px solid rgba(90,162,255,.2);color:#7bb5ff;flex:0 0 38px}
+#lsHomeEconomy .ls-econ-icon svg{width:19px;height:19px}
+#lsHomeEconomy .ls-econ-label{font-size:.62rem;color:#8190aa}.ls-econ-value{font-size:1rem;font-weight:950;color:#fff;margin-top:2px;text-shadow:0 1px 8px rgba(255,255,255,.08)}
+/* Chat shell */
+#chatOverlay .ls-ultimate-shell{height:100%;display:flex;flex-direction:column;min-height:0;background:#050a14}
+#chatOverlay .ls-ultimate-tabs{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:10px 12px 0;background:#070d18;border-bottom:1px solid rgba(255,255,255,.08)}
+#chatOverlay .ls-ultimate-tab{appearance:none;border:0;border-bottom:2px solid transparent;background:transparent!important;color:#8190aa!important;border-radius:0!important;padding:13px 8px 12px;font:850 .86rem inherit;cursor:pointer;position:relative}
+#chatOverlay .ls-ultimate-tab.active{color:#fff!important;border-bottom-color:#fff!important;box-shadow:none!important}
+#chatOverlay .ls-ultimate-view{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+#chatOverlay .ls-ultimate-feed{flex:1;min-height:0;overflow:auto;padding:16px 14px 18px;scroll-behavior:smooth}
+#chatOverlay .ls-u-empty{padding:48px 20px;text-align:center;color:#7f8eaa;font-size:.8rem}
+#chatOverlay .ls-u-msg{display:flex;gap:10px;align-items:flex-start;margin:0 0 18px}
+#chatOverlay .ls-u-msg.mine{flex-direction:row-reverse}
+#chatOverlay .ls-u-avatar{width:42px;height:42px;min-width:42px;border-radius:50%;overflow:hidden;background:#15243b;border:1px solid rgba(255,255,255,.09);display:grid;place-items:center;color:#fff;font-weight:900;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.18)}
+#chatOverlay .ls-u-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+#chatOverlay .ls-u-content{max-width:min(80%,440px);min-width:0}
+#chatOverlay .ls-u-msg.mine .ls-u-content{display:flex;flex-direction:column;align-items:flex-end}
+#chatOverlay .ls-u-meta{display:flex;align-items:center;gap:7px;margin:1px 3px 6px;color:#8797b4;font-size:.67rem;line-height:1.2}
+#chatOverlay .ls-u-meta b{color:#f2f6ff;font-size:.73rem;text-shadow:0 1px 6px rgba(255,255,255,.08)}
+#chatOverlay .ls-u-bubble{width:fit-content;max-width:100%;padding:12px 13px 8px;border-radius:17px;background:linear-gradient(145deg,#12233b,#0d1a2d);border:1px solid rgba(255,255,255,.075);color:#f5f8ff;box-shadow:0 12px 28px rgba(0,0,0,.18);overflow-wrap:anywhere}
+#chatOverlay .ls-u-msg.mine .ls-u-bubble{background:linear-gradient(145deg,#1979e9,#1464c8);border-color:rgba(115,182,255,.34)}
+#chatOverlay .ls-u-bubble-text{font-size:.88rem;line-height:1.5;white-space:pre-wrap}
+#chatOverlay .ls-u-photo{display:block;max-width:min(100%,320px);max-height:360px;border-radius:12px;object-fit:cover}
+#chatOverlay .ls-u-reply-quote{padding:7px 9px;margin-bottom:8px;border-left:2px solid rgba(255,255,255,.55);background:rgba(0,0,0,.12);border-radius:7px;color:#d9e5f8;font-size:.68rem}
+#chatOverlay .ls-u-reactions{display:flex;flex-wrap:wrap;gap:5px;margin:7px 2px 5px}
+#chatOverlay .ls-u-reaction{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;background:rgba(16,30,50,.96);border:1px solid rgba(49,133,255,.65);color:#eaf3ff;font-size:.66rem;cursor:pointer;box-shadow:0 5px 16px rgba(0,0,0,.16)}
+#chatOverlay .ls-u-reaction.mine{background:rgba(49,133,255,.16);border-color:#5ba4ff}
+#chatOverlay .ls-u-reaction svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8}
+#chatOverlay .ls-u-actions{display:flex;align-items:center;gap:6px;margin-top:6px}
+#chatOverlay .ls-u-action{display:inline-flex;align-items:center;gap:5px;padding:6px 8px;border:1px solid transparent;background:transparent;color:#8292ae;border-radius:9px;font:750 .66rem inherit;cursor:pointer}
+#chatOverlay .ls-u-action:hover{background:rgba(255,255,255,.035);color:#fff}
+#chatOverlay .ls-u-action.react{border-color:rgba(49,133,255,.7);color:#8bbdff;background:rgba(49,133,255,.045);border-radius:999px}
+#chatOverlay .ls-u-action.delete{color:#ff7272;border-color:rgba(255,80,80,.18)}
+#chatOverlay .ls-u-action svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.9}
+#chatOverlay .ls-u-composer-wrap{flex:0 0 auto;border-top:1px solid rgba(255,255,255,.08);background:#070d18;padding:9px 12px calc(10px + env(safe-area-inset-bottom))}
+#chatOverlay .ls-u-reply-preview{display:none;align-items:center;gap:8px;padding:8px 10px;margin-bottom:8px;border:1px solid rgba(90,162,255,.22);background:rgba(49,133,255,.06);border-radius:12px;color:#dbe9ff;font-size:.68rem}
+#chatOverlay .ls-u-reply-preview.show{display:flex;animation:lsUFade .22s ease}
+#chatOverlay .ls-u-reply-preview .x{margin-left:auto;border:0;background:transparent;color:#91a2bf;cursor:pointer}
+#chatOverlay .ls-u-row{display:grid;grid-template-columns:44px minmax(0,1fr) 46px;gap:8px;align-items:end}
+#chatOverlay .ls-u-plus,#chatOverlay .ls-u-send{width:44px;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.10);display:grid;place-items:center;cursor:pointer}
+#chatOverlay .ls-u-plus{background:#0d1b30;color:#dbe9ff}.ls-u-send{background:#197cf1;color:#fff;border-color:rgba(112,180,255,.3)!important}
+#chatOverlay .ls-u-plus svg,#chatOverlay .ls-u-send svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9}
+#chatOverlay .ls-u-input{width:100%;min-height:44px;max-height:110px;resize:none;box-sizing:border-box;border:1px solid rgba(255,255,255,.10);border-radius:15px;background:#0c1627;color:#fff;padding:12px 13px;outline:none;font:500 .82rem inherit}
+#chatOverlay .ls-u-input:focus{border-color:rgba(90,162,255,.55);box-shadow:0 0 0 3px rgba(49,133,255,.07)}
+#chatOverlay .ls-u-premium{display:none;width:100%;margin-top:8px;min-height:43px;border-radius:14px;border:1px solid rgba(255,213,74,.25);background:linear-gradient(145deg,#18243a,#101a2c);color:#fff;font:850 .75rem inherit;cursor:pointer;box-shadow:0 12px 28px rgba(0,0,0,.18)}
+#chatOverlay .ls-u-premium.show{display:flex;align-items:center;justify-content:center;gap:8px;animation:lsUFade .5s ease}
+#chatOverlay .ls-u-premium svg{width:18px;height:18px;stroke:#ffd65a;fill:none;stroke-width:1.8}
+#chatOverlay .ls-u-clan-head{display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.07);color:#eaf2ff;cursor:pointer}
+#chatOverlay .ls-u-clan-head .tag{color:#76b4ff;font-size:.67rem}
+#chatOverlay .ls-u-clan-empty{margin:auto;max-width:340px;padding:30px;text-align:center;color:#8493ae}
+#chatOverlay .ls-u-clan-empty h3{margin:0 0 7px;color:#fff;font-size:1rem}.ls-u-clan-empty p{font-size:.72rem;line-height:1.5;margin:0 0 16px}
+#chatOverlay .ls-u-clan-btns{display:flex;justify-content:center;gap:8px}.ls-u-clan-btns button{border-radius:12px;padding:10px 13px;font:850 .72rem inherit;cursor:pointer}.ls-u-clan-btns .primary{background:#1878eb;border:1px solid #4c9aff;color:#fff}.ls-u-clan-btns .ghost{background:#0e1b2f;border:1px solid rgba(255,255,255,.10);color:#dbe6f8}
+@keyframes lsUFade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+/* Notifications and sheets */
+#notifOverlay .notif-actions-bar{position:sticky;bottom:0;padding:10px 14px;background:#080f1c;border-top:1px solid rgba(255,255,255,.08)}
+#notifOverlay #clearAllNotifBtn{color:#fff;border-color:rgba(255,255,255,.12);background:#101c30;border-radius:12px}
+#notifOverlay #clearAllNotifBtn:hover{background:#c83e4a;border-color:#ef6a72}
+#notifOverlay .notif-item__del{color:#ff7474!important}
+/* Episode list can be opened/closed cleanly. */
+.watch-episode-section{border-radius:18px;padding:12px!important;background:linear-gradient(145deg,rgba(255,255,255,.025),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.065)!important}
+.watch-episode-head{margin-bottom:8px!important}.ls-episode-toggle{border:1px solid rgba(255,255,255,.11);background:#0d1a2c;color:#dce8fa;border-radius:10px;padding:7px 9px;font:800 .66rem inherit;cursor:pointer}
+.watch-episode-list.ls-collapsed{display:none!important}
+/* General panel polish */
+.sheet,.modal__box,.shop-overlay,.popup-sheet,.simple-modal,.quick-panel,.quality-modal{border-radius:24px!important;box-shadow:0 30px 100px rgba(0,0,0,.58)!important}
+.sheet__title,.modal__header-title,.popup-sheet__title{color:#fff!important;text-shadow:0 1px 7px rgba(255,255,255,.10)}
+</style>
+<script id="ls-ultimate-fix-2026-09-20">
 (function(){'use strict';
-  var q=function(s){return document.querySelector(s)};
-  var qa=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
-  var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
-  var icon=function(path,filled){return '<svg class="ls-final-icon" viewBox="0 0 24 24" aria-hidden="true" '+(filled?'fill="currentColor"':'fill="none"')+'>'+path+'</svg>'};
-
-  /* 1) Strong, consistent icon rendering. */
-  var css=document.createElement('style');css.id='ls-final-redesign-2026-09-20';css.textContent=`
-    :root{--ls-blue:#2584ff;--ls-blue2:#1267db;--ls-bg:#050a14;--ls-card:#0b1526;--ls-card2:#0e1a2d;--ls-line:rgba(157,184,229,.14);--ls-muted:#91a0bd;--ls-white:#f4f7ff}
-    .ls-final-icon{width:20px!important;height:20px!important;display:block!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important;color:inherit!important;flex:none}
-    .icon{color:#dce8ff!important;stroke:currentColor!important}.icon--filled{color:#fff!important;fill:currentColor!important;stroke:none!important}
-    button{font-family:inherit}.btn,.icon-btn,.ls-clan-icon-btn,.ls-clan-back,.ls-game-back,.ls-customize-close{color:#eaf1ff!important}
-    .btn--primary,.ls-clan-claim,.ls-clan-request-big,.ls-clan-request.sent,.ls-clan-request:not(.sent),.send{color:#fff!important;background:linear-gradient(135deg,#2d8cff,#1167dd)!important;box-shadow:0 10px 26px rgba(28,123,255,.24),inset 0 1px 0 rgba(255,255,255,.18)!important}
-    .ls-home-tools{width:calc(100% - 28px)!important;max-width:430px!important;margin:14px auto 20px!important;gap:12px!important}
-    .ls-balance-card,.ls-board-card,.ls-game-card,.ls-home-chat,.ls-clan-card,.ls-clan-detail-head,.ls-clan-resource,.ls-clan-member-count,.ls-clan-subtabs,.ls-clan-full-section{background:linear-gradient(145deg,#0d192b,#08111f)!important;border:1px solid var(--ls-line)!important;box-shadow:0 16px 45px rgba(0,0,0,.25)!important}
-    .ls-balance-card{order:2}.ls-board-card{order:1}.ls-game-list{order:3}
-    .ls-game-section{order:4}
-    .ls-board-card,.ls-balance-card{max-width:none!important;width:100%!important;box-sizing:border-box!important}
-    .ls-board-card{padding:15px!important}.ls-board-preview{gap:8px!important}.ls-board-mini{min-width:0!important;overflow:hidden}
-    .ls-balance-grid{grid-template-columns:1fr 1fr!important}
-    .ls-event-float{right:14px!important;bottom:calc(92px + env(safe-area-inset-bottom,0px))!important}
-    .ls-gift-btn{color:#fff!important;background:linear-gradient(145deg,#12213a,#0b1425)!important;border-color:rgba(72,145,255,.35)!important}
-    .ls-xch-box,.ls-clan-modal-box,.ls-clan-info-box,.ls-customize-box,.quality-modal__box,.simple-modal__box,.popup-sheet__box{background:linear-gradient(155deg,#101d32,#07101d)!important;border:1px solid rgba(92,151,235,.22)!important;box-shadow:0 25px 80px rgba(0,0,0,.6),0 0 35px rgba(40,120,255,.08)!important;color:#fff!important}
-    .ls-xch-box *,.ls-clan-modal-box *,.ls-clan-info-box *,.ls-customize-box *,.quality-modal__box *{color:#f2f6ff}
-    .ls-clan-subtab{transition:background .18s,color .18s,box-shadow .18s!important}.ls-clan-subtab.active{background:linear-gradient(135deg,#2d8cff,#1269dc)!important;color:#fff!important;box-shadow:0 8px 22px rgba(31,124,255,.22)!important}
-    .ls-clan-detail-top{position:sticky!important;top:0!important;z-index:30!important;background:rgba(5,10,20,.94)!important;backdrop-filter:blur(14px)!important;border-bottom:1px solid rgba(255,255,255,.08)!important}
-    .ls-clan-detail-head{overflow:hidden!important;position:relative!important}.ls-clan-detail-head:before{content:"";position:absolute;inset:0;background:var(--clan-bg) center/cover no-repeat;opacity:.18;filter:saturate(1.1);pointer-events:none}.ls-clan-detail-head>*{position:relative;z-index:1}
-    .ls-clan-resource{padding:18px!important}.ls-clan-resource__num{font-size:1.55rem!important;color:#fff!important;text-shadow:0 2px 12px rgba(60,150,255,.25)}
-    .ls-clan-claim,.ls-clan-request-big{min-height:46px!important;border-radius:15px!important}
-    .ls-final-claim-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.ls-final-claim-meta{font-size:.68rem;color:#8fa2c2;margin-top:8px;text-align:center}.ls-final-claim-amount{font-size:1rem;font-weight:900;color:#fff;text-align:center}
-    .ls-final-member-card{position:relative;display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px;border-radius:18px;background:linear-gradient(145deg,#0e1b2f,#091220);border:1px solid rgba(255,255,255,.08);margin-top:9px;overflow:hidden}.ls-final-member-card .banner{position:absolute;inset:0;background:center/cover no-repeat;opacity:.12}.ls-final-member-card>*:not(.banner){position:relative;z-index:1}.ls-final-member-avatar{width:54px;height:54px;border-radius:16px;object-fit:cover;background:#10203a;border:1px solid rgba(255,255,255,.1)}.ls-final-member-name{font-weight:900;color:#fff}.ls-final-member-meta{font-size:.68rem;color:#94a4bf;margin-top:4px}.ls-final-member-donate{text-align:right;font-size:.72rem;color:#aebbd0}.ls-final-member-donate b{display:block;font-size:.9rem;color:#65b4ff;margin-bottom:4px}
-    .ls-final-role{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:4px 8px;border-radius:8px;font-size:.62rem;font-weight:900;border:1px solid currentColor;box-shadow:0 0 12px currentColor33,inset 0 0 7px #ffffff22}.ls-final-role.leader{color:#ffd54f}.ls-final-role.officer{color:#62df91}.ls-final-role.victro{color:#c48aff}.ls-final-role.hydler{color:#67d8ff}.ls-final-role.member{color:#aab5c8}
-    /* Clean chat: Global and Clan are separate screens, not one mashed-up list. */
-    #chatOverlay .sheet{background:#050a14!important}.ls-final-chat-shell{height:100%;display:flex;flex-direction:column;min-height:0;background:radial-gradient(circle at 50% 0,rgba(38,111,255,.08),transparent 38%),#050a14}.ls-final-chat-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:7px;margin:12px;border:1px solid rgba(255,255,255,.09);background:#0a1424;border-radius:18px}.ls-final-chat-tabs button{height:46px;border:0;border-radius:14px;background:transparent;color:#8998b6;font-weight:900;font-size:.82rem}.ls-final-chat-tabs button.active{background:linear-gradient(135deg,#2c8cff,#1167dc);color:#fff;box-shadow:0 8px 24px rgba(34,127,255,.23)}.ls-final-chat-list{flex:1;min-height:0;overflow:auto;padding:0 14px 18px}.ls-final-msg{display:grid;grid-template-columns:40px minmax(0,1fr);gap:9px;margin:12px 0}.ls-final-msg.mine{grid-template-columns:minmax(0,1fr) 40px}.ls-final-msg.mine .ls-final-msg-avatar{grid-column:2}.ls-final-msg.mine .ls-final-msg-main{grid-column:1;grid-row:1;text-align:right}.ls-final-msg-avatar{width:40px;height:40px;border-radius:13px;object-fit:cover;background:#10213a;border:1px solid rgba(255,255,255,.08);cursor:pointer}.ls-final-msg-main{min-width:0}.ls-final-msg-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:#a8b7d2;font-size:.68rem}.mine .ls-final-msg-head{justify-content:flex-end}.ls-final-name{font-weight:900;color:#f1f5ff}.ls-final-tag{padding:3px 7px;border-radius:7px;border:1px solid #2d8cff;color:#77b5ff;background:rgba(45,140,255,.08);font-weight:800}.ls-final-verified{color:#4ca1ff}.ls-final-time{color:#6f7f9c}.ls-final-bubble{display:inline-block;max-width:min(78%,430px);margin-top:5px;padding:10px 13px;border-radius:15px;background:#0e1c30;border:1px solid rgba(255,255,255,.08);color:#f4f7ff;line-height:1.45;word-break:break-word;text-align:left;box-shadow:0 9px 24px rgba(0,0,0,.18)}.mine .ls-final-bubble{background:linear-gradient(145deg,#1470d9,#0f58af);border-color:rgba(109,181,255,.25)}.ls-final-actions{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}.mine .ls-final-actions{justify-content:flex-end}.ls-final-action{border:0;background:transparent;color:#7f90ad;font-size:.62rem;padding:4px 6px;border-radius:7px}.ls-final-action:hover{background:rgba(255,255,255,.05);color:#dbe8ff}.ls-final-reactions{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}.ls-final-reaction{border:1px solid rgba(255,255,255,.1);background:#0b1628;color:#fff;border-radius:10px;padding:4px 7px;font-size:.7rem}.ls-final-reaction.active{border-color:#2d8cff;background:rgba(45,140,255,.12)}.ls-final-composer{flex:none;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:#070d18;border-top:1px solid rgba(255,255,255,.09);box-shadow:0 -16px 35px rgba(0,0,0,.32)}.ls-final-composer-row{display:grid;grid-template-columns:42px minmax(0,1fr) 48px;gap:8px;align-items:end}.ls-final-attach,.ls-final-send{width:42px;height:42px;border-radius:14px;border:1px solid rgba(255,255,255,.1);display:grid;place-items:center}.ls-final-attach{background:#0d1b2f;color:#dce8ff}.ls-final-send{background:linear-gradient(135deg,#2d8cff,#1269dd);color:#fff;box-shadow:0 8px 20px rgba(34,127,255,.28)}.ls-final-input{width:100%;min-height:42px;max-height:110px;resize:none;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:#0a1525;color:#fff;padding:11px 12px;outline:none;box-sizing:border-box}.ls-final-input:focus{border-color:#2d8cff;box-shadow:0 0 0 3px rgba(45,140,255,.1)}.ls-final-premium{opacity:0;transform:translateY(5px);pointer-events:none;transition:.28s}.ls-final-premium.show{opacity:1;transform:none;pointer-events:auto}.ls-final-premium button{width:100%;margin-top:7px;border:1px solid rgba(92,151,235,.18);background:#0d1b2e;color:#cfe1ff;border-radius:12px;padding:9px;font-weight:800}
-    .ls-final-reaction-panel{display:flex;flex-wrap:wrap;gap:5px;padding:8px;background:#0b1525;border:1px solid rgba(255,255,255,.09);border-radius:14px;margin-top:6px}.ls-final-reaction-panel button{width:30px;height:30px;border:0;border-radius:8px;background:transparent;font-size:18px}
-    .ls-final-empty{padding:18px;border-radius:18px;background:#0b1627;border:1px solid rgba(255,255,255,.08);color:#aab7ce;line-height:1.55;text-align:center;margin-top:12px}.ls-final-empty h3{color:#fff;margin:0 0 5px}
-    .ls-final-schedule-overlay{position:fixed;inset:0;z-index:99990;background:#050a14;display:none;flex-direction:column}.ls-final-schedule-overlay.open{display:flex}.ls-final-schedule-head{display:flex;align-items:center;gap:10px;padding:16px 14px;border-bottom:1px solid rgba(255,255,255,.08);background:#08101e}.ls-final-schedule-head h2{margin:0;font-size:1rem}.ls-final-schedule-tabs{display:flex;gap:6px;padding:10px 12px;overflow:auto}.ls-final-schedule-tabs button{flex:0 0 auto;border:1px solid rgba(255,255,255,.08);background:#0c1728;color:#91a0bd;border-radius:11px;padding:9px 12px;font-weight:800}.ls-final-schedule-tabs button.active{background:#2584ff;color:#fff;border-color:#2584ff}.ls-final-schedule-list{flex:1;overflow:auto;padding:0 12px 24px}.ls-final-schedule-card{display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px;margin:7px 0;border-radius:15px;background:#0b1627;border:1px solid rgba(255,255,255,.08)}.ls-final-schedule-card img{width:54px;height:68px;border-radius:10px;object-fit:cover}.ls-final-schedule-card b{display:block;color:#fff;font-size:.76rem}.ls-final-schedule-card span{display:block;color:#8494b0;font-size:.64rem;margin-top:4px}.ls-final-schedule-time{color:#64b0ff!important;font-weight:900!important}
-    /* Modal typography: white, readable, no accidental black icon blocks. */
-    .ls-final-modal{position:fixed;inset:0;z-index:100001;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.65);backdrop-filter:blur(7px)}.ls-final-modal.open{display:flex}.ls-final-modal-box{width:min(460px,calc(100% - 24px));max-height:min(86vh,720px);overflow:auto;margin-bottom:12px;padding:18px;border-radius:22px;background:linear-gradient(155deg,#10203a,#07101d);border:1px solid rgba(91,151,236,.25);box-shadow:0 25px 80px rgba(0,0,0,.65);color:#fff}.ls-final-modal-box h3{margin:0 0 7px;color:#fff}.ls-final-modal-box p,.ls-final-modal-box label{color:#b9c6dc;font-size:.76rem;line-height:1.5}.ls-final-modal-box input,.ls-final-modal-box textarea,.ls-final-modal-box select{width:100%;box-sizing:border-box;background:#081424;border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:12px;padding:11px;margin:5px 0 9px;outline:none}.ls-final-modal-box .ls-final-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.ls-final-choice{border:1px solid rgba(255,255,255,.1);background:#0b1728;color:#cbd8ec;border-radius:12px;padding:10px;font-weight:800}.ls-final-choice.active{background:#2584ff;color:#fff;border-color:#2584ff}.ls-final-modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.ls-final-modal-actions button{min-height:44px;border-radius:13px;border:1px solid rgba(255,255,255,.1);font-weight:900}.ls-final-primary{background:#2584ff;color:#fff}.ls-final-secondary{background:#0d1a2d;color:#dce7f8}
-    .ls-final-episode-toggle{margin-left:auto;border:1px solid rgba(255,255,255,.12);background:#0d1a2d;color:#dbe8ff;border-radius:10px;padding:7px 10px;font-weight:800}.episode-section{border-top:1px solid rgba(255,255,255,.08);margin-top:10px;padding-top:10px}.episode-section h3{color:#fff!important}
-    #bottomNav .bottom-nav__item{transition:.18s!important}#bottomNav .bottom-nav__item.active{color:#2d8cff!important}#bottomNav .bottom-nav__item.active .icon{color:#2d8cff!important;filter:drop-shadow(0 0 7px rgba(45,140,255,.3))}
-    .ls-final-dev-anime{margin-top:12px;padding:13px;border-radius:16px;background:#0b1728;border:1px solid rgba(255,255,255,.08)}.ls-final-dev-anime h4{margin:0 0 8px;color:#fff}.ls-final-dev-anime input,.ls-final-dev-anime textarea{width:100%;box-sizing:border-box;margin:5px 0;padding:10px;border-radius:10px;background:#071221;border:1px solid rgba(255,255,255,.1);color:#fff}.ls-final-dev-anime button{width:100%;padding:10px;border-radius:10px;border:0;background:#2584ff;color:#fff;font-weight:900}
-    @media(max-width:380px){.ls-final-msg{grid-template-columns:34px minmax(0,1fr)}.ls-final-msg.mine{grid-template-columns:minmax(0,1fr) 34px}.ls-final-msg-avatar{width:34px;height:34px}.ls-final-composer-row{grid-template-columns:38px minmax(0,1fr) 44px}.ls-final-attach,.ls-final-send{width:38px;height:38px}.ls-final-grid{grid-template-columns:repeat(2,1fr)!important}}
-  `;document.head.appendChild(css);
-
-  /* 2) Bottom navigation: Home -> Chat -> Jadwal -> Akun. Search remains available from the header. */
-  var nav=q('#bottomNav');
-  if(nav){
-    nav.innerHTML='<button class="bottom-nav__item active" data-final-tab="home">'+icon('<path d="M3 10.5 12 3l9 7.5v9a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 19.5Z"/><path d="M9 21v-6h6v6"/>')+'<span class="bottom-nav__label">Home</span></button>'+
-      '<button class="bottom-nav__item" data-final-tab="chat">'+icon('<path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 9 9 0 0 1-4.2-1L4 19l1.4-3.2A7.2 7.2 0 0 1 4.5 12 7.5 7.5 0 0 1 12 4.5a7.5 7.5 0 0 1 8 7Z"/>')+'<span class="bottom-nav__label">Chat</span></button>'+
-      '<button class="bottom-nav__item" data-final-tab="schedule">'+icon('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>')+'<span class="bottom-nav__label">Jadwal</span></button>'+
-      '<button class="bottom-nav__item" data-final-tab="account">'+icon('<circle cx="12" cy="7" r="4"/><path d="M4 21v-2a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v2"/>')+'<span class="bottom-nav__label">Akun</span></button>';
-    nav.addEventListener('click',function(e){var b=e.target.closest('[data-final-tab]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();qa('#bottomNav .bottom-nav__item').forEach(function(x){x.classList.toggle('active',x===b)});var t=b.dataset.finalTab;if(t==='home'){if(typeof closeAllOverlays==='function')closeAllOverlays();window.scrollTo({top:0,behavior:'smooth'});return}if(t==='account'){var o=q('#accountOverlay');if(o)o.classList.add('open');if(typeof renderAccountPage==='function')renderAccountPage();return}if(t==='chat'){openFinalChat('global');return}if(t==='schedule'){openFinalSchedule();return}},true);
-  }
-
-  function makeOverlay(id,html){var x=q('#'+id);if(!x){x=document.createElement('div');x.id=id;x.className='ls-final-schedule-overlay';x.innerHTML=html;document.body.appendChild(x)}return x}
-  function openFinalSchedule(){var o=makeOverlay('lsFinalSchedule','<div class="ls-final-schedule-head"><button class="icon-btn" id="lsFinalScheduleBack">'+icon('<path d="M15 18 9 12l6-6"/>')+'</button><h2>Jadwal Anime</h2></div><div class="ls-final-schedule-tabs" id="lsFinalScheduleTabs"></div><div class="ls-final-schedule-list" id="lsFinalScheduleList"></div>');o.classList.add('open');var days=['Semua','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];var tabs=q('#lsFinalScheduleTabs');tabs.innerHTML=days.map(function(d,i){return '<button class="'+(i===0?'active':'')+'" data-day="'+d+'">'+d+'</button>'}).join('');function draw(day){var src=qa('#animeScheduleList .anime-schedule-item, #animeScheduleList [data-day], #animeScheduleList > *');var html='';src.forEach(function(el){var txt=(el.textContent||'').trim();if(!txt)return;if(day!=='Semua'&&txt.toLowerCase().indexOf(day.toLowerCase())<0)return;var im=el.querySelector('img');html+='<div class="ls-final-schedule-card">'+(im?'<img src="'+esc(im.src)+'">':'<div style="width:54px;height:68px;border-radius:10px;background:#10213a"></div>')+'<div><b>'+esc(txt.slice(0,80))+'</b><span>Jadwal episode</span></div><span class="ls-final-schedule-time">Lihat</span></div>'});if(!html)html='<div class="ls-final-empty"><h3>Belum ada jadwal</h3>Data jadwal akan muncul setelah sumber anime tersedia.</div>';q('#lsFinalScheduleList').innerHTML=html}tabs.querySelectorAll('button').forEach(function(b){b.onclick=function(){tabs.querySelectorAll('button').forEach(function(x){x.classList.remove('active')});b.classList.add('active');draw(b.dataset.day)}});q('#lsFinalScheduleBack').onclick=function(){o.classList.remove('open')};draw('Semua')}
-
-  /* 3) Chat rebuilt separately for Global and Clan. */
-  var REACTS=['😀','😂','😍','😎','😭','😮','😡','👍','👎','❤️','🔥','🎉','👏','🤔','😴','💯','✨','🙏','🤣','🥹'];
-  function chatStoreKey(clan){return clan?'lstream_chat_clan_'+String(window.__lsOpenClanId||'none'):'lstream_chat_global'}
-  function getMsgs(clan){try{return JSON.parse(localStorage.getItem(chatStoreKey(clan))||'[]')}catch(e){return[]}}
-  function saveMsgs(clan,a){try{localStorage.setItem(chatStoreKey(clan),JSON.stringify(a.slice(-100)))}catch(e){}}
-  function currentUser(){return window.userState||{username:'User',avatarUrl:'',premium:false}}
-  function msgAvatar(m){return m.avatar||currentUser().avatarUrl||''}
-  function finalChatHTML(mode){var clan=mode==='clan',u=currentUser(),hasClan=!!u.clanId;return '<div class="ls-final-chat-shell"><div style="display:flex;align-items:center;gap:10px;padding:14px;border-bottom:1px solid rgba(255,255,255,.08);background:#07101e"><button class="icon-btn" id="lsFinalChatBack">'+icon('<path d="m15 18-6-6 6-6"/>')+'</button><b style="font-size:1rem;color:#fff">Chat</b></div><div class="ls-final-chat-tabs"><button data-fchat="global" class="'+(!clan?'active':'')+'">Chat Global</button><button data-fchat="clan" class="'+(clan?'active':'')+'" '+(!hasClan?'disabled':'')+'>Chat Clan</button></div>'+(clan&&!hasClan?'<div class="ls-final-chat-list"><div class="ls-final-empty"><h3>Belum punya clan</h3><div>Buat atau gabung clan untuk membuka chat clan.</div><div style="display:flex;gap:8px;justify-content:center;margin-top:12px"><button class="btn btn--primary" id="lsFinalJoinClan">Gabung Clan</button><button class="btn btn--ghost" id="lsFinalCreateClan">Buat Clan</button></div></div></div>':'<div class="ls-final-chat-list" id="lsFinalChatList"></div><div class="ls-final-composer"><div class="ls-final-composer-row"><button class="ls-final-attach" id="lsFinalAttach">'+icon('<path d="M21 12.5 12.5 21a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8-8"/>')+'</button><textarea class="ls-final-input" id="lsFinalInput" rows="1" placeholder="Tulis pesan..."></textarea><button class="ls-final-send" id="lsFinalSend">'+icon('<path d="m3 11 18-9-9 18-2-7-7-2Z" fill="currentColor" stroke="none"/>',true)+'</button></div><div class="ls-final-premium" id="lsFinalPremium"><button id="lsFinalGivePremium">'+icon('<path d="m12 3 2.2 4.5L19 8.2l-3.5 3.4.8 4.8-4.3-2.2-4.3 2.2.8-4.8L5 8.2l4.8-.7L12 3Z"/>')+' Give Premium</button></div></div>')+'</div>'}
-  function openFinalChat(mode){var o=q('#chatOverlay');if(!o){return}o.classList.add('open');var sheet=o.querySelector('.sheet');if(!sheet)return;sheet.innerHTML=finalChatHTML(mode);bindFinalChat(mode)}
-  function bindFinalChat(mode){
-    var back=q('#lsFinalChatBack');if(back)back.onclick=function(){var o=q('#chatOverlay');if(o)o.classList.remove('open')};
-    var clan=mode==='clan', list=q('#lsFinalChatList'), input=q('#lsFinalInput');
-    qa('[data-fchat]').forEach(function(b){b.onclick=function(){openFinalChat(b.dataset.fchat)}});
-    var u=currentUser(), c=null;
-    try{c=window.S&&window.__lsOpenClanId&&window.S.clans?window.S.clans.find(function(x){return x.id===window.__lsOpenClanId}):null}catch(e){}
-    if(q('#lsFinalJoinClan'))q('#lsFinalJoinClan').onclick=function(){if(typeof renderClanJoin==='function')renderClanJoin()};
-    if(q('#lsFinalCreateClan'))q('#lsFinalCreateClan').onclick=function(){if(typeof openCreateClan==='function')openCreateClan()};
-    if(!list)return;
-    function draw(){
-      var a=getMsgs(clan);
-      if(!a.length){list.innerHTML='<div class="ls-final-empty"><h3>'+(clan?'Belum ada pesan di clan':'Belum ada pesan')+'</h3><div>Mulai percakapan dengan mengirim pesan pertama.</div></div>';return}
-      list.innerHTML=a.map(function(m,i){
-        var mine=m.user===u.username, tag=m.tag||((clan&&c)?c.tag:''), reacts=m.react||{};
-        var reactHtml=Object.keys(reacts).filter(function(x){return reacts[x]>0}).map(function(x){return '<button class="ls-final-reaction '+(m.mineReact===x?'active':'')+'" data-unreact="'+i+'" data-em="'+esc(x)+'">'+x+' '+reacts[x]+'</button>'}).join('');
-        var verified=m.premium?'<span class="ls-final-verified">'+icon('<path d="m5 12 4 4L19 6"/>')+'</span>':'';
-        return '<div class="ls-final-msg '+(mine?'mine':'')+'"><img class="ls-final-msg-avatar" data-profile="'+esc(m.user)+'" src="'+esc(msgAvatar(m))+'" onerror="this.style.visibility=\'hidden\'"><div class="ls-final-msg-main"><div class="ls-final-msg-head"><span class="ls-final-name">'+esc(m.user)+'</span>'+verified+(tag?'<span class="ls-final-tag">'+esc(tag)+'</span>':'')+'<span class="ls-final-time">'+esc(m.time||'baru saja')+'</span></div><div class="ls-final-bubble">'+esc(m.text||'')+'</div>'+(m.reply?'<div style="font-size:.62rem;color:#8fa2bf;margin-top:5px">Membalas: '+esc(m.reply)+'</div>':'')+'<div class="ls-final-actions"><button class="ls-final-action" data-reply="'+i+'">Balas</button><button class="ls-final-action" data-react="'+i+'">Reaksi</button>'+(mine?'<button class="ls-final-action" data-delete="'+i+'">Hapus</button>':'')+'<span class="ls-final-time" style="margin-left:auto">'+esc(m.time||'baru saja')+'</span></div><div class="ls-final-reactions">'+reactHtml+'</div><div id="lsReact'+i+'"></div></div></div>';
-      }).join('');
-      qa('[data-profile]').forEach(function(b){b.onclick=function(){openFinalProfile(b.dataset.profile)}});
-      qa('[data-delete]').forEach(function(b){b.onclick=function(){a.splice(Number(b.dataset.delete),1);saveMsgs(clan,a);draw()}});
-      qa('[data-reply]').forEach(function(b){b.onclick=function(){input.value='';input.focus();input.dataset.replyIndex=b.dataset.reply}});
-      qa('[data-react]').forEach(function(b){b.onclick=function(){
-        var box=q('#lsReact'+b.dataset.react); if(!box)return;
-        box.innerHTML='<div class="ls-final-reaction-panel">'+REACTS.map(function(x){return '<button data-r="'+b.dataset.react+'" data-e="'+esc(x)+'">'+x+'</button>'}).join('')+'</div>';
-        box.querySelectorAll('[data-r]').forEach(function(x){x.onclick=function(){
-          var idx=Number(x.dataset.r),em=x.dataset.e,ar=getMsgs(clan); ar[idx].react=ar[idx].react||{};
-          if(ar[idx].mineReact===em){ar[idx].react[em]=Math.max(0,(ar[idx].react[em]||1)-1);ar[idx].mineReact=''}
-          else{if(ar[idx].mineReact)ar[idx].react[ar[idx].mineReact]=Math.max(0,(ar[idx].react[ar[idx].mineReact]||1)-1);ar[idx].react[em]=(ar[idx].react[em]||0)+1;ar[idx].mineReact=em}
-          saveMsgs(clan,ar);draw();
-        }});
-      }});
-    }
-    draw();
-    var send=q('#lsFinalSend');
-    if(send)send.onclick=function(){var t=input.value.trim();if(!t)return;var ar=getMsgs(clan);var ri=input.dataset.replyIndex;ar.push({user:u.username,avatar:u.avatarUrl||'',premium:!!u.premium,text:t,time:'baru saja',tag:clan&&c?c.tag:'',reply:ri!=null&&ar[Number(ri)]?ar[Number(ri)].text:''});saveMsgs(clan,ar);input.value='';delete input.dataset.replyIndex;draw();list.scrollTop=list.scrollHeight};
-    var attach=q('#lsFinalAttach'), prem=q('#lsFinalPremium'), gave=false;
-    if(attach)attach.onclick=function(){var p=q('#photoChatInput');if(!p)return;p.onchange=function(){var f=p.files&&p.files[0];if(!f)return;var reader=new FileReader();reader.onload=function(){var ar=getMsgs(clan);ar.push({user:u.username,avatar:u.avatarUrl||'',premium:!!u.premium,text:'Foto: '+f.name,time:'baru saja',tag:clan&&c?c.tag:'',image:reader.result});saveMsgs(clan,ar);draw()};reader.readAsDataURL(f)};p.click();if(!gave){gave=true;setTimeout(function(){if(prem)prem.classList.add('show')},180)}};
-    var gp=q('#lsFinalGivePremium');if(gp)gp.onclick=function(){openGivePremium(mode)};
-  }
-  function openFinalProfile(name){
-    var u=currentUser(), isSelf=name===u.username;
-    if(typeof openUserFullscreen==='function'){openUserFullscreen({name:name,avatarUrl:isSelf?u.avatarUrl:'',isSelf:isSelf});return}
-    var box=document.createElement('div');box.className='ls-final-modal open';box.innerHTML='<div class="ls-final-modal-box"><div style="display:flex;align-items:center;gap:10px"><button class="icon-btn" data-close>'+icon('<path d="m15 18-6-6 6-6"/>')+'</button><h3 style="margin:0">Profil</h3></div><div style="text-align:center;padding:18px 0"><div style="width:84px;height:84px;margin:auto;border-radius:24px;background:#102544;display:grid;place-items:center;font-size:1.6rem;font-weight:900;color:#fff">'+esc((name||'U').charAt(0).toUpperCase())+'</div><h3>'+esc(name)+'</h3><p>Profil pengguna</p></div></div>';document.body.appendChild(box);box.onclick=function(e){if(e.target===box||e.target.closest('[data-close]'))box.remove()};
-  }
-  function openGivePremium(mode){var m=document.createElement('div');m.className='ls-final-modal open';var days=[1,5,7,15,20,30],people=[1,5,10,15,25,30];m.innerHTML='<div class="ls-final-modal-box"><h3>Give Premium</h3><p>Kirim Premium kepada pengguna melalui pesan. Biaya Premium dan XP mengikuti jumlah hari serta jumlah penerima.</p><label>Durasi Premium</label><div class="ls-final-grid" id="gpDays">'+days.map(function(x){return '<button class="ls-final-choice" data-v="'+x+'">'+x+' hari</button>'}).join('')+'</div><label style="display:block;margin-top:10px">Jumlah penerima</label><div class="ls-final-grid" id="gpPeople">'+people.map(function(x){return '<button class="ls-final-choice" data-v="'+x+'">'+x+' orang</button>'}).join('')+'</div><label style="display:block;margin-top:10px">Pesan</label><textarea id="gpText" rows="3" placeholder="Tulis pesan..." maxlength="300"></textarea><div id="gpExplain" class="ls-final-empty" style="text-align:left;margin-top:8px"></div><div class="ls-final-modal-actions"><button class="ls-final-secondary" id="gpCancel">Batal</button><button class="ls-final-primary" id="gpSend">Kirim</button></div></div>';document.body.appendChild(m);var selD=1,selP=1;function calc(){var base={1:2,5:6,7:9,15:18,20:23,30:33}[selD],xp={1:300,5:700,7:1000,15:1400,20:1800,30:2100}[selD];var extra=selP>=30?8:selP>=25?6:selP>=15?4:selP>=10?3:selP>=5?1:0;var xextra={1:0,5:100,10:300,15:450,25:600,30:800}[selP]||0;m.querySelector('#gpExplain').innerHTML='<b>Biaya: '+(base+extra)+' hari Premium</b><br>XP dasar: '+xp+'<br>Bonus penerima: +'+xextra+' XP<br><span style="color:#9eb0cc">Penerima dapat claim sesuai slot yang tersedia.</span>'}qa2(m,'#gpDays button').forEach(function(b){b.onclick=function(){selD=Number(b.dataset.v);qa2(m,'#gpDays button').forEach(function(x){x.classList.remove('active')});b.classList.add('active');calc()}});qa2(m,'#gpPeople button').forEach(function(b){b.onclick=function(){selP=Number(b.dataset.v);qa2(m,'#gpPeople button').forEach(function(x){x.classList.remove('active')});b.classList.add('active');calc()}});m.querySelector('#gpDays button').classList.add('active');m.querySelector('#gpPeople button').classList.add('active');calc();m.querySelector('#gpCancel').onclick=function(){m.remove()};m.querySelector('#gpSend').onclick=function(){m.remove();toast('Give Premium dibuat.');}}
-  function qa2(root,s){return Array.prototype.slice.call(root.querySelectorAll(s))}
-
-  /* 4) Episode list: explicit show/hide button, instead of forcing users to hunt for it. */
-  function patchEpisodeToggle(){var h=q('#modal .modal__header');if(!h||q('#lsFinalEpisodeToggle'))return;var b=document.createElement('button');b.id='lsFinalEpisodeToggle';b.className='ls-final-episode-toggle';b.textContent='Episode';h.appendChild(b);b.onclick=function(){var x=q('#episodeSection');if(x)x.style.display=x.style.display==='none'?'block':'none'}}
-  document.addEventListener('click',function(e){if(e.target.closest('#heroDetailBtn,.anime-card,.card'))setTimeout(patchEpisodeToggle,100)},true);
-  patchEpisodeToggle();
-
-  /* 5) Notification: clear-all button is always visible. */
-  document.addEventListener('click',function(e){var b=e.target.closest('#clearAllNotifBtn');if(b){b.textContent='Hapus Semua';}},true);
-
-  /* 6) Developer anime creator. */
-  function isDev(){var u=currentUser();return !!(u.loggedIn&&(typeof hasBadge==='function'&&hasBadge(u.username,'developer')||u.role==='Developer'||u.username==='Developer'))}
-  function installAnimeDev(){var root=q('#settingsContent');if(!root||q('#lsFinalAnimeDev')||!isDev())return;var box=document.createElement('div');box.id='lsFinalAnimeDev';box.className='ls-final-dev-anime';box.innerHTML='<h4>Developer · Tambah Anime</h4><input id="lsDevAnimeTitle" placeholder="Judul anime"><input id="lsDevAnimeImage" placeholder="URL poster"><input id="lsDevAnimeEndpoint" placeholder="Endpoint detail"><input id="lsDevAnimeGenre" placeholder="Genre"><textarea id="lsDevAnimeSynopsis" rows="4" placeholder="Sinopsis"></textarea><button id="lsDevAnimeSave">Simpan Anime</button><div id="lsDevAnimeStatus" style="font-size:.68rem;color:#9eb0cc;margin-top:7px"></div>';root.appendChild(box);q('#lsDevAnimeSave').onclick=function(){var data={title:q('#lsDevAnimeTitle').value.trim(),image:q('#lsDevAnimeImage').value.trim(),endpoint:q('#lsDevAnimeEndpoint').value.trim(),genre:q('#lsDevAnimeGenre').value.trim(),synopsis:q('#lsDevAnimeSynopsis').value.trim(),createdAt:Date.now()};if(!data.title){q('#lsDevAnimeStatus').textContent='Judul wajib diisi.';return}var a=[];try{a=JSON.parse(localStorage.getItem('lstream_developer_anime')||'[]')}catch(e){}a.push(data);localStorage.setItem('lstream_developer_anime',JSON.stringify(a));q('#lsDevAnimeStatus').textContent='Anime tersimpan di koleksi developer lokal.'}};
-  document.addEventListener('click',function(e){if(e.target.closest('#settingsBtn'))setTimeout(installAnimeDev,80)},true);
-
-  /* 7) Home tool order and removal of the old home chat preview. */
-  function reorderHome(){var tools=q('#lsHomeTools');if(!tools)return;var board=q('#lsBoardCard')&&q('#lsBoardCard').closest('.ls-board-card');var bal=q('.ls-balance-card');if(board)tools.insertBefore(board,tools.firstChild);if(bal)tools.appendChild(bal);var homeChat=q('#lsHomeChatBareng');if(homeChat)homeChat.style.display='none'}
-  setTimeout(reorderHome,500);setTimeout(reorderHome,1500);
-
-  /* 8) Make clan claim amount independent from clan donation total. */
-  window.levelClan=function(c){
-    if(!c)return 1;
-    var xp=Math.max(0,Number(c.xpDiamonds)||0), level=1, used=0;
-    for(var lv=1;lv<200;lv++){var need=700+(lv-1)*10;if(xp>=used+need){used+=need;level=lv+1}else break}
-    c.level=level;c.levelProgress=Math.max(0,xp-used);c.levelNeed=level<200?700+(level-1)*10:0;c.claimDiamonds=100+Math.max(0,level-1)*5;return level;
+  var escU=function(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')};
+  var q=function(id){return document.getElementById(id)};
+  var iconSvg={
+    plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+    send:'<svg viewBox="0 0 24 24"><path d="M3 11.5 21 3l-8.5 18-2.1-7.4z"/><path d="m10.4 13.6 5-5"/></svg>',
+    reply:'<svg viewBox="0 0 24 24"><path d="M9 8 4 12l5 4"/><path d="M5 12h9a6 6 0 0 1 6 6v1"/></svg>',
+    react:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-9-9c-1.2-2.8.5-6 3.7-6 2 0 3.2 1.2 4.3 2.6C12.1 6.2 13.3 5 15.3 5 18.5 5 20.2 8.2 19 11c-2 4.6-7 9-7 9Z"/></svg>',
+    trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg>',
+    star:'<svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9z"/></svg>',
+    heart:'<svg viewBox="0 0 24 24"><path d="M20.8 8.7c0 5.1-8.8 10.3-8.8 10.3S3.2 13.8 3.2 8.7A4.7 4.7 0 0 1 12 6a4.7 4.7 0 0 1 8.8 2.7Z"/></svg>',
+    fire:'<svg viewBox="0 0 24 24"><path d="M13.5 3s.7 4.4-2.2 6.4C9.8 7.7 9 6 9 6S5 9.5 5 14a7 7 0 0 0 14 0c0-4.2-2.7-7.5-5.5-11Z"/></svg>',
+    laugh:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>',
+    wow:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9h.01M15 9h.01M10 16c.8-1.2 3.2-1.2 4 0M12 11v2"/></svg>'
   };
-  var oldClaim=window.claimClan;window.claimClan=function(c){try{if(!c)return;var key=new Date().toISOString().slice(0,10);if(window.S&&S.claims&&S.claims[c.id]===key)return;var lvl=Math.max(1,Number(c.level)||1),amount=100+Math.max(0,lvl-1)*5;if(window.S){S.claims=S.claims||{};S.claims[c.id]=key}var u=currentUser();u.diamonds=Number(u.diamonds||0)+amount;window.userState=u;if(typeof saveUserSafe==='function')saveUserSafe();if(window.S&&typeof storeSet==='function')storeSet(S);if(typeof updateBalanceUI==='function')updateBalanceUI();if(typeof toastClan==='function')toastClan('Claim harian +'+amount+' berlian.');if(typeof openClanDetail==='function')openClanDetail(c)}catch(e){if(oldClaim)oldClaim(c)}};
+  var reactionDefs=[['like',iconSvg.star],['heart',iconSvg.heart],['fire',iconSvg.fire],['laugh',iconSvg.laugh],['wow',iconSvg.wow]];
+  var reactionIcon=function(k){for(var i=0;i<reactionDefs.length;i++)if(reactionDefs[i][0]===k)return reactionDefs[i][1];return iconSvg.star};
+  window.toast=window.toast||function(msg){try{if(typeof window.toastClan==='function'){window.toastClan(msg);return}}catch(e){}var d=document.createElement('div');d.textContent=msg;d.style.cssText='position:fixed;left:50%;bottom:92px;transform:translateX(-50%);z-index:999999;background:#101c30;border:1px solid rgba(255,255,255,.12);color:#fff;padding:11px 15px;border-radius:13px;box-shadow:0 18px 50px rgba(0,0,0,.5);font:700 13px system-ui';document.body.appendChild(d);setTimeout(function(){d.remove()},2200)};
 
-  var oldGameListFinal=window.gameList;
-  if(typeof oldGameListFinal==='function'&&!window.__lsFinalGameClean){
-    window.gameList=function(){oldGameListFinal();setTimeout(function(){var b=q('#lsGameShopBtn');if(b){b.textContent='Buka LS Premium Shop';b.insertAdjacentHTML('afterbegin',icon('<path d="m12 3 2.2 4.5L19 8.2l-3.5 3.4.8 4.8-4.3-2.2-4.3 2.2.8-4.8L12 3Z"/>'));b.style.display='flex';b.style.alignItems='center';b.style.justifyContent='center';b.style.gap='7px'}} ,0)};window.__lsFinalGameClean=true;
+  function currentUid(){try{return String(window.userState&&userState.userId||'guest')}catch(e){return'guest'}}
+  function currentName(){try{return String(window.userState&&userState.username||'User')}catch(e){return'User'}}
+  function currentAvatar(){try{return String(window.userState&&userState.avatarUrl||'')}catch(e){return''}}
+  function timeText(ts){try{if(typeof window.formatRelativeTime==='function')return formatRelativeTime(ts)}catch(e){}var d=Date.now()-Number(ts||Date.now());if(d<20000)return'baru saja';if(d<60000)return Math.floor(d/1000)+' dtk';if(d<3600000)return Math.floor(d/60000)+' mnt';if(d<86400000)return Math.floor(d/3600000)+' jam';return Math.floor(d/86400000)+' hari'}
+  function globalMsgs(){try{return typeof getGlobalChat==='function'?(getGlobalChat()||[]):JSON.parse(localStorage.getItem('lstream_chat_global')||'[]')}catch(e){return[]}}
+  function saveGlobal(a){try{if(typeof saveGlobalChat==='function')saveGlobalChat(a);else localStorage.setItem('lstream_chat_global',JSON.stringify(a))}catch(e){}}
+  function clanNow(){try{return typeof currentClan==='function'?currentClan():null}catch(e){return null}}
+  function clanMsgsU(c){try{return JSON.parse(localStorage.getItem('lstream_clan_chat_'+c.id)||'[]')}catch(e){return[]}}
+  function clanSaveU(c,a){try{localStorage.setItem('lstream_clan_chat_'+c.id,JSON.stringify(a.slice(-150)))}catch(e){}}
+  function safePhoto(url){return url?escU(url):''}
+  function avatar(name,url){var n=escU(name||'U');return url?'<div class="ls-u-avatar"><img src="'+safePhoto(url)+'" alt="" onerror="this.parentNode.innerHTML=\''+escU((name||'U').charAt(0).toUpperCase())+'\'"/></div>':'<div class="ls-u-avatar">'+escU((name||'U').charAt(0).toUpperCase())+'</div>'}
+  function reactions(ctx,id){try{return typeof getReactions==='function'?getReactions(ctx,id)||{}:{}}catch(e){return{}}}
+  function toggleReact(ctx,id,key){try{if(typeof toggleReaction==='function')return toggleReaction(ctx,id,key)}catch(e){}return null}
+  function reactionHtml(ctx,id){var r=reactions(ctx,id),keys=Object.keys(r),uid=currentUid();if(!keys.length)return'';return '<div class="ls-u-reactions">'+keys.map(function(k){var arr=r[k]||[],mine=arr.indexOf(uid)!==-1;return '<button class="ls-u-reaction '+(mine?'mine':'')+'" data-u-react="'+escU(k)+'" data-u-ctx="'+escU(ctx)+'" data-u-id="'+escU(id)+'">'+reactionIcon(k)+'<span>'+arr.length+'</span></button>'}).join('')+'</div>'}
+
+  function premiumButton(){return '<button class="ls-u-premium" id="lsUPremium">'+iconSvg.star+'<span>Give Premium</span></button>'}
+  function showPremium(){var b=q('lsUPremium');if(!b)return;b.classList.add('show');b.onclick=function(){try{if(typeof openPremiumShop==='function')openPremiumShop();else if(typeof openPremiumGift==='function')openPremiumGift();else toast('Panel Give Premium belum tersedia.')}catch(e){toast('Panel Give Premium belum tersedia.')}}}
+
+  function replyPreview(root,reply){var p=root.querySelector('.ls-u-reply-preview');if(!p)return;if(!reply){p.classList.remove('show');p.dataset.active='';return}p.dataset.active='1';p.dataset.name=reply.name;p.dataset.text=reply.text;p.innerHTML='<span>'+iconSvg.reply+'</span><span>Membalas <b>'+escU(reply.name)+'</b> · '+escU(reply.text.slice(0,90))+'</span><button class="x" type="button" aria-label="Batal">×</button>';p.classList.add('show');p.querySelector('.x').onclick=function(){p.classList.remove('show');p.dataset.active='';root.__reply=null}}
+
+  function bindReactions(root,rerender){root.querySelectorAll('[data-u-react]').forEach(function(b){b.onclick=function(e){e.preventDefault();e.stopPropagation();var key=b.dataset.uReact,ctx=b.dataset.uCtx,id=b.dataset.uId;toggleReact(ctx,id,key);rerender()}})}
+  function openReactPicker(anchor,ctx,id,rerender){var old=q('lsUReactPicker');if(old)old.remove();var p=document.createElement('div');p.id='lsUReactPicker';p.style.cssText='position:fixed;z-index:999999;display:flex;gap:6px;padding:8px;background:#0b1627;border:1px solid rgba(90,162,255,.35);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.55)';p.innerHTML=reactionDefs.map(function(x){return '<button data-r="'+x[0]+'" style="width:34px;height:34px;border-radius:10px;border:1px solid rgba(90,162,255,.28);background:#101f35;color:#9ecaff;display:grid;place-items:center;cursor:pointer">'+x[1]+'</button>'}).join('');document.body.appendChild(p);p.querySelectorAll('[data-r]').forEach(function(b){b.onclick=function(e){e.stopPropagation();toggleReact(ctx,id,b.dataset.r);p.remove();rerender()}});var r=anchor.getBoundingClientRect();p.style.left=Math.max(8,Math.min(window.innerWidth-180,r.left))+'px';p.style.top=Math.max(8,r.top-54)+'px';setTimeout(function(){var close=function(e){if(!p.contains(e.target)){p.remove();document.removeEventListener('click',close)}};document.addEventListener('click',close)},0)}
+
+  function messageBubble(m,isMe,ctx,root,rerender,clan){
+    var id=String(m.id||m.time),name=isMe?currentName():(m.fromName||m.name||'User'),av=isMe?currentAvatar():(m.fromAvatar||m.avatar||''),text=m.text||'',photo=m.type==='photo'&&m.url;
+    var body='';if(m.replyTo)body+='<div class="ls-u-reply-quote"><b>'+escU(m.replyTo.name||'User')+'</b><br>'+escU(m.replyTo.text||'')+'</div>';
+    if(photo)body+='<img class="ls-u-photo" src="'+safePhoto(m.url)+'" alt="Foto">';else body+='<div class="ls-u-bubble-text">'+escU(text)+'</div>';
+    var row=document.createElement('div');row.className='ls-u-msg '+(isMe?'mine':'');row.innerHTML=avatar(name,av)+ '<div class="ls-u-content"><div class="ls-u-meta"><b>'+escU(name)+'</b><span>'+escU(timeText(m.time))+'</span></div><div class="ls-u-bubble">'+body+'<div class="ls-u-actions"><button class="ls-u-action" data-reply="1">'+iconSvg.reply+'<span>Balas</span></button><button class="ls-u-action react" data-react="1">'+iconSvg.react+'<span>Reaksi</span></button>'+(isMe?'<button class="ls-u-action delete" data-delete="1">'+iconSvg.trash+'<span>Hapus</span></button>':'')+'</div></div>'+reactionHtml(ctx,id)+'</div>';
+    var avEl=row.querySelector('.ls-u-avatar');if(avEl)avEl.onclick=function(){try{if(typeof openUserFullscreen==='function')openUserFullscreen({name:name,avatarUrl:av,isSelf:isMe})}catch(e){}};
+    row.querySelector('[data-reply]').onclick=function(e){e.stopPropagation();root.__reply={name:name,text:photo?'Foto':text};replyPreview(root,root.__reply);var inp=root.querySelector('.ls-u-input');if(inp)inp.focus({preventScroll:true})};
+    row.querySelector('[data-react]').onclick=function(e){e.stopPropagation();openReactPicker(row.querySelector('[data-react]'),ctx,id,rerender)};
+    var del=row.querySelector('[data-delete]');if(del)del.onclick=function(e){e.stopPropagation();if(!confirm('Hapus pesan ini?'))return;if(ctx==='global'){saveGlobal(globalMsgs().filter(function(x){return String(x.id||x.time)!==id}))}else if(clan){clanSaveU(clan,clanMsgsU(clan).filter(function(x){return String(x.id||x.time)!==id}))}rerender()};
+    bindReactions(row,rerender);return row;
   }
 
-  /* 9) Ensure black/oversized legacy clan action blocks inherit the polished dimensions. */
-  document.addEventListener('click',function(e){var b=e.target.closest('#lsClanClaim,#lsClanDonateBtn,#lsClanSettingsBtn,#lsClanInfoBtn');if(b)setTimeout(function(){qa('.ls-clan-icon-btn,.ls-clan-request-big,.ls-clan-claim').forEach(function(x){x.style.color='#fff'});},30)},true);
-})();
+  function composer(root,mode,render){
+    var c=document.createElement('div');c.className='ls-u-composer-wrap';c.innerHTML='<div class="ls-u-reply-preview"></div><div class="ls-u-row"><button class="ls-u-plus" type="button" aria-label="Kirim foto">'+iconSvg.plus+'</button><textarea class="ls-u-input" rows="1" placeholder="Tulis pesan..." maxlength="2000"></textarea><button class="ls-u-send" type="button" aria-label="Kirim">'+iconSvg.send+'</button></div>'+premiumButton()+'<input id="lsUPhotoInput" type="file" accept="image/*" hidden>';
+    root.appendChild(c);var inp=c.querySelector('.ls-u-input'),send=c.querySelector('.ls-u-send'),plus=c.querySelector('.ls-u-plus'),file=c.querySelector('#lsUPhotoInput');
+    var sendText=function(){var t=String(inp.value||'').trim();if(!t)return;var reply=root.__reply||null;if(mode==='global'){var a=globalMsgs();a.push({id:'gm_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),from:currentUid(),fromName:currentName(),fromAvatar:currentAvatar(),text:t,time:Date.now(),replyTo:reply,type:'text'});saveGlobal(a.slice(-300))}else{var clan=clanNow();if(!clan){toast('Kamu belum bergabung ke clan.');return}var a2=clanMsgsU(clan);a2.push({id:'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),userId:currentUid(),name:currentName(),avatar:currentAvatar(),text:t,time:Date.now(),replyTo:reply,type:'text'});clanSaveU(clan,a2)}root.__reply=null;render();setTimeout(function(){var ni=root.querySelector('.ls-u-input');if(ni)ni.focus({preventScroll:true})},0)};
+    send.onclick=sendText;inp.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendText()}};inp.oninput=function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,110)+'px'};plus.onclick=function(){showPremium();file.click()};file.onchange=function(){var f=file.files&&file.files[0];if(!f)return;if(!/^image\//.test(f.type)){toast('Pilih file gambar.');return}if(f.size>5*1024*1024){toast('Ukuran foto maksimal 5 MB.');return}showPremium();var reader=new FileReader();reader.onload=function(){var data=reader.result;if(mode==='global'){var a=globalMsgs();a.push({id:'gm_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),from:currentUid(),fromName:currentName(),fromAvatar:currentAvatar(),text:'',type:'photo',url:data,time:Date.now(),replyTo:root.__reply||null});saveGlobal(a.slice(-300))}else{var clan=clanNow();if(!clan){toast('Kamu belum bergabung ke clan.');return}var a2=clanMsgsU(clan);a2.push({id:'cm_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),userId:currentUid(),name:currentName(),avatar:currentAvatar(),text:'',type:'photo',url:data,time:Date.now(),replyTo:root.__reply||null});clanSaveU(clan,a2)}root.__reply=null;render();showPremium()};reader.readAsDataURL(f);file.value=''};
+    var oldReply=root.querySelector('.ls-u-reply-preview');if(oldReply)oldReply.onclick=function(e){if(e.target.classList.contains('x')){root.__reply=null;replyPreview(root,null)}};
+    return c;
+  }
 
+  function buildChat(mode){
+    var ov=q('chatOverlay');if(!ov)return;ov.classList.add('open');var sheet=ov.querySelector('.sheet');if(!sheet)return;
+    sheet.innerHTML='<div class="sheet__header"><button class="icon-btn" id="lsUChatBack">'+((window.ICON&&ICON.back)||'<svg class="icon" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>')+'</button><span class="sheet__title">'+(mode==='clan'?'Chat Clan':'Chat Global')+'</span></div><div class="ls-ultimate-shell"><div class="ls-ultimate-tabs"><button class="ls-ultimate-tab '+(mode==='global'?'active':'')+'" data-u-mode="global">Chat Global</button><button class="ls-ultimate-tab '+(mode==='clan'?'active':'')+'" data-u-mode="clan">Chat Clan</button></div><div class="ls-ultimate-view" id="lsUView"></div></div>';
+    q('lsUChatBack').onclick=function(){ov.classList.remove('open')};sheet.querySelectorAll('[data-u-mode]').forEach(function(b){b.onclick=function(e){e.preventDefault();e.stopPropagation();buildChat(b.dataset.uMode)}});
+    var view=q('lsUView');if(!view)return;
+    var clan=clanNow();if(mode==='clan'&&!clan){view.innerHTML='<div class="ls-u-clan-empty"><h3>Belum punya clan</h3><p>Gabung atau buat clan untuk membuka Chat Clan. Chat Global tetap terpisah dari Chat Clan.</p><div class="ls-u-clan-btns"><button class="primary" id="lsUJoin">Gabung Clan</button><button class="ghost" id="lsUCreate">Buat Clan</button></div></div>'+premiumButton();var j=q('lsUJoin'),cr=q('lsUCreate');if(j)j.onclick=function(){try{if(typeof renderClanJoin==='function')renderClanJoin()}catch(e){}};if(cr)cr.onclick=function(){try{if(typeof openCreateClan==='function')openCreateClan()}catch(e){}};return}
+    if(mode==='clan'){var head=document.createElement('div');head.className='ls-u-clan-head';head.innerHTML='<span style="font-weight:900">'+escU(clan.name||'Clan')+'</span><span class="tag">'+escU(clan.tag||'')+'</span><span style="margin-left:auto">'+((window.ICON&&ICON.chev)||'›')+'</span>';head.onclick=function(){try{if(typeof openClanDetail==='function')openClanDetail(clan)}catch(e){}};view.appendChild(head)}
+    var feed=document.createElement('div');feed.className='ls-ultimate-feed';view.appendChild(feed);var root=view;root.__reply=null;
+    function render(){var oldFeed=view.querySelector('.ls-ultimate-feed');if(oldFeed)oldFeed.remove();var f=document.createElement('div');f.className='ls-ultimate-feed';var arr=mode==='global'?globalMsgs():(clanMsgsU(clan)||[]);if(!arr.length)f.innerHTML='<div class="ls-u-empty">Belum ada pesan.</div>';else arr.forEach(function(m){var isMe=mode==='global'?String(m.from)===currentUid():String(m.userId||m.from)===currentUid();f.appendChild(messageBubble(m,isMe,mode==='global'?'global':'clan_'+clan.id,root,render,clan))});view.insertBefore(f,view.querySelector('.ls-u-composer-wrap')||null);f.scrollTop=f.scrollHeight;var comp=view.querySelector('.ls-u-composer-wrap');if(!comp)composer(root,mode,render);else{var rp=comp.querySelector('.ls-u-reply-preview');if(rp&&!root.__reply)rp.classList.remove('show');var p=comp.querySelector('.ls-u-premium');if(p&&root.__premium)p.classList.add('show');}}
+    render();
+  }
+  window.renderClanShell=function(mode){buildChat(mode||'global')};window.openChatUltimate=function(){buildChat('global')};
+  document.addEventListener('click',function(e){var t=e.target&&e.target.closest?e.target.closest('.bottom-nav__item[data-tab="chat"],#lsHomeChatBareng'):null;if(!t)return;e.preventDefault();e.stopImmediatePropagation();buildChat('global')},true);
+
+  /* Economy card below XP leaderboard, replacing the old Chat Bareng card. */
+  function economyCard(){var board=q('lsBoardCard');if(!board)return;document.querySelectorAll('#lsHomeChatBareng,.ls-home-chat-card').forEach(function(x){x.remove()});var old=q('lsHomeEconomy');if(!old){old=document.createElement('section');old.id='lsHomeEconomy';board.insertAdjacentElement('afterend',old)}var coins=Number(window.userState&&userState.coins||0),dia=Number(window.userState&&userState.diamonds||0);old.innerHTML='<div class="ls-econ-head"><div><h3>Saldo & Berlian</h3><div class="ls-econ-sub">Dompet akun kamu</div></div><span style="color:#6f84a4;font-size:.7rem">LS Economy</span></div><div class="ls-econ-grid"><div class="ls-econ-item"><div class="ls-econ-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9h6M9 12h6M10 15h4"/></svg></div><div><div class="ls-econ-label">Saldo</div><div class="ls-econ-value">'+coins.toLocaleString('id-ID')+'</div></div></div><div class="ls-econ-item"><div class="ls-econ-icon"><svg viewBox="0 0 24 24"><path d="m12 3 7 6-7 12L5 9z"/><path d="m5 9 7 3 7-3"/></svg></div><div><div class="ls-econ-label">Berlian</div><div class="ls-econ-value">'+dia.toLocaleString('id-ID')+'</div></div></div></div>'}
+  function patchHome(){economyCard();setTimeout(economyCard,250)}
+  patchHome();setInterval(economyCard,1200);
+
+  /* Game rewards: 5 clicks = 1 diamond; Whack a Mole: 10 hits = 15 diamonds. */
+  window.openClicker=function(){var m=typeof gamesModal==='function'?gamesModal():null;if(!m)return;m.classList.add('open');if(typeof ensureEconomy==='function')ensureEconomy();var g=(userState.gameData.clicker||{});m.querySelector('#lsGameTitle').textContent='Clicker';m.querySelector('#lsGameBody').innerHTML='<div class="ls-game-topbar"><button class="ls-game-back" id="lsGameBack">'+((window.ICON&&ICON.back)||'‹')+'</button><b>Clicker</b></div><div class="ls-clicker-wrap"><div class="ls-click-count" id="lsClickCount">'+Number(g.clicks||0)+'</div><div class="ls-click-label">click tersimpan</div><button class="ls-click-btn" id="lsClickBtn">CLICK</button><div class="ls-game-note">Setiap 5 click mendapatkan 1 berlian.</div></div>';
+    q('lsGameBack').onclick=typeof backGame==='function'?backGame:function(){m.classList.remove('open')};q('lsClickBtn').onclick=function(){g=userState.gameData.clicker;g.clicks=(Number(g.clicks)||0)+1;g.total=(Number(g.total)||0)+1;if(g.clicks%5===0){userState.diamonds=(Number(userState.diamonds)||0)+1;toast('+1 berlian dari Clicker.')}if(typeof saveUser==='function')saveUser(userState);q('lsClickCount').textContent=g.clicks;economyCard()};
+  };
+  window.openMole=function(){var m=typeof gamesModal==='function'?gamesModal():null;if(!m)return;m.classList.add('open');clearInterval(window.__lsMoleTimer);if(typeof ensureEconomy==='function')ensureEconomy();var g=(userState.gameData.mole||{});g.hits=Number(g.hits)||0;m.querySelector('#lsGameTitle').textContent='Whack a Mole';m.querySelector('#lsGameBody').innerHTML='<div class="ls-game-topbar"><button class="ls-game-back" id="lsGameBack">'+((window.ICON&&ICON.back)||'‹')+'</button><b>Whack a Mole</b></div><div style="font-size:.72rem;color:#9aabc5">Pukul <b id="lsMoleHits" style="color:#fff">'+g.hits+'</b> / 10</div><div class="ls-mole-board" id="lsMoleBoard">'+Array.from({length:9},function(){return'<button class="ls-hole"><span class="mole"></span></button>'}).join('')+'</div><div class="ls-game-note">Setiap 10 ketukan mendapatkan 15 berlian.</div>';
+    q('lsGameBack').onclick=typeof backGame==='function'?backGame:function(){m.classList.remove('open');clearInterval(window.__lsMoleTimer)};var holes=[].slice.call(m.querySelectorAll('.ls-hole'));function pop(){holes.forEach(function(h){h.classList.remove('active')});holes[Math.floor(Math.random()*holes.length)].classList.add('active')}holes.forEach(function(h){h.onclick=function(){if(!h.classList.contains('active'))return;g.hits++;q('lsMoleHits').textContent=g.hits;h.classList.remove('active');if(g.hits>=10){userState.diamonds=(Number(userState.diamonds)||0)+15;g.hits=0;toast('+15 berlian dari Whack a Mole.');if(typeof saveUser==='function')saveUser(userState);q('lsMoleHits').textContent='0';economyCard()}pop()}});pop();window.__lsMoleTimer=setInterval(pop,600)};
+  function patchGameList(){var body=q('lsGameBody');if(!body)return;body.querySelectorAll('.ls-game-card').forEach(function(c){if(c.dataset.game==='clicker'){var d=c.querySelector('.ls-game-desc');if(d)d.textContent='Setiap 5 click mendapatkan 1 berlian.'}if(c.dataset.game==='mole'){var d2=c.querySelector('.ls-game-desc');if(d2)d2.textContent='Pukul mole 10 kali untuk mendapatkan 15 berlian.'}})}
+  document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('#gameBtn,#lsGameBtn,.ls-game-card'))setTimeout(patchGameList,50)},true);
+
+  /* Notifications: make clear-all reliable and visually obvious. */
+  document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('#clearAllNotifBtn'):null;if(!b)return;e.preventDefault();e.stopImmediatePropagation();if(typeof saveNotifs==='function')saveNotifs([]);else localStorage.removeItem('lstream_notifications');try{if(typeof renderNotifList==='function')renderNotifList()}catch(x){}try{if(typeof renderNotifBadge==='function')renderNotifBadge()}catch(x){}},true);
+
+  /* Episode collapse/expand button. */
+  function patchEpisodeToggle(){var sec=document.querySelector('.watch-episode-section');if(!sec)return;var head=sec.querySelector('.watch-episode-head'),list=sec.querySelector('.watch-episode-list');if(!head||!list||head.querySelector('.ls-episode-toggle'))return;var b=document.createElement('button');b.className='ls-episode-toggle';b.textContent='Tutup';head.appendChild(b);b.onclick=function(){var closed=list.classList.toggle('ls-collapsed');b.textContent=closed?'Tampilkan':'Tutup'}}
+  function episodeWatch(){patchEpisodeToggle();setTimeout(patchEpisodeToggle,120)}
+  document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('[data-continue-anime],.watch-episode-btn,#heroDetailBtn,.anime-card'))setTimeout(episodeWatch,250)},true);
+  setTimeout(episodeWatch,500);
+
+  /* Make all chat/pop-up text high contrast without relying on grey text. */
+  var st=document.createElement('style');st.textContent='#chatOverlay .ls-u-meta,#chatOverlay .ls-u-action,#chatOverlay .ls-u-empty,#chatOverlay .ls-u-clan-empty p,#chatOverlay .ls-u-clan-empty .tag{ text-shadow:0 1px 5px rgba(255,255,255,.05)} #chatOverlay .sheet__header{background:#070d18!important}';document.head.appendChild(st);
+})();
 </script>
+
 </body>
 </html>
