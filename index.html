@@ -6087,7 +6087,7 @@ try{
       LQ('lsCreateNamePreview').textContent=n||'Nama Clan';
       LQ('lsCreateTagPreview').innerHTML=getLogo(selected)+'<span>'+(t||'TAG')+'</span>';
       LQ('lsCreateNameLogo').innerHTML=getLogo(selected);
-      submit.disabled=!(n.length>=2 && t.length>=4 && !!avatarData);
+      submit.disabled=!(n.length>=2 && t.length>=4);
     }
     name.oninput=refresh; tag.oninput=refresh;
     v.querySelectorAll('[data-create-logo]').forEach(function(b){
