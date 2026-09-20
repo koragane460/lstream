@@ -6426,5 +6426,119 @@ setTimeout(ensureFinalNav,250);
 setTimeout(ensureFinalNav,900);
 })();
 </script>
+
+<style id="ls-final-polish-2026-09-20">
+/* FINAL POLISH: chat, clan, balances, comments, icons */
+:root{--ls-blue:#2f8cff;--ls-blue2:#69b7ff;--ls-gold:#ffd24a;--ls-red:#ff5d6c;--ls-panel:rgba(12,25,45,.94)}
+.icon:not(.icon--filled),.bottom-nav__item .icon{fill:none!important;stroke:currentColor!important;color:inherit!important}
+.icon--filled{fill:currentColor!important;stroke:currentColor!important;color:inherit!important}
+button .icon,button svg{color:inherit}
+.ls-balance-icon{color:#55b8ff!important}.ls-balance-icon.cash{color:#ffd24a!important}.ls-balance-icon .icon{fill:currentColor!important;stroke:currentColor!important}
+.ls-ultimate-shell{background:linear-gradient(180deg,rgba(5,12,24,.92),rgba(3,8,17,.98));border:1px solid rgba(117,168,232,.13);border-radius:26px;box-shadow:0 25px 70px rgba(0,0,0,.35);overflow:hidden}
+.ls-ultimate-tabs{background:transparent!important;border:0!important;border-bottom:1px solid rgba(255,255,255,.10)!important;border-radius:0!important;padding:0 10px!important;gap:0!important}
+.ls-ultimate-tab{background:transparent!important;border:0!important;border-radius:0!important;color:#71809e!important;min-height:62px;position:relative;box-shadow:none!important}
+.ls-ultimate-tab.active{color:#f4f8ff!important}
+.ls-ultimate-tab.active:after{content:"";position:absolute;left:16%;right:16%;bottom:0;height:3px;border-radius:99px;background:linear-gradient(90deg,#2580ff,#71c2ff);box-shadow:0 0 16px rgba(47,140,255,.55)}
+.ls-ultimate-feed{padding:18px 14px 160px!important}
+.ls-u-msg{max-width:88%;margin:0 0 18px;display:flex;gap:10px;align-items:flex-start}
+.ls-u-msg.mine{margin-left:auto;flex-direction:row-reverse}
+.ls-u-avatar{width:46px!important;height:46px!important;min-width:46px!important;border-radius:50%!important;background:linear-gradient(145deg,#172943,#0d1a2d)!important;border:1px solid rgba(105,183,255,.28)!important;color:#eaf3ff!important;display:grid!important;place-items:center!important;font-weight:900!important;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.24)}
+.ls-u-avatar img{width:100%;height:100%;object-fit:cover}
+.ls-u-content{min-width:0;max-width:calc(100% - 56px)}
+.ls-u-meta{display:flex;align-items:center;gap:8px;margin:0 6px 7px;color:#7e8eac;font-size:.68rem}
+.ls-u-meta b{color:#eef5ff;font-size:.76rem}
+.ls-u-msg.mine .ls-u-meta{justify-content:flex-end}
+.ls-u-bubble{width:max-content;max-width:min(100%,430px);padding:13px 15px 8px!important;border-radius:19px!important;background:linear-gradient(145deg,#10223a,#0c192c)!important;border:1px solid rgba(110,166,232,.16)!important;box-shadow:0 12px 30px rgba(0,0,0,.22)!important;color:#f1f5fc!important;overflow:hidden}
+.ls-u-msg.mine .ls-u-bubble{background:linear-gradient(145deg,#247ce8,#1765c8)!important;border-color:rgba(110,190,255,.5)!important}
+.ls-u-bubble-text{font-size:.94rem;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.ls-u-photo{display:block;max-width:280px;max-height:330px;border-radius:14px;object-fit:cover}
+.ls-u-actions{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;margin-top:9px!important;padding-top:8px!important;border-top:1px solid rgba(255,255,255,.10)!important;background:transparent!important}
+.ls-u-msg.mine .ls-u-actions{justify-content:flex-end!important}
+.ls-u-action{display:inline-flex!important;align-items:center!important;gap:5px!important;padding:6px 9px!important;border-radius:999px!important;border:1px solid rgba(115,171,235,.25)!important;background:transparent!important;color:#9eb1cd!important;font-size:.66rem!important;font-weight:800!important;box-shadow:none!important}
+.ls-u-action svg{width:15px;height:15px;stroke:currentColor;fill:none}
+.ls-u-action.react{border-color:rgba(47,140,255,.65)!important;color:#73b7ff!important}
+.ls-u-action.delete{border-color:rgba(255,88,103,.55)!important;color:#ff6674!important}
+.ls-u-reactions{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;padding:0 2px}
+.ls-u-reaction{display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(47,140,255,.6)!important;background:rgba(22,72,135,.22)!important;color:#8fc8ff!important;border-radius:999px;padding:4px 8px;min-width:32px;justify-content:center}
+.ls-u-reaction svg{width:14px;height:14px;stroke:currentColor;fill:none}
+.ls-u-reaction.mine{background:rgba(47,140,255,.32)!important;box-shadow:0 0 12px rgba(47,140,255,.18)}
+.ls-u-reply-preview{margin:0 0 8px!important;border-left:3px solid #4aa2ff!important;background:rgba(26,67,113,.28)!important;color:#dceaff!important;border-radius:12px!important;padding:9px 11px!important}
+.ls-u-composer-wrap{background:linear-gradient(180deg,rgba(5,12,23,.72),rgba(4,10,19,.98))!important;border-top:1px solid rgba(255,255,255,.08)!important;padding:12px 12px calc(10px + env(safe-area-inset-bottom,0px))!important}
+.ls-u-row{display:grid!important;grid-template-columns:58px minmax(0,1fr) 58px!important;gap:8px!important;align-items:end!important}
+.ls-u-plus,.ls-u-send{width:58px!important;height:58px!important;border-radius:18px!important}
+.ls-u-plus{background:linear-gradient(145deg,#12233a,#0d1a2d)!important;border:1px solid rgba(120,174,237,.2)!important;color:#dbeaff!important}
+.ls-u-send{background:linear-gradient(145deg,#318dff,#1669d7)!important;border:1px solid rgba(118,194,255,.5)!important;color:#fff!important;box-shadow:0 8px 22px rgba(32,120,238,.28)!important}
+.ls-u-input{min-height:58px!important;border-radius:18px!important;background:#0c192b!important;border:1px solid rgba(116,169,232,.16)!important;color:#f4f7ff!important;font-size:.9rem!important}
+.ls-u-premium{opacity:0;visibility:hidden;transform:translateY(8px);pointer-events:none;transition:opacity .35s ease,transform .35s ease,visibility .35s ease!important;margin-top:9px!important;width:100%!important;min-height:56px!important;border-radius:18px!important;border:1px solid rgba(255,211,74,.35)!important;background:linear-gradient(145deg,rgba(31,37,27,.92),rgba(15,24,28,.96))!important;color:#ffe37b!important;box-shadow:0 10px 28px rgba(0,0,0,.25)!important}
+.ls-u-premium.show{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
+.ls-u-premium svg{width:19px;height:19px;stroke:currentColor;fill:none}
+#lsUReactPicker{display:grid!important;grid-template-columns:repeat(10,1fr)!important;gap:5px!important;width:min(340px,calc(100vw - 20px))!important;padding:10px!important;border:1px solid rgba(90,162,255,.35)!important;border-radius:18px!important;background:rgba(8,17,31,.98)!important;backdrop-filter:blur(16px)!important;box-shadow:0 24px 70px rgba(0,0,0,.55)!important}
+#lsUReactPicker button{width:29px!important;height:29px!important;border-radius:9px!important;border:1px solid rgba(90,162,255,.22)!important;background:#101f35!important;display:grid!important;place-items:center!important}
+#lsUReactPicker button:hover{background:#17365b!important;border-color:#4e9dff!important;transform:translateY(-1px)}
+#lsUReactPicker img{width:22px;height:22px;object-fit:contain}
+.ls-u-clan-empty{margin:18px 0!important;padding:28px 20px!important;border-radius:24px!important;background:linear-gradient(145deg,#0f2036,#0a1526)!important;border:1px solid rgba(110,167,232,.16)!important;box-shadow:0 18px 50px rgba(0,0,0,.25)!important;text-align:center}
+.ls-u-clan-empty h3{color:#f5f8ff!important;font-size:1.05rem!important}.ls-u-clan-empty p{color:#a7b6ce!important;line-height:1.55}
+.ls-u-clan-btns{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin-top:18px!important}.ls-u-clan-btns button{min-height:52px!important;border-radius:16px!important;font-weight:900!important}.ls-u-clan-btns .primary{background:linear-gradient(145deg,#2e8cff,#1768d7)!important;color:#fff!important;border:1px solid rgba(115,192,255,.5)!important}.ls-u-clan-btns .ghost{background:#0e1d31!important;color:#e8f0ff!important;border:1px solid rgba(115,169,230,.2)!important}
+/* comments: one elegant surface with separators */
+.comment-list{background:linear-gradient(145deg,rgba(10,22,39,.76),rgba(6,14,25,.88))!important;border:1px solid rgba(110,165,229,.14)!important;border-radius:22px!important;overflow:hidden!important;padding:0 16px!important}
+.comment-list .comment-item{background:transparent!important;border:0!important;border-radius:0!important;margin:0!important;padding:17px 2px!important;box-shadow:none!important}
+.comment-list .comment-item:not(:last-child){border-bottom:1px solid rgba(255,255,255,.10)!important}
+.comment-list .comment-item__text{color:#f1f5fc!important}
+/* account/balance icon colors */
+#lsHomeTools .ls-balance-icon .icon{stroke:#55b8ff!important;fill:#55b8ff!important}.ls-balance-icon.cash .icon{stroke:#ffd24a!important;fill:#ffd24a!important}
+/* remove accidental black icon fills */
+.ls-clan-empty .icon,.ls-clan-action .icon,.ls-clan-icon-btn .icon,.ls-clan-resource .icon,.ls-clan-detail-actions .icon{color:#75baff!important;stroke:currentColor!important;fill:none!important}
+</style>
+<script id="ls-final-polish-2026-09-20-js">
+(function(){'use strict';
+  function q(s){return document.querySelector(s)}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+  /* 1. Clan empty buttons: always bind the two actions after every chat rerender. */
+  function bindClanEmpty(){
+    var j=q('#lsUJoin,#lsStableJoinClan,#lsJoinClanBtn'), c=q('#lsUCreate,#lsStableCreateClan,#lsCreateClanBtn');
+    if(j&&!j.__lsFinalBound){j.__lsFinalBound=true;j.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();try{if(typeof window.renderClanJoin==='function')window.renderClanJoin();else if(typeof renderClanJoin==='function')renderClanJoin()}catch(x){}})}
+    if(c&&!c.__lsFinalBound){c.__lsFinalBound=true;c.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();try{if(typeof window.openCreateClan==='function')window.openCreateClan();else if(typeof openCreateClan==='function')openCreateClan()}catch(x){}})}
+  }
+  new MutationObserver(bindClanEmpty).observe(document.body,{childList:true,subtree:true});setTimeout(bindClanEmpty,100);
+
+  /* 2. Ultimate chat actions live BELOW the bubble, never inside it. */
+  function moveActions(){document.querySelectorAll('.ls-u-msg').forEach(function(row){var bubble=row.querySelector('.ls-u-bubble'), actions=row.querySelector('.ls-u-actions'), content=row.querySelector('.ls-u-content');if(!bubble||!actions||!content)return;if(actions.parentNode===bubble){bubble.appendChild(document.createElement('span'));/* keep DOM stable */content.appendChild(actions)} });}
+  new MutationObserver(function(){moveActions();}).observe(document.body,{childList:true,subtree:true});setTimeout(moveActions,120);
+
+  /* 3. Long-press photo button reveals Give Premium. Short press only opens photo picker. */
+  var pressTimer=null,longPressed=false,activePlus=null;
+  document.addEventListener('pointerdown',function(e){var b=e.target.closest&&e.target.closest('.ls-u-plus');if(!b)return;activePlus=b;longPressed=false;clearTimeout(pressTimer);pressTimer=setTimeout(function(){longPressed=true;var p=q('.ls-u-premium');if(p){p.classList.add('show');p.setAttribute('data-long-open','1');}},650)},true);
+  document.addEventListener('pointerup',function(){clearTimeout(pressTimer);pressTimer=null},true);
+  document.addEventListener('pointercancel',function(){clearTimeout(pressTimer);pressTimer=null},true);
+  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.ls-u-plus');if(!b)return;e.preventDefault();e.stopImmediatePropagation();if(longPressed){longPressed=false;return}var file=b.closest('.ls-u-composer-wrap')&&b.closest('.ls-u-composer-wrap').querySelector('input[type=file]');if(file)file.click()},true);
+
+  /* 4. Give Premium has a real panel instead of the old "belum tersedia" toast. */
+  window.openChatGivePremium=function(){
+    var old=q('#lsGivePremiumPanel');if(old)old.remove();
+    var m=document.createElement('div');m.id='lsGivePremiumPanel';m.style.cssText='position:fixed;inset:0;z-index:1000000;display:grid;place-items:center;padding:18px;background:rgba(1,6,14,.72);backdrop-filter:blur(14px);animation:lsFadeIn .25s ease';
+    m.innerHTML='<div style="width:min(430px,100%);border:1px solid rgba(103,176,255,.22);border-radius:28px;background:linear-gradient(145deg,#10233b,#091321);box-shadow:0 30px 100px rgba(0,0,0,.62);padding:22px;color:#fff">'+
+      '<div style="display:flex;align-items:center;gap:12px"><div style="width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(145deg,#328eff,#1766d1);color:#fff"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L6 9.6l6-.9Z"/></svg></div><div><b style="font-size:1.05rem">Give Premium</b><div style="color:#91a7c5;font-size:.7rem;margin-top:3px">Kirim Premium ke pengguna LStream</div></div><button id="lsGiveClose" style="margin-left:auto;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#fff;font-size:22px">×</button></div>'+
+      '<label style="display:block;margin-top:20px;color:#b7c6dc;font-size:.7rem;font-weight:800">Username penerima</label><input id="lsGiveUser" placeholder="Contoh: User3753" style="width:100%;box-sizing:border-box;margin-top:7px;padding:13px 14px;border-radius:15px;background:#091525;border:1px solid rgba(109,170,232,.18);color:#fff;outline:none">'+
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px"><button data-gdays="3" class="ls-gdays">3 Hari</button><button data-gdays="7" class="ls-gdays">7 Hari</button><button data-gdays="30" class="ls-gdays">30 Hari</button></div><button id="lsGiveConfirm" style="width:100%;margin-top:13px;min-height:52px;border:0;border-radius:16px;background:linear-gradient(145deg,#318dff,#1669d7);color:#fff;font-weight:900">Kirim Premium</button><div style="margin-top:11px;color:#7f93af;font-size:.62rem;line-height:1.5">Pilih durasi lalu kirim. Data grant disimpan pada penyimpanan LStream yang tersedia.</div></div>';
+    document.body.appendChild(m);var selected=3;m.querySelectorAll('.ls-gdays').forEach(function(b){b.style.cssText='min-height:42px;border-radius:13px;border:1px solid rgba(93,161,236,.2);background:#0c1a2d;color:#a9c5e9;font-weight:800';b.onclick=function(){selected=Number(b.dataset.gdays);m.querySelectorAll('.ls-gdays').forEach(function(x){x.style.background='#0c1a2d';x.style.color='#a9c5e9'});b.style.background='#176dd6';b.style.color='#fff'}});m.querySelector('.ls-gdays').click();m.querySelector('#lsGiveClose').onclick=function(){m.remove()};m.addEventListener('click',function(e){if(e.target===m)m.remove()});m.querySelector('#lsGiveConfirm').onclick=function(){var name=m.querySelector('#lsGiveUser').value.trim();if(!name){window.toast('Masukkan username penerima.');return}try{if(typeof readGrants==='function'&&typeof writeGrants==='function'){var g=readGrants()||{};g[name]=Math.max(Date.now(),Number(g[name]||0))+selected*86400000;writeGrants(g)}m.remove();window.toast('Premium '+selected+' hari diberikan ke '+name+'.')}catch(x){window.toast('Gagal memberikan Premium.')}};
+    return m;
+  };
+  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#lsUPremium');if(!b)return;e.preventDefault();e.stopImmediatePropagation();window.openChatGivePremium()},true);
+
+  /* 5. Reaction picker: exactly 20 Apple-style emoji, and reaction buttons remain toggleable. */
+  window.openReactPicker=function(anchor,ctx,id,rerender){var old=q('#lsUReactPicker');if(old)old.remove();var p=document.createElement('div');p.id='lsUReactPicker';var arr=(window.IPHONE_EMOJIS_20||['❤️','😂','👍','🔥','😍','🥰','😭','😊','👏','💯','🙏','😎','✨','💀','🤔','😅','🎉','🥺','💪','😢']);p.innerHTML=arr.map(function(em){return '<button type="button" data-r="'+esc(em)+'"><img src="'+(typeof appleEmojiUrl==='function'?appleEmojiUrl(em):'')+'" alt="'+esc(em)+'"><span>'+em+'</span></button>'}).join('');document.body.appendChild(p);p.querySelectorAll('[data-r]').forEach(function(b){b.onclick=function(e){e.stopPropagation();toggleReaction(ctx,id,b.dataset.r);p.remove();rerender()}});var r=anchor.getBoundingClientRect();var w=Math.min(340,window.innerWidth-20);p.style.left=Math.max(10,Math.min(window.innerWidth-w-10,r.left+r.width/2-w/2))+'px';p.style.top=Math.max(10,r.top-125)+'px';setTimeout(function(){function off(e){if(!p.contains(e.target)){p.remove();document.removeEventListener('click',off)}}document.addEventListener('click',off)},0)};
+
+  /* 6. New test accounts start with 10,000 Cash. Existing values are preserved. */
+  if(typeof window.ensureEconomy==='function'&&!window.ensureEconomy.__lsCash10k){var oldEco=window.ensureEconomy;window.ensureEconomy=function(){oldEco();if(window.userState&&typeof userState.cash!=='number'){userState.cash=10000;if(typeof saveUser==='function')saveUser(userState)}};window.ensureEconomy.__lsCash10k=true}
+  try{if(window.userState&&typeof userState.cash==='undefined'){userState.cash=10000;if(typeof saveUser==='function')saveUser(userState)}}catch(e){}
+
+  /* 7. Creator LStream thresholds. */
+  function updateCreatorText(){document.querySelectorAll('.ls-event-rules').forEach(function(box){box.innerHTML='<div class="ls-event-rule"><b>1</b><span>Upload video tentang LStream di TikTok dan YouTube.</span></div><div class="ls-event-rule"><b>2</b><span>Minimal <b>5.000 views</b> dan <b>200 likes</b>. Maksimal yang dihitung <b>15.000 views</b> dan <b>1.000 likes</b>.</span></div><div class="ls-event-rule"><b>3</b><span>Setelah memenuhi syarat, kirim link video ke Gmail LStream untuk verifikasi.</span></div><div class="ls-event-rule"><b>4</b><span>Video harus milik sendiri dan membahas LStream.</span></div><div class="ls-event-rule"><b>5</b><span>Badge Creator diberikan setelah verifikasi sesuai ketentuan event.</span></div>'})}
+  window.setTimeout(updateCreatorText,250);
+
+  /* 8. Premium visual pass for account/detail panels. */
+  var s=document.createElement('style');s.textContent='@keyframes lsFadeIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}.acct{color:#f5f8ff!important}.acct__hero,.acct__stats,.acct__tabs{border-color:rgba(108,169,235,.16)!important;box-shadow:0 18px 55px rgba(0,0,0,.22)!important}.acct__name,.acct__stat b,.acct__info *{text-shadow:0 1px 7px rgba(255,255,255,.08)}';document.head.appendChild(s);
+})();
+</script>
 </body>
 </html>
