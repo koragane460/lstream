@@ -6346,5 +6346,85 @@ document.addEventListener('click',function(e){var t=e.target&&e.target.closest?e
 })();
 </script>
 
+
+<style id="ls-nav-icons-final-2026-09-20">
+/* Navigasi final: Home / Chat / Jadwal / Akun. */
+.bottom-nav__item .icon{color:var(--text-muted)!important;stroke:currentColor!important}
+.bottom-nav__item.active .icon{color:var(--accent)!important;stroke:currentColor!important}
+/* Icon tidak boleh mewarisi warna hitam dari tombol/markup lama. */
+.icon{color:var(--text-main)!important;stroke:currentColor!important}
+.icon--filled{color:inherit!important;fill:currentColor!important;stroke:none!important}
+.navbar__iconbtn .icon,.icon-btn .icon,.chat-attach-btn .icon,.chat-msg__inline-reply .icon,.chat-msg__del .icon,.chat-reply-preview__close .icon{color:var(--text-main)!important;stroke:currentColor!important}
+.btn--primary .icon,.send .icon{color:#fff!important;stroke:currentColor!important}
+.btn--danger .icon,.chat-msg__del .icon{color:#fff!important;stroke:currentColor!important}
+.ls-clan-tab .icon{color:inherit!important;stroke:currentColor!important}
+/* Preview Chat Bareng di bawah leaderboard sudah tidak dipakai. */
+#lsHomeChatBareng,.ls-home-chat-card{display:none!important}
+</style>
+<script id="ls-final-nav-chat-fix-2026-09-20">
+(function(){
+'use strict';
+function ensureFinalNav(){
+  try{
+    var nav=document.getElementById('bottomNav');
+    if(!nav)return;
+    /* Kotak Chat Bareng Home di bawah leaderboard dihapus permanen dari UI. */
+    document.querySelectorAll('#lsHomeChatBareng,.ls-home-chat-card').forEach(function(x){x.remove()});
+
+    /* Search tidak menjadi item bottom-nav lagi. Search tetap dapat dipakai dari UI pencarian yang ada. */
+    nav.querySelectorAll('.bottom-nav__item[data-tab="search"]').forEach(function(x){x.remove()});
+
+    var chat=nav.querySelector('.bottom-nav__item[data-tab="chat"]');
+    if(!chat){
+      chat=document.createElement('button');
+      chat.type='button';
+      chat.className='bottom-nav__item';
+      chat.dataset.tab='chat';
+      chat.innerHTML='<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.4 8.4 0 0 1-3.2-.6L4 20l1.6-4A7.3 7.3 0 0 1 4 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></svg><span class="bottom-nav__label">Chat</span>';
+    }
+    var schedule=nav.querySelector('.bottom-nav__item[data-tab="schedule"]');
+    if(!schedule){
+      schedule=document.createElement('button');
+      schedule.type='button';
+      schedule.className='bottom-nav__item';
+      schedule.dataset.tab='schedule';
+      schedule.innerHTML='<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="13" x2="8" y2="17"/><line x1="12" y1="13" x2="12" y2="17"/><line x1="16" y1="13" x2="16" y2="17"/></svg><span class="bottom-nav__label">Jadwal</span>';
+    }
+    var account=nav.querySelector('.bottom-nav__item[data-tab="account"]');
+    var home=nav.querySelector('.bottom-nav__item[data-tab="home"]');
+    nav.innerHTML='';
+    if(home)nav.appendChild(home);
+    nav.appendChild(chat);
+    nav.appendChild(schedule);
+    if(account)nav.appendChild(account);
+
+    nav.querySelectorAll('.bottom-nav__item').forEach(function(b){
+      b.onclick=function(e){
+        e.preventDefault();
+        nav.querySelectorAll('.bottom-nav__item').forEach(function(x){x.classList.remove('active')});
+        b.classList.add('active');
+        var tab=b.dataset.tab;
+        try{
+          if(tab==='chat'){
+            if(typeof window.renderClanShell==='function')window.renderClanShell('global');
+            else if(typeof window.buildChat==='function')window.buildChat('global');
+            else if(typeof window.openChat==='function')window.openChat();
+          }else if(tab==='schedule'){
+            if(typeof window.openSchedule==='function')window.openSchedule();
+          }else if(tab==='account'){
+            if(typeof window.renderAccountPage==='function')window.renderAccountPage();
+          }else if(tab==='home'){
+            if(typeof window.goHome==='function')window.goHome();
+          }
+        }catch(err){console.error(err)}
+      };
+    });
+  }catch(e){console.error(e)}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureFinalNav);else ensureFinalNav();
+setTimeout(ensureFinalNav,250);
+setTimeout(ensureFinalNav,900);
+})();
+</script>
 </body>
 </html>
