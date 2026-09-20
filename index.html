@@ -6161,5 +6161,90 @@ document.addEventListener('click',function(e){var t=e.target&&e.target.closest?e
 })();
 </script>
 
+
+<style id="ls-clan-create-v3-style">
+.ls-c3-page{padding:10px 14px 34px;animation:lsC3In .24s ease both;color:#eef5ff}
+.ls-c3-top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.ls-c3-top .ls-c3-back{width:38px;height:38px;border:1px solid rgba(117,171,255,.14);border-radius:13px;background:rgba(11,22,40,.82);color:#bcd4ff;display:grid;place-items:center;cursor:pointer}
+.ls-c3-top .ls-c3-back .icon{width:18px;height:18px}
+.ls-c3-title{font-size:1rem;font-weight:950;letter-spacing:-.02em}
+.ls-c3-subtitle{font-size:.69rem;color:#7285a7;margin-top:2px}
+.ls-c3-hero{position:relative;overflow:hidden;border:1px solid rgba(82,153,255,.18);border-radius:24px;padding:16px;background:radial-gradient(circle at 85% 15%,rgba(54,132,255,.16),transparent 34%),linear-gradient(145deg,#101d33,#080f1c 72%);box-shadow:0 18px 50px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.035)}
+.ls-c3-hero:after{content:"";position:absolute;inset:auto -30px -70px auto;width:180px;height:180px;border-radius:50%;background:rgba(48,137,255,.08);filter:blur(30px);pointer-events:none}
+.ls-c3-preview{display:grid;grid-template-columns:74px 1fr auto;gap:12px;align-items:center;position:relative;z-index:1}
+.ls-c3-avatar{width:74px;height:74px;border-radius:21px;object-fit:cover;border:1px solid rgba(135,191,255,.22);background:#0b1525;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+.ls-c3-avatar.empty{display:grid;place-items:center;color:#7186a8}
+.ls-c3-avatar.empty .icon{width:27px;height:27px}
+.ls-c3-name{font-size:1.02rem;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ls-c3-tag{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:7px 11px 7px 10px;min-width:72px;justify-content:center;color:#b9d9ff;background:linear-gradient(180deg,rgba(48,126,255,.18),rgba(22,67,139,.14));border:1px solid rgba(84,158,255,.35);border-radius:8px 8px 9px 9px;clip-path:polygon(0 10%,14% 10%,20% 0,80% 0,86% 10%,100% 10%,100% 100%,0 100%);box-shadow:0 0 18px rgba(42,130,255,.09)}
+.ls-c3-tag .ls-c3-logo-mini{width:16px;height:16px;display:grid;place-items:center;color:#74b8ff}.ls-c3-tag .ls-c3-logo-mini svg{width:16px;height:16px;shape-rendering:crispEdges}
+.ls-c3-cost{display:flex;align-items:center;gap:5px;color:#70b9ff;font-weight:900;font-size:.72rem;white-space:nowrap}
+.ls-c3-cost .icon{width:17px;height:17px}
+.ls-c3-section{margin-top:15px;padding:14px;border-radius:19px;border:1px solid rgba(117,154,206,.11);background:rgba(8,15,27,.72);box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.ls-c3-label{font-size:.73rem;font-weight:900;color:#dce8fb;margin-bottom:9px}.ls-c3-help{font-size:.64rem;color:#7184a5;line-height:1.5;margin-top:-3px;margin-bottom:10px}
+.ls-c3-photo-btn{width:100%;height:45px;border:1px solid rgba(76,145,255,.2);border-radius:13px;background:linear-gradient(180deg,rgba(33,91,171,.22),rgba(11,29,56,.52));color:#bcd9ff;font-weight:850;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}.ls-c3-photo-btn:active{transform:scale(.985)}
+.ls-c3-photo-btn .icon{width:18px;height:18px}
+.ls-c3-logo-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.ls-c3-logo-choice{height:54px;border:1px solid rgba(103,139,188,.12);border-radius:14px;background:#0b1525;color:#7188ad;display:grid;place-items:center;cursor:pointer;transition:.16s ease}.ls-c3-logo-choice svg{width:27px;height:27px;shape-rendering:crispEdges}.ls-c3-logo-choice:hover{border-color:rgba(83,157,255,.32);transform:translateY(-1px)}.ls-c3-logo-choice.active{color:#69b3ff;border-color:rgba(78,155,255,.68);background:linear-gradient(145deg,rgba(37,116,221,.24),rgba(9,28,54,.9));box-shadow:0 0 0 2px rgba(57,142,255,.09),0 10px 22px rgba(25,107,220,.12)}
+.ls-c3-field{position:relative}.ls-c3-input{width:100%;height:48px;border:1px solid rgba(113,148,199,.15);border-radius:14px;background:#08111f;color:#edf5ff;padding:0 48px 0 13px;outline:none;font:750 .78rem inherit;box-sizing:border-box}.ls-c3-input:focus{border-color:rgba(74,157,255,.62);box-shadow:0 0 0 3px rgba(46,128,255,.09)}.ls-c3-input::placeholder{color:#50627f}.ls-c3-input-logo{position:absolute;right:13px;top:50%;transform:translateY(-50%);width:23px;height:23px;color:#68afff;display:grid;place-items:center;pointer-events:none}.ls-c3-input-logo svg{width:23px;height:23px;shape-rendering:crispEdges}
+.ls-c3-actions{display:grid;grid-template-columns:1fr 1.35fr;gap:9px;margin-top:15px}.ls-c3-btn{height:48px;border-radius:15px;border:1px solid rgba(118,145,185,.14);font-weight:900;font-size:.76rem;cursor:pointer}.ls-c3-cancel{background:#0b1423;color:#8798b5}.ls-c3-create{background:linear-gradient(135deg,#2d8cff,#1260d6);color:#fff;border-color:rgba(122,190,255,.42);box-shadow:0 12px 28px rgba(24,113,238,.24)}.ls-c3-create:disabled{background:#182131;color:#566782;border-color:rgba(255,255,255,.06);box-shadow:none;cursor:not-allowed}.ls-c3-create:not(:disabled):active,.ls-c3-cancel:active{transform:scale(.985)}
+.ls-c3-note{display:flex;align-items:flex-start;gap:8px;margin-top:10px;color:#687c9c;font-size:.62rem;line-height:1.45}.ls-c3-note .icon{width:14px;height:14px;flex:0 0 14px;color:#65aaff}
+@keyframes lsC3In{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:390px){.ls-c3-preview{grid-template-columns:64px 1fr}.ls-c3-avatar{width:64px;height:64px}.ls-c3-cost{grid-column:2}.ls-c3-logo-grid{gap:6px}.ls-c3-logo-choice{height:50px}}
+</style>
+<script id="ls-clan-create-v3-js">
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+var svg=function(body){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">'+body+'</svg>'};
+var logos={
+ wing:svg('<path d="M2 8h5v3h3v3h2V8h5v3h3v3h-5v5h-3v-5H7v-3H2z" fill="currentColor" stroke="none"/>'),
+ fire:svg('<path d="M12 3v5l-3-2 1 6-3-2c-2 5 1 11 5 11s7-3 5-8l-3 2 1-6z" fill="currentColor" stroke="none"/>'),
+ lightning:svg('<path d="M13 2 5 13h6l-1 9 8-12h-6z" fill="currentColor" stroke="none"/>'),
+ clover:svg('<rect x="9" y="9" width="6" height="6" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="4" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="4" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="4" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="4" fill="currentColor" stroke="none"/><path d="M12 15v7"/></svg>'),
+ sparkle:svg('<path d="M12 2l1.7 7.1L21 11l-7.3 1.9L12 20l-1.7-7.1L3 11l7.3-1.9z" fill="currentColor" stroke="none"/><path d="m19 16 .7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7z" fill="currentColor" stroke="none"/>'),
+ bow:svg('<path d="M12 8 5 4l2 8-2 8 7-4 7 4-2-8 2-8z"/><path d="M12 8v8M9 12h6"/>'),
+ skull:svg('<rect x="5" y="4" width="14" height="14" rx="3" fill="currentColor" stroke="none"/><rect x="8" y="8" width="3" height="3" fill="#08111f" stroke="none"/><rect x="13" y="8" width="3" height="3" fill="#08111f" stroke="none"/><path d="M9 14h6M10 18v3M14 18v3" stroke="#08111f" stroke-width="1.5"/>'),
+ water:svg('<path d="M12 2 19 11c3 4-1 10-7 10S4 15 7 11z" fill="currentColor" stroke="none"/><path d="M8 14c1.2 2 2.8 3 5 3" stroke="#08111f" stroke-width="1.4"/>'),
+ snow:svg('<path d="M12 2v20M2 12h20M5 5l14 14M19 5 5 19" stroke-width="2.2"/><path d="m12 2-2 3 2 2 2-2zM12 22l-2-3 2-2 2 2zM2 12l3-2 2 2-2 2zM22 12l-3-2-2 2 2 2z" fill="currentColor" stroke="none"/>'),
+ sun:svg('<circle cx="12" cy="12" r="5" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" stroke-width="2"/>')
+};
+var logoKeys=Object.keys(logos);
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function renderEmptyV3(){
+ var v=$('lsClanView');if(!v)return;
+ v.innerHTML='<div class="ls-clan-empty" style="padding-top:44px"><div class="ls-clan-empty__icon">'+((window.ICON&&ICON.users)||'')+'</div><h3>Kamu belum punya clan</h3><p class="ls-clan-empty__subtext" style="max-width:310px">Bergabung dengan clan yang tersedia, atau donate berlian untuk membuat clan semakin besar.</p><div class="ls-clan-actions"><button class="ls-clan-action" id="lsC3Join"><span class="icon-wrap">'+((window.ICON&&ICON.users)||'')+'</span><span><b>Gabung Clan</b><span>Cari clan yang tersedia</span></span></button><button class="ls-clan-action" id="lsC3Make"><span class="icon-wrap">'+((window.ICON&&ICON.plus)||'')+'</span><span><b>Buat Clan</b><span>Biaya pembuatan 1.000 berlian</span></span></button></div></div>';
+ var j=$('lsC3Join'),m=$('lsC3Make');if(j)j.onclick=function(e){e.preventDefault();if(typeof window.renderClanJoin==='function')window.renderClanJoin()};if(m)m.onclick=function(e){e.preventDefault();window.openCreateClan()};
+}
+window.renderClanEmpty=renderEmptyV3;
+window.openCreateClan=function(){
+ var v=$('lsClanView');if(!v)return;
+ var selected='wing',avatarData='';
+ var logoGrid=logoKeys.map(function(k){return '<button type="button" class="ls-c3-logo-choice '+(k===selected?'active':'')+'" data-c3-logo="'+k+'" aria-label="Pilih logo">'+logos[k]+'</button>'}).join('');
+ v.innerHTML='<div class="ls-c3-page"><div class="ls-c3-top"><button class="ls-c3-back" id="lsC3Back" aria-label="Kembali">'+((window.ICON&&ICON.back)||'')+'</button><div><div class="ls-c3-title">Buat Clan</div><div class="ls-c3-subtitle">Bangun clan kamu dari awal</div></div></div><div class="ls-c3-hero"><div class="ls-c3-preview"><div id="lsC3AvatarWrap" class="ls-c3-avatar empty">'+((window.ICON&&ICON.users)||'')+'</div><div><div id="lsC3NamePreview" class="ls-c3-name">Nama Clan</div><div class="ls-c3-tag"><span id="lsC3LogoPreview" class="ls-c3-logo-mini">'+logos[selected]+'</span><span id="lsC3TagPreview">TAG</span></div></div><div class="ls-c3-cost">'+((window.ICON&&ICON.diamond)||'')+' 1.000</div></div></div><div class="ls-c3-section"><div class="ls-c3-label">Foto profil clan</div><div class="ls-c3-help">Pilih foto khusus untuk clan. Foto wajib dipasang sebelum clan dibuat.</div><input id="lsC3File" type="file" accept="image/*" hidden><button class="ls-c3-photo-btn" id="lsC3Photo">'+((window.ICON&&ICON.camera)||'')+' Custom photo profile</button></div><div class="ls-c3-section"><div class="ls-c3-label">Logo tag clan</div><div class="ls-c3-help">Pilih satu logo pixel untuk ditampilkan di tag dan profil clan.</div><div class="ls-c3-logo-grid">'+logoGrid+'</div></div><div class="ls-c3-section"><div class="ls-c3-label">Custom nama clan</div><div class="ls-c3-field"><input id="lsC3Name" class="ls-c3-input" maxlength="24" placeholder="Masukkan nama clan" autocomplete="off"><span id="lsC3NameLogo" class="ls-c3-input-logo">'+logos[selected]+'</span></div></div><div class="ls-c3-section"><div class="ls-c3-label">Custom nama tag clan</div><div class="ls-c3-help">Minimal 4 huruf, maksimal 8 karakter.</div><div class="ls-c3-field"><input id="lsC3Tag" class="ls-c3-input" maxlength="8" placeholder="Contoh: LSTR" autocomplete="off"></div></div><div class="ls-c3-actions"><button type="button" class="ls-c3-btn ls-c3-cancel" id="lsC3Cancel">Batal</button><button type="button" class="ls-c3-btn ls-c3-create" id="lsC3Create" disabled>'+((window.ICON&&ICON.plus)||'')+' Buat Clan</button></div><div class="ls-c3-note">'+((window.ICON&&ICON.info)||'')+' Membuat clan membutuhkan 1.000 berlian. Setelah berhasil dibuat, kamu otomatis menjadi Leader.</div></div>';
+ var name=$('lsC3Name'),tag=$('lsC3Tag'),create=$('lsC3Create'),file=$('lsC3File');
+ function refresh(){var n=name.value.trim(),t=tag.value.trim().toUpperCase();$('lsC3NamePreview').textContent=n||'Nama Clan';$('lsC3TagPreview').textContent=t||'TAG';$('lsC3LogoPreview').innerHTML=logos[selected];$('lsC3NameLogo').innerHTML=logos[selected];create.disabled=!(avatarData&&n.length>=2&&t.length>=4&&t.length<=8);}
+ document.querySelectorAll('[data-c3-logo]').forEach(function(b){b.onclick=function(){document.querySelectorAll('[data-c3-logo]').forEach(function(x){x.classList.remove('active')});b.classList.add('active');selected=b.getAttribute('data-c3-logo');refresh()}});
+ name.oninput=refresh;tag.oninput=refresh;
+ $('lsC3Photo').onclick=function(){file.click()};
+ file.onchange=function(){var f=this.files&&this.files[0];if(!f)return;if(!/^image\//.test(f.type)){if(typeof toastClan==='function')toastClan('File foto tidak valid.');return}var r=new FileReader();r.onload=function(){avatarData=r.result;var w=$('lsC3AvatarWrap');w.className='ls-c3-avatar';w.innerHTML='<img class="ls-c3-avatar" src="'+esc(avatarData)+'" alt="Foto clan">';$('lsC3Photo').innerHTML=((window.ICON&&ICON.camera)||'')+' Ganti photo profile';refresh()};r.readAsDataURL(f)};
+ $('lsC3Back').onclick=renderEmptyV3;$('lsC3Cancel').onclick=renderEmptyV3;
+ create.onclick=function(){
+   if(create.disabled)return;
+   if(userState.clanId){if(typeof toastClan==='function')toastClan('Kamu sudah berada di clan.');return}
+   var balance=Number(userState.diamonds||0);if(balance<1000){if(typeof toastClan==='function')toastClan('Butuh 1.000 berlian untuk membuat clan.');return}
+   var now=Date.now(),id='cl_'+now,cn=name.value.trim(),ct=tag.value.trim().toUpperCase();
+   var clan={id:id,name:cn,tag:ct,icon:selected,logo:selected,avatar:avatarData,description:'Belum ada deskripsi clan.',createdAt:now,diamonds:0,xpDiamonds:0,level:1,claimDiamonds:100,bgUrl:'',requests:[],settings:{},members:[{name:userState.username,role:'Leader',level:userState.level||1,joinedAt:now,donate:0,donateToday:0,grade:'GRADE I',avatar:userState.avatarUrl||''}]};
+   userState.diamonds=balance-1000;userState.clanId=id;userState.clanRole='Leader';
+   if(window.S&&Array.isArray(S.clans))S.clans.push(clan);else if(window.S)S.clans=[clan];
+   try{if(typeof saveUserSafe==='function')saveUserSafe();else if(typeof save==='function')save()}catch(e){}
+   try{if(typeof storeSet==='function')storeSet(S)}catch(e){}
+   if(typeof toastClan==='function')toastClan('Clan berhasil dibuat.');
+   if(typeof window.renderClanShell==='function')window.renderClanShell('clan');else if(typeof window.openClanDetail==='function')window.openClanDetail(clan);
+ };
+ refresh();
+};
+})();
+</script>
+
 </body>
 </html>
